@@ -12,6 +12,9 @@ src/sksundae/*.c
 *.pyd
 *.pxi
 
+# VS Code
+.vscode/
+
 # Distribution / packaging
 .Python
 build/
