@@ -35,7 +35,7 @@ If you prefer using the `conda` package manager, you can install scikit-SUNDAE f
 conda install -c conda-forge scikit-sundae
 ```
 
-Both sources contain binary installations. If you're combination of operating system and CPU architecture is not supported, please submit an [issue]() to let us know. If you'd prefer to build from source, please see the [documentation]().
+Both sources contain binary installations. If you're combination of operating system and CPU architecture is not supported, please submit an [issue](https://github.com/NREL/scikit-sundae/issues) to let us know. If you'd prefer to build from source, please see the [documentation]().
 
 ## Get Started
 You are now ready to start solving. Run one of the following examples to check your installation. Afterward, checkout the [documentation]() for a full list of options (including event functions), more detailed examples, and more.
@@ -83,7 +83,7 @@ plt.show()
 * Check out the [solve_ivp](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) function from scipy or the [scipy-dae](https://pypi.org/project/scipy-dae/) package for more examples that you can translate over and try out in scikit-SUNDAE.
 
 ## Contributing
-If you'd like to contribute to this package, please look through the existing [issues](). If the bug you've caught or the feature you'd like to add isn't already being worked on, please submit a new issue before getting started. You should also read through the [developer guidelines]().
+If you'd like to contribute to this package, please look through the existing [issues](https://github.com/NREL/scikit-sundae/issues). If the bug you've caught or the feature you'd like to add isn't already being worked on, please submit a new issue before getting started. You should also read through the [developer guidelines]().
 
 ## Acknowledgements
 Scikit-SUNDAE was inspired by [scikits.odes](https://scikits-odes.readthedocs.io/en/latest/) which is another package offering Python bindings for SUNDIALS; however, all source code for scikit-SUNDAE is original. If you are looking to use the iterative solvers and/or you are trying to compile from source against a custom-configured SUNDIALS, you will likely want to consider scikits.odes over scikit-SUNDAE.

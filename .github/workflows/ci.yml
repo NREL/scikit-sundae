@@ -5,19 +5,23 @@ on:
     branches: [main]
     paths-ignore:
       - '*.md'
+      - '*.txt'
       - 'README*'
-      - 'LICENSE'
+      - 'CHANGELOG*'
       - 'docs/*'
       - 'images/*'
+      - '.github/ISSUE_TEMPLATE/*'
 
   pull_request:
     branches: [main]
     paths-ignore:
       - '*.md'
+      - '*.txt'
       - 'README*'
-      - 'LICENSE'
+      - 'CHANGELOG*'
       - 'docs/*'
       - 'images/*'
+      - '.github/ISSUE_TEMPLATE/*'
 
 jobs:
   lint:

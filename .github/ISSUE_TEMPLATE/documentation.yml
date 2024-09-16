@@ -8,16 +8,16 @@ body:
     attributes:
       value: Thanks for taking the time to fill out this report!
 
-  - type: radio
+  - type: dropdown
     id: problem-type
     attributes:
       label: Problem/request type
       description: What are you trying to get fixed or added?
       options:
-        - label: typo
-        - label: example request
-        - label: broken link
-        - label: other
+        - typo
+        - example request
+        - broken link
+        - other
     validations:
       required: true
 

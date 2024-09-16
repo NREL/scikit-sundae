@@ -30,7 +30,7 @@ jobs:
           miniconda-version: latest
           auto-update-conda: true
 
-      - name: Conda dependencies  # Set SUNDIALS version to build against
+      - name: Conda dependencies  # Set SUNDIALS version to build/test against
         run: |
           conda install sundials=7.1 -c conda-forge
 
