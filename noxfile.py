@@ -155,19 +155,19 @@ def run_pre_commit(session):
 
     run_pytest(session)
     run_genbadge(session)
-    
+
 
 @nox.session(name='rebuild', python=False)
 def run_build_ext(session):
     """
     Runs setup.py build_ext --inplace
-    
+
     Use this to rebuild your editable package when the Cython files change.
     This removes for a full reinstallation. Note, this only works if your
     original install was done in editable mode. Editable mode already takes
     care of keeping modified python files synced, so only rebuild when the
     extension files (.pyx, .pxd) are modified.
-        
+
     """
-    
+
     session.run('python', 'setup.py', 'build_ext', '--inplace')
