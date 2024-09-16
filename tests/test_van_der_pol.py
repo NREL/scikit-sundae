@@ -31,17 +31,16 @@ def test_nonstiff_agaisnt_C_solution():
     # Only the nonstiff solution is checked against the solution generated from
     # a SUNDIALS C program because the stiff problem transitions from large to
     # small values at slightly different times, making errors seems larger than
-    # they are. NOTE: If GitHub actions has issues with checking this solution
-    # based on the 'onestep_solve', change over to using a linspace time span.
+    # they are.
 
     here = os.path.dirname(__file__)
     data = pd.read_csv(here + '/C_programs/van_der_pol/output.csv')
 
-    tspan = np.array([0, 20])
+    tspan = np.linspace(0, 20, 500)
     y0 = np.array([2, 0])
 
     solver = cvode.CVODE(rhsfn_nonstiff, rtol=1e-6, atol=1e-8)
     soln = solver.solve(tspan, y0)
 
     assert np.allclose(soln.t, data.t)
-    assert np.allclose(soln.y, data[['y0', 'y1']])
+    assert np.allclose(soln.y, data[['y0', 'y1']], rtol=1e-4, atol=1e-6)

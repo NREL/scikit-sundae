@@ -29,7 +29,7 @@ int main() {
     SUNContext ctx;
     sunrealtype lin_start = 0.0;
     sunrealtype lin_end = 20.0;
-    int lin_num = 1000;
+    int lin_num = 500;
     sunrealtype step = (lin_end - lin_start) / (lin_num - 1.0);
     int flag;
 
@@ -83,23 +83,8 @@ int main() {
 
     fprintf(file, "%.17g,%.17g,%.17g\n", t0, yy_p[0], yy_p[1]);
 
-    // for (int i = 1; i < lin_num; i++) {
-    //     flag = CVode(mem, tt_p[i], yy, &tout, CV_NORMAL);
-    //     if (flag < 0) {
-    //         printf("Error: CVODE failed\n");
-    //         return -1;
-    //     } 
-        
-    //     fprintf(file, "%.17g,%.17g,%.17g\n", tout, yy_p[0], yy_p[1]);
-    //     printf("t=%g, y=%g, %g\n", tout, yy_p[0], yy_p[1]);
-
-    //     if (flag == CV_TSTOP_RETURN) {
-    //         break;
-    //     }  
-    // }   
-
-    while (1) {
-        flag = CVode(mem, tend, yy, &tout, CV_ONE_STEP);
+    for (int i = 1; i < lin_num; i++) {
+        flag = CVode(mem, tt_p[i], yy, &tout, CV_NORMAL);
         if (flag < 0) {
             printf("Error: CVODE failed\n");
             return -1;
@@ -111,7 +96,22 @@ int main() {
         if (flag == CV_TSTOP_RETURN) {
             break;
         }  
-    } 
+    }   
+
+    // while (1) {
+    //     flag = CVode(mem, tend, yy, &tout, CV_ONE_STEP);
+    //     if (flag < 0) {
+    //         printf("Error: CVODE failed\n");
+    //         return -1;
+    //     } 
+        
+    //     fprintf(file, "%.17g,%.17g,%.17g\n", tout, yy_p[0], yy_p[1]);
+    //     printf("t=%g, y=%g, %g\n", tout, yy_p[0], yy_p[1]);
+
+    //     if (flag == CV_TSTOP_RETURN) {
+    //         break;
+    //     }  
+    // } 
 
     N_VDestroy(yy);
     SUNMatDestroy(A);
