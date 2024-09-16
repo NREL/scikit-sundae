@@ -1,7 +1,7 @@
 <picture>
-  <source media='(prefers-color-scheme: dark)' srcset='./images/dark_tag.png'
+  <source media='(prefers-color-scheme: dark)' srcset='./images/dark_tag.svg'
   style='width: 75%; min-width: 250px; max-width: 500px;'>
-  <img alt='Logo' src='./images/light_tag.png'
+  <img alt='Logo' src='./images/light_tag.svg'
   style='width: 75%; min-width: 250px; max-width: 500px;'>
   </br></br>
 </picture> 
