@@ -1,0 +1,31 @@
+name: Documentation
+description: File a bug report
+title: "[docs]: "
+labels: ["documentation"]
+
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to fill out this report!
+
+  - type: radio
+    id: problem-type
+    attributes:
+      label: Problem/request type
+      description: What are you trying to get fixed or added?
+      options:
+        - label: typo
+        - label: example request
+        - label: broken link
+        - label: other
+    validations:
+      required: true
+
+  - type: textarea
+    id: detailed-explanation
+    attributes:
+      label: Detailed explanation
+      description: |
+        On what page is the typo or link broken? Include the page url and refer to a specific section when possible. If you are requesting an example, what would you like to see demonstrated? For anything else, be concise, but provide enough detail to make sure the issue/request can be further investigated.
+    validations:
+      required: true

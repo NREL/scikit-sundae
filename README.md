@@ -8,8 +8,8 @@
 ![coverage][cov-b] &nbsp;
 [![pep8][pep-b]][pep-l]
 
-[ci-b]: https://github.com/NREL/BATMODS/actions/workflows/ci.yaml/badge.svg
-[ci-l]: https://github.com/NREL/BATMODS/actions/workflows/ci.yaml
+[ci-b]: https://github.com/NREL/scikit-sundae/actions/workflows/ci.yml/badge.svg
+[ci-l]: https://github.com/NREL/scikit-sundae/actions/workflows/ci.yml
 
 [test-b]: ./images/tests.svg
 [cov-b]: ./images/coverage.svg
