@@ -1,0 +1,30 @@
+name: Feature Request
+description: Suggest an enhancement or new feature
+labels: ["feature"]
+
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to fill out this form!
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Explain the feature.
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: How does the feature improve the package? What is the expected outcome?
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other context or screenshots about the request here.

@@ -1,0 +1,361 @@
+# cvode.py
+
+from __future__ import annotations
+from typing import Callable, TYPE_CHECKING
+
+from ._cy_cvode import CVODE as _CVODE, CVODEResult as _CVODEResult
+
+if TYPE_CHECKING:  # pragma: no cover
+    from numpy import ndarray
+
+
+class CVODE:
+    """SUNDIALS CVODE solver."""
+
+    def __init__(self, rhsfn: Callable, **options) -> None:
+        """
+        This class wraps the C-based variable-coefficient ordinary differential
+        equations (CVODE) solver from SUNDIALS.
+
+        Parameters
+        ----------
+        rhsfn : Callable
+            Right-hand-side function with signature ``f(t, y, yp[, userdata])``.
+            If 'rhsfn' has return values, they are ignored. Instead of using
+            returns, the solver interacts directly with the 'yp' array memory.
+            For more info see the notes.
+        **options : dict, optional
+            Keyword arguments to describe the solver options. A full list of
+            names, types, descriptions, and defaults is given below.
+        userdata : object or None, optional
+            Additional data object to supply to all user-defined callables. If
+            'resfn' takes in 5 arguments, including the optional 'userdata',
+            then this option cannot be None (default). See notes for more info.
+        method : {'Adams', 'BDF'}, optional
+            Specifies the linear multistep method. The suggested settings are
+            to use 'Adams' nonstiff problems and 'BDF' for stiff problems. The
+            default is 'BDF'.
+        first_step : float, optional
+            Specifies the initial step size. The default is 0, which uses an
+            estimated value internally determined by SUNDIALS.
+        min_step : float, optional
+            Minimum allowed step size. The default is 0.
+        max_step : float, optional
+            Maximum allowed step size. Use 0 (default) for unbounded steps.
+        rtol : float, optional
+            Relative tolerance. For example, 1e-4 means errors are controlled
+            to within 0.01%. It is recommended to not use values larger than
+            1e-3 nor smaller than 1e-15. The default is 1e-5.
+        atol : float or array_like[float], optional
+            Absolute tolerance. Use be a scalar float to apply the same value
+            for all state variables, or an array with a length matching 'y' to
+            provide tolerances specific to each variable. The default is 1e-6.
+        linsolver : {'dense', 'band'}, optional
+            Choice of linear solver. When using 'band', don't forget to provide
+            'lband' and 'uband' values. The default is 'dense'.
+        lband : int or None, optional
+            Lower Jacobian bandwidths. Given an ODE system ``yp = F(t, y)``,
+            the Jacobian is ``J = dF_i/dy_j``. 'lband' should be set to the max
+            distance between the main diagonal and the non-zero elements below
+            the diagonal. This option cannot be None (default) if 'linsolver'
+            is 'band'.
+        uband : int or None, optional
+            Upper Jacobian bandwidth. See 'lband' for the Jacobian description.
+            'uband' should be set to the max distance between the main diagonal
+            and the non-zero elements above the diagonal. This option cannot be
+            None (default) if 'linsolver' is 'band'.
+        max_order : int, optional
+            Specifies the maximum order for the linear multistep method. BDF
+            and Adams allow values in ranges [1, 5] and [1, 12], respectively.
+            The default is the method's, i.e., 5 for BDF and 12 for Adams.
+        max_num_steps : int, optional
+            Specifies the maximum number of steps taken by the solver in each
+            attempt to reach the next output time. The default is 500.
+        max_nonlin_iters : int, optional
+            Specifies the maximum number of nonlinear solver iterations in one
+            step. The default is 3.
+        max_conv_fails : int, optional
+            Specifies the max number of nonlinear solver convergence failures
+            in one step. The default is 10.
+        constraints_idx : array_like[int] or None, optional
+            Specifies indices 'i' in the 'y[i]' state variable array for which
+            inequality constraints should be applied. Constraints types must be
+            specified in 'constraints_type', see below. The default is None.
+        constraints_type : array_like[int] or None, optional
+            If 'constraints_idx' is not None, then this option must include an
+            array of equal length specifying the types of constraints to apply.
+            Values should be in ``{-2, -1, 1, 2}`` which apply ``y[i] < 0``,
+            ``y[i] <= 0``, ``y[i] >=0,`` and ``y[i] > 0``, respectively. The
+            default is None.
+        eventsfn : Callable or None, optional
+            Events function with signature ``g(t, y, yp, events[, userdata])``.
+            Return values from this function are ignored. Instead, the solver
+            directly interacts with the 'events' array. Each 'events[i]' should
+            be an expression that triggers an event when equal to zero. If None
+            (default), no events are tracked. See the notes for more info. The
+            option 'num_events' must be set if 'eventsfn' is not None so memory
+            can be allocated and managed for the events array. The 'eventsfn'
+            can also have the following attributes:
+
+                terminal: list[bool, int], optional
+                    A list with length 'num_events' that tells how the solver
+                    how to respond to each event. If boolean, the solver will
+                    terminate when True and will simply record the event when
+                    False. If integer, termination occurs at the given number
+                    of occurrences. The default is ``[True]*num_events``.
+                direction: list[int], optional
+                    A list with length 'num_events' that tells the solver which
+                    event directions to track. Values must be in ``{-1, 0, 1}``.
+                    Negative values will only trigger events when the slope is
+                    negative (i.e., 'events[i]' went from positive to negative).
+                    Alternatively, positive values track events with positive
+                    slope. If zero, either direction triggers the event. When
+                    not assigned, ``direction = [0]*num_events``.
+
+            You can assign attributes like ``eventsfn.terminal = [True]`` to
+            any function in Python, after it has been defined.
+        num_events : int, optional
+            Number of events to track. Must be greater than zero if 'eventsfn'
+            is not None. The default is 0.
+        jacfn : Callable or None, optional
+            Jacobian function like ``J(t, y, yp, res, cj, JJ[, userdata])``.
+            The function should fill the pre-allocated 2D matrix 'JJ' with the
+            values defined by ``JJ[i,j] = dres_i/dy_j + cj*dres_i/dyp_j``. An
+            internal finite difference method is applied when None (default).
+            As with other user-defined callables, return values from 'jacfn'
+            are ignored. See notes for more info.
+
+        Notes
+        -----
+        Return values from 'resfn', 'eventsfn', and 'jacfn' are ignored by the
+        solver. Instead the solver directly reads from pre-allocated memory.
+        The 'res', 'events', and 'JJ' arrays from each user-defined callable
+        should be filled within each respective function. When setting values
+        across the entire array/matrix at once, don't forget to use ``[:]`` to
+        fill the existing array rather than overwriting it. For example, using
+        ``res[:] = F(t, y, yp)`` is correct whereas ``res = F(t, y, yp)`` is
+        not. Using this method of pre-allocated memory helps pass data between
+        Python and the SUNDIALS C functions. It also keeps the solver fast,
+        especially for large problems.
+
+        When 'resfn' (or 'eventsfn', or 'jacfn') require data outside of their
+        normal arguments, you can supply 'userdata' as an option. When given,
+        'userdata' must appear in the function signatures for all of 'resfn',
+        'eventsfn' (when not None), and 'jacfn' (when not None), even if it is
+        not used in all of these functions. Note that 'userdata' only takes up
+        one argument position; however, 'userdata' can be any Python object.
+        Therefore, if you need to pass more than one extra argument then you
+        should pack all of the data into a single tuple, dict, dataclass, etc.
+        and pass them all together as 'userdata'. The data can be unpacked as
+        needed within a function.
+
+        Examples
+        --------
+        The following example solves the stiff van der Pol equation, which is a
+        classic ODE test problem. The same example is provided by `MATLAB`_ for
+        comparison.
+
+        .. _MATLAB:
+            https://www.mathworks.com/help/matlab/math/solve-stiff-odes.html
+
+        .. code-block:: python
+
+            import numpy as np
+            import sundae as sun
+            import matplotlib.pyplot as plt
+
+            def rhsfn(t, y, yp):
+                yp[0] =  y[1]
+                yp[1] = 1000.*(1. - y[0]**2)*y[1] - y[0]
+
+            solver = sun.cvode.CVODE(rhsfn)
+
+            tspan = np.array([0, 3000])
+            y0 = np.array([2, 0])
+
+            soln = solver.solve(tspan, y0)
+
+            plt.plot(soln.t, soln.y[:,0])
+            plt.show()
+
+        """
+        self._CVODE = _CVODE(rhsfn, **options)
+
+    def init_step(self, t0: float, y0: ndarray) -> CVODEResult:
+        """
+        Initializes the solver.
+
+        This method is called automatically when using 'solve'. However, it
+        must be run manually, before the 'step' method, when solving with a
+        step-by-step approach.
+
+        Parameters
+        ----------
+        t0 : float
+            Initial value of time.
+        y0 : array_like[float], shape(m,)
+            State variable values at 't0'. The length should match the number
+            of equations in 'rhsfn'.
+
+        Returns
+        -------
+        :class:`~sundae.cvode.CVODEResult`
+            Custom output class for CVODE solutions. Includes pretty-printing
+            consistent with scipy outputs. See the class definition for more
+            information.
+
+        Raises
+        ------
+        MemoryError
+            Failed to allocate memory for the CVODE solver.
+        RuntimeError
+            A SUNDIALS function returned NULL or was unsuccessful.
+
+        """
+        return self._CVODE.init_step(t0, y0)
+
+    def step(self, t: float, method='normal', tstop=None) -> CVODEResult:
+        """
+        Return the solution at time 't'.
+
+        Before calling the 'step' method, you must first initialize the solver
+        by running 'init_step'.
+
+        Parameters
+        ----------
+        t : float
+            Value of time.
+        method : {'normal', 'onestep'}, optional
+            Solve method for the current step. When 'normal' (default), output
+            is returned at time 't'. If 'onestep', output is returned after one
+            internal step toward 't'. Both methods stop at events, if given,
+            regardless of how 'eventsfn.terminal' was set.
+        tstop : float, optional
+            Specifies a hard time constraint for which the solver should not
+            pass, regardless of the 'method'. The default is None.
+
+        Returns
+        -------
+        :class:`~sundae.cvode.CVODEResult`
+            Custom output class for CVODE solutions. Includes pretty-printing
+            consistent with scipy outputs. See the class definition for more
+            information.
+
+        Raises
+        ------
+        ValueError
+            'method' value is invalid. Must be 'normal' or 'onestep'.
+        ValueError
+            'init_step' must be run prior to 'step'.
+
+        Notes
+        -----
+        In general, when solving step by step, times should all be provided in
+        either increasing or decreasing order. The solver can output results at
+        times taken in the opposite direction of integration if the requested
+        time is within the last internal step interval; however, values outside
+        this interval with raise errors. Rather than trying to mix forward and
+        reverse directions, choose each sequential time step carefully so you
+        get all of the values you need.
+
+        When mixing the 'normal' and 'onestep' methods, consider using 'tstop'
+        for all steps. Even though the solver may be returning the solution at
+        time 't' for the 'normal' method, the internal state can pass this time
+        during the step when 'tstop' is not provided. Therefore, the following
+        time steps may throw errors if the internal state has surpassed a next
+        requested 't' value in the direction of integration.
+
+        """
+        return self._CVODE.step(t, method, tstop)
+
+    def solve(self, tspan: ndarray, y0: ndarray) -> CVODEResult:
+        """
+        Return the solution across 'tspan'.
+
+        Parameters
+        ----------
+        tspan : array_like[float], shape(n >= 2,)
+            Solution time span. If ``len(tspan) == 2``, the solution will save
+            at internally chosen time steps. If ``len(tspan) > 2``, the values
+            themselves are used to create the solution output.
+        y0 : array_like[float], shape(m,)
+            State variable values at 'tspan[0]'. The length must match that of
+            'yp0' and the number of residual equations in 'resfn'.
+        yp0 : array_like[float], shape(m,)
+            Time derivatives for the 'y0' array, evaluated at 'tspan[0]'. The
+            length and indexing should be consistent with 'y0'.
+
+        Returns
+        -------
+        :class:`~sundae.cvode.CVODEResult`
+            Custom output class for CVODE solutions. Includes pretty-printing
+            consistent with scipy outputs. See the class definition for more
+            information.
+
+        Raises
+        ------
+        ValueError
+            'tspan' must be strictly increasing or decreasing.
+        ValueError
+            'tspan' length must be >= 2.
+
+        """
+        return self._CVODE.solve(tspan, y0)
+
+
+class CVODEResult(_CVODEResult):
+    """Results class for CVODE solver."""
+
+    def __init__(self, **kwargs) -> None:
+        """
+        Inherits from :class:`~sundae.common.RichResult`. The solution class
+        groups output from :class:`CVODE` into an object with the fields:
+
+        Parameters
+        ----------
+        message : str
+            Human-readable description of the status value.
+        success : bool
+            True if the solver was successful (status >= 0). False otherwise.
+        status : int
+            Reason for the algorithm termination. Negative values correspond
+            to errors, and positive values to different successful termination
+            criteria.
+        t : ndarray, shape(n,)
+            Solution time(s). The dimension depends on the method. Stepwise
+            solutions will only have 1 value whereas solutions across a full
+            'tspan' will have many.
+        y : ndarray, shape(n, m)
+            State variable values at each solution time. Rows correspond to
+            indices in 't' and columns match indexing from 'y0'.
+        i_events : ndarray, shape(k, num_events) or None
+            Provides an array for each detected event 'k' specifying indices
+            for which event(s) occurred. ``i_events[k,i] != 0`` if 'events[i]'
+            occurred at 't_events[k]'. The sign of 'i_events' indicates the
+            direction of zero-crossing:
+
+                * -1 indicates 'events[i]' was decreasing
+                * +1 indicates 'events[i]' was increasing
+
+            Output for 'i_events' will be None when either 'eventsfn' was None
+            or if no events occurred during the solve.
+        t_events : ndarray, shape(k,) or None
+            Times at which events occurred or None if 'eventsfn' was None or
+            no events were triggered during the solve.
+        y_events : ndarray, shape(k, m) or None
+            State variable values at each 't_events' value or None. Rows and
+            columns correspond to 't_events' and 'y0' indexing, respectively.
+        nfev : int
+            Number of times that 'resfn' was evaluated.
+        njev : int
+            Number of times the Jacobian was evaluated, 'jacfn' or internal
+            finite difference method.
+
+        Notes
+        -----
+        Terminal events are appended to the end of 't' and 'y'. However, if an
+        event was not terminal then it will only appear in '_events' outputs
+        and not within the main output arrays.
+
+        """
+        super().__init__(**kwargs)

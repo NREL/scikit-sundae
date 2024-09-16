@@ -1,0 +1,18 @@
+[flake8]
+# It is not a bug that we do not enforce the following formatting:
+# ----------------------------------------------------------------
+# E121: allow continuation line under-indented for hanging indent
+# E122: allow continuation line missing indentation or outdented
+# E126: allow continuation line over-indented for hanging indent
+# E127: allow continuation line over-indented for visual indent
+# E128: allow continuation line under-indented for visual indent
+# E131: allow continuation line unaligned for hanging indent
+# E201: allow whitespace after ‘(’
+# E202: allow whitespace before ‘)’
+# E226: allow missing whitespace around arithmetic operator
+# E241: allow multiple spaces after ‘,’
+# E731: allow assigning a lambda expression
+
+max-line-length = 80
+extend-ignore = E121,E122,E126,E127,E128,E131,E201,E202,E226,E241,E731
+exclude = .git,.github,.nox,build,docs,images,reports,C_programs

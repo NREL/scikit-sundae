@@ -1,0 +1,3 @@
+include LICENSE.txt
+include SUNDIALS_LICENSE.txt
+recursive-include src *.pyx *.pxd

@@ -1,0 +1,171 @@
+name: release
+
+on: workflow_dispatch
+
+jobs:    
+  build-wheels:
+    name: (Wheels ${{ matrix.python-version }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-13, macos-latest, windows-latest, ubuntu-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup conda/python
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          channel-priority: true
+          activate-environment: sun
+          python-version: ${{ matrix.python-version }}
+          miniconda-version: latest
+          auto-update-conda: true
+
+      - name: Conda dependencies  # Set SUNDIALS version to build against
+        run: |
+          conda install sundials=7.1 -c conda-forge
+
+      - name: Install build
+        run: pip install build
+
+      - name: List info
+        run: |
+          conda info
+          conda list
+
+      - name: Build wheels
+        env:
+          MACOSX_DEPLOYMENT_TARGET: '11.0'
+          LDFLAGS: -headerpad_max_install_names
+        run: python -m build --wheel
+
+      - name: Repair Windows wheels
+        if: runner.os == 'Windows'
+        run: |
+          pip install delvewheel
+          for %whl in (dist/*sundae*.whl) do (
+            delvewheel repair "%whl" -w wheels/ || exit 1;
+          )
+
+      - name: Set dylib path for delocate
+        if: runner.os == 'macOS'
+        run: echo "DYLD_LIBRARY_PATH=$CONDA_PREFIX/lib" >> $GITHUB_ENV
+
+      - name: Repair MacOS wheels
+        if: runner.os == 'macOS'
+        run: |
+          pip install delocate
+          for whl in dist/*sundae*.whl; do
+            delocate-wheel "$whl" -w wheels/ || exit 1;
+          done
+
+      - name: Repair Linux wheels
+        if: runner.os == 'Linux'
+        run: |
+          pip install auditwheel
+          for whl in dist/*sundae*.whl; do
+            auditwheel repair "$whl" --plat manylinux2014_x86_64 -w wheels/ || exit 1;
+          done
+        
+      - name: List files in wheels dir
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            dir wheels
+          else
+            ls wheels
+          fi
+        
+      - name: Test in clean environment
+        env:  # Remove known SUNDIALS header and lib paths
+          DYLD_LIBRARY_PATH:
+        run: |
+          conda create -n test_env python=${{ matrix.python-version }}
+          conda activate test_env
+
+          python -m pip install --upgrade pip
+          pip install numpy pytest
+          pip install --no-index --find-links=wheels scikit-sundae
+
+          pytest ./tests
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-wheels-${{ matrix.python-version }}-${{ matrix.os }}
+          path: wheels/*.whl
+
+  build-tarball:
+    name: (Tarball ${{ matrix.python-version }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.12']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install build
+        run: pip install build
+
+      - name: Build tarball
+        run: python -m build --sdist       
+
+      - name: Upload tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-tarball
+          path: dist/*.tar.gz
+
+  upload:
+    name: Upload to testpypi
+    needs: [build-wheels, build-tarball]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all builds
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+          pattern: dist-*
+          merge-multiple: true
+
+      - name: Check files
+        run: ls dist
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install twine
+        run: |
+          pip install twine
+
+      - name: Check builds and upload to TestPyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TESTPYPI_TOKEN }}
+        run: |
+          twine check dist/*
+          twine upload --repository testpypi dist/*

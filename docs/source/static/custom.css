@@ -1,0 +1,50 @@
+@import "../basic.css";
+
+:root {
+	/* --pst-color-primary: #0079C2 !important; 
+	--pst-color-secondary: #5D9732 !important; */
+
+  --pst-sidebar-font-size-mobile: 0.9rem !important;
+}
+
+/* Remove caption text on main page, but keep in toc */
+section span.caption-text {
+  display: none;
+}
+
+/* Fix transparent background in images */
+.transparent {
+  background: transparent;
+  background-color: transparent;
+}
+
+/* Dark theme tweaking */
+html[data-theme=dark] .sd-card img[src*='.svg'] {
+  filter: invert(1.0) brightness(0.8) contrast(1.2);
+}
+
+/* Toggle main page logo for dark/light modes */
+html[data-theme=dark] .ondark {
+  display: block;
+}
+
+html[data-theme=dark] .onlight {
+  display: None;
+}
+
+html[data-theme=light] .ondark {
+  display: None;
+}
+
+html[data-theme=light] .onlight {
+  display: block;
+}
+
+@media screen and (max-width: 540px) {
+  h1 {font-size: 30px;}
+  h2 {font-size: 24px;}
+  h3 {font-size: 21px;}
+  h4 {font-size: 18px;}
+  h5 {font-size: 18px;}
+  h6 {font-size: 18px;}
+}

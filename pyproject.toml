@@ -1,0 +1,58 @@
+# pyproject.toml
+
+[build-system]
+requires = ["setuptools", "cython>=3", "numpy"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scikit-sundae"
+readme = "README.md"
+dynamic = ["version"]
+requires-python = ">=3.9,<3.13"
+license = { file = "LICENSE.txt" }
+description = "SUNDIALS implicit differential algebraic (IDA) solver for DAEs."
+authors = [{ name = "Corey R. Randall", email = "corey.randall@nrel.gov" }]
+maintainers = [{ name = "Corey R. Randall", email = "corey.randall@nrel.gov" }]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = ["numpy"]
+
+[tool.setuptools.dynamic]
+version = {attr = "sksundae.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.txt", ".pyd", ".so", ".dll", ".dylib"]
+
+[project.optional-dependencies]
+dev = [
+    "nox",
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist",
+    "genbadge[all]",
+    "codespell",
+    "flake8",
+    "autopep8",
+    "sphinx",
+    "sphinx-autoapi",
+    "sphinx-design",
+    "sphinx-favicon",
+    "sphinx-copybutton",
+    "myst-nb",
+    "pydata-sphinx-theme",
+]
+
+[project.urls]
+Homepage = "https://example.com"
+Documentation = "https://example.com"
+Repository = "https://example.com"
+Issues = "https://example.com"
