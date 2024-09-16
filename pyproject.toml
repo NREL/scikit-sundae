@@ -35,6 +35,7 @@ where = ["src"]
 [project.optional-dependencies]
 dev = [
     "nox",
+    "pandas",
     "pytest",
     "pytest-cov",
     "pytest-xdist",

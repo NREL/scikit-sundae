@@ -88,5 +88,5 @@ jobs:
                 
       - name: Pytest
         run: |
-          pip install pytest
+          pip install pandas pytest
           pytest .
