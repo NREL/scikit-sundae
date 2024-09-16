@@ -1,10 +1,7 @@
-<picture>
-  <source media='(prefers-color-scheme: dark)' srcset='./images/dark_tag.svg'
-  style='width: 75%; min-width: 250px; max-width: 500px;'>
-  <img alt='Logo' src='./images/light_tag.svg'
-  style='width: 75%; min-width: 250px; max-width: 500px;'>
-  </br></br>
-</picture> 
+<img alt='Logo' src='./images/dark_tag.png#gh-dark-mode-only'
+ style='width: 75%; min-width: 250px; max-width: 500px;'/>
+<img alt='Logo' src='./images/dark_tag.png#gh-light-mode-only'
+ style='width: 75%; min-width: 250px; max-width: 500px;'/>
 
 [![CI][ci-b]][ci-l] &nbsp;
 ![tests][test-b] &nbsp;
