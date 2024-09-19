@@ -15,4 +15,4 @@
 
 max-line-length = 80
 extend-ignore = E121,E122,E126,E127,E128,E131,E201,E202,E226,E241,E731
-exclude = .git,.github,.nox,build,docs,images,reports,C_programs
+exclude = build,docs,images,reports,C_programs

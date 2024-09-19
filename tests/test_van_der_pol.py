@@ -30,7 +30,7 @@ def test_successful_stiff_solve():
 def test_nonstiff_agaisnt_C_solution():
     # Only the nonstiff solution is checked against the solution generated from
     # a SUNDIALS C program because the stiff problem transitions from large to
-    # small values at slightly different times, making errors seems larger than
+    # small values at slightly different times, making errors seem larger than
     # they are.
 
     here = os.path.dirname(__file__)

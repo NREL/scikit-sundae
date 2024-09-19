@@ -5,6 +5,7 @@
 
 # Standard library
 from warnings import warn
+from types import MethodType
 from inspect import getfullargspec
 from typing import Callable, Iterable
 
@@ -865,6 +866,9 @@ def _check_signature(name: str, func: Callable, expected: tuple[int]) -> int:
     """Check 'resfn', 'eventsfn', and 'jacfn' signatures."""
 
     argspec = getfullargspec(func)
+    if isinstance(func, MethodType):  # if method, remove self/cls
+        argspec.args.pop(0)
+
     if argspec.varargs or argspec.varkw:
         raise ValueError(f"'{name}' cannot include *args or **kwargs.")
     elif argspec.kwonlyargs:

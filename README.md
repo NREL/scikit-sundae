@@ -1,6 +1,6 @@
 <img alt='Logo' src='./images/dark_tag.png#gh-dark-mode-only'
  style='width: 75%; min-width: 250px; max-width: 500px;'/>
-<img alt='Logo' src='./images/dark_tag.png#gh-light-mode-only'
+<img alt='Logo' src='./images/light_tag.png#gh-light-mode-only'
  style='width: 75%; min-width: 250px; max-width: 500px;'/>
 
 [![CI][ci-b]][ci-l] &nbsp;
@@ -90,4 +90,4 @@ Scikit-SUNDAE was inspired by [scikits.odes](https://scikits-odes.readthedocs.io
 
 Since scikit-SUNDAE wraps the SUNDIALS solvers, the binary installations include pre-compiled dynamic libraries. These are self-contained in the scikit-SUNDAE package and will not affect any existing SUNDIALS installations you may already have on your machine. To be in compliance with SUNDIALS distribution requirements, all scikit-SUNDAE distributions include a copy of the SUNDIALS license. In addition, users and developers should be aware of the SUNDIALS [copyright](https://github.com/LLNL/sundials/blob/main/LICENSE).
 
-This work was authored by the National Renewable Energy Laboratory (NREL), operated by Alliance for Sustainable Energy, LLC, for the U.S. Department of Energy (DOE) under Contract No. DE-AC36-08GO28308. This work was supported by funding from DOE's Vehicle Technologies Office (VTO) and Advanced Scientific Computing Research (ASCR) program. The research was performed using computational resources sponsored by the Department of Energy's Office of Energy Efficiency and Renewable Energy and located at the National Renewable Energy Laboratory. The views expressed in the repository do not necessarily represent the views of the DOE or the U.S. Government.
+This work was authored by the National Renewable Energy Laboratory (NREL), operated by Alliance for Sustainable Energy, LLC, for the U.S. Department of Energy (DOE). The views expressed in the repository do not necessarily represent the views of the DOE or the U.S. Government.
