@@ -1,2 +1,0 @@
-Initial value problems
-======================

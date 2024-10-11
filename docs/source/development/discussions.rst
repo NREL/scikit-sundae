@@ -1,2 +1,0 @@
-Issues and features discussions
-===============================

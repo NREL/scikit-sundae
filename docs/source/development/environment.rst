@@ -1,2 +1,0 @@
-Setup a development environment
-===============================

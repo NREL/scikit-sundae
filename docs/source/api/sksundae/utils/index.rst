@@ -1,7 +1,7 @@
-sksundae.common
-===============
+sksundae.utils
+==============
 
-.. py:module:: sksundae.common
+.. py:module:: sksundae.utils
 
 
 Classes
@@ -9,7 +9,7 @@ Classes
 
 .. autoapisummary::
 
-   sksundae.common.RichResult
+   sksundae.utils.RichResult
 
 
 Module Contents
@@ -19,7 +19,7 @@ Module Contents
 
    Output container with pretty printing.
 
-   This class is a modified copy of ``_RichResult`` from the ``scipy``
+   This class is a based off the ``_RichResult`` class in the ``scipy``
    library. It combines a series of formatting functions to make the
    printed 'repr' easy to read. Use this class directly by passing in
    any number of keyword arguments, or use it as a base class to have
@@ -46,7 +46,7 @@ Module Contents
 
        import sundae as sun
 
-       class CustomResult(sun.common.RichResult):
+       class CustomResult(sun.utils.RichResult):
            _order_keys = ['first', 'second', 'third',]
 
        result = CustomResult(second=None, last=None, first=None)
@@ -59,7 +59,7 @@ Module Contents
    .. code-block:: python
 
        import numpy as np
-       from sundae.common import RichResult
+       from sundae.utils import RichResult
 
        t = np.linspace(0, 1, 1000)
        y = np.random.rand(1000, 5)
@@ -75,7 +75,7 @@ Module Contents
 
    .. code-block:: python
 
-       from sundae.common import RichResult
+       from sundae.utils import RichResult
 
        result = RichResult(a=10, b=20, c=30)
 

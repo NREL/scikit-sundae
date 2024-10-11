@@ -25,11 +25,11 @@ DAEs with no algebraic constraints).
 .. _SUNDIALS: https://sundials.readthedocs.io/en/latest/
 
 .. toctree:: 
-   :caption: User guide
+   :caption: User Guide
    :hidden:
    :maxdepth: 2
 
-   User guide <user_guide/index>
+   User Guide <user_guide/index>
 
 .. toctree:: 
    :caption: API Reference
@@ -61,7 +61,7 @@ DAEs with no algebraic constraints).
 
 .. grid:: 1 2 2 2
 
-   .. grid-item-card:: User guide
+   .. grid-item-card:: User Guide
          :class-footer: border-0
          :padding: 2
 

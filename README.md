@@ -25,20 +25,20 @@ The name SUNDAE combines (SUN)DIALS and DAE, which stands for differential algeb
 ## Installation
 Scikit-SUNDAE is installable via either `pip` or `conda`. To install from [PyPI]() use the following command.
 
-```cmd
+```
 pip install scikit-sundae
 ```
 
 If you prefer using the `conda` package manager, you can install scikit-SUNDAE from the `conda-forge` channel using the command below.
 
-```cmd
+```
 conda install -c conda-forge scikit-sundae
 ```
 
-Both sources contain binary installations. If you're combination of operating system and CPU architecture is not supported, please submit an [issue](https://github.com/NREL/scikit-sundae/issues) to let us know. If you'd prefer to build from source, please see the [documentation]().
+Both sources contain binary installations. If your combination of operating system and CPU architecture is not supported, please submit an [issue](https://github.com/NREL/scikit-sundae/issues) to let us know. If you'd prefer to build from source, please see the [documentation]().
 
 ## Get Started
-You are now ready to start solving. Run one of the following examples to check your installation. Afterward, checkout the [documentation]() for a full list of options (including event functions), more detailed examples, and more.
+You are now ready to start solving. Run one of the following examples to check your installation. Afterward, checkout the [documentation]() for a full list of options (including event functions), detailed examples, and more.
 
 ```python
 # Use the CVODE integrator to solve the Van der Pol equation
@@ -57,7 +57,7 @@ plt.plot(soln.t, soln.y[:, 0])
 plt.show()
 ```
 
-The `CVODE` solver demonstrated above is only capable of solving pure ODEs. The constant parameters and time span used above matches the same example given by [MATLAB](https://www.mathworks.com/help/matlab/ref/ode15s.html) for easy comparison. If you are trying to solve a DAE, you will want to use the `IDA` solver instead. A minimal DAE example is given below for the Robertson problem. As with the CVODE example, the parameters below are chosen to match an online [MATLAB](https://www.mathworks.com/help/matlab/ref/ode15s.html) example for easy comparison.
+The `CVODE` solver demonstrated above is only capable of solving pure ODEs. The constant parameters and time span used above match an example given by [MATLAB](https://www.mathworks.com/help/matlab/ref/ode15s.html) for easy comparison. If you are trying to solve a DAE, you will want to use the `IDA` solver instead. A minimal DAE example is given below for the Robertson problem. As with the CVODE example, the parameters below are chosen to match an online [MATLAB](https://www.mathworks.com/help/matlab/ref/ode15s.html) example for easy comparison.
 
 ```python
 # Use the IDA integrator to solve the Robertson problem
@@ -80,14 +80,17 @@ plt.show()
 
 **Notes:**
 * If you are new to Python, check out [Spyder IDE](https://www.spyder-ide.org/). Spyder is a powerful interactive development environment (IDE) that can make programming in Python more approachable to new users.
-* Check out the [solve_ivp](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) function from scipy or the [scipy-dae](https://pypi.org/project/scipy-dae/) package for more examples that you can translate over and try out in scikit-SUNDAE.
+* Check the [solve_ivp](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) documentation from scipy or the [scipy-dae](https://pypi.org/project/scipy-dae/) package repository if you are looking for common examples to test out and compare against. Translating an example from another package can help you learn how to use scikit-SUNDAE before trying to solve more challenging problems.
 
 ## Contributing
-If you'd like to contribute to this package, please look through the existing [issues](https://github.com/NREL/scikit-sundae/issues). If the bug you've caught or the feature you'd like to add isn't already being worked on, please submit a new issue before getting started. You should also read through the [developer guidelines]().
+If you'd like to contribute to this package, please look through the existing [issues](https://github.com/NREL/scikit-sundae/issues). If the bug you've caught or the feature you'd like to add isn't already reported, please submit a new issue. You should also read through the [developer guidelines]() if you plan to work on the issue yourself.
 
 ## Acknowledgements
-Scikit-SUNDAE was inspired by [scikits.odes](https://scikits-odes.readthedocs.io/en/latest/) which is another package offering Python bindings for SUNDIALS; however, all source code for scikit-SUNDAE is original. If you are looking to use the iterative solvers and/or you are trying to compile from source against a custom-configured SUNDIALS, you will likely want to consider scikits.odes over scikit-SUNDAE.
+Scikit-SUNDAE was originally inspired by [scikits.odes](https://scikits-odes.readthedocs.io/en/latest/) which also offers Python bindings to SUNDIALS. The API for scikit-SUNDAE was mostly adopted from scikits.odes; however, all of our source code is original. If you are comparing the two:
 
-Since scikit-SUNDAE wraps the SUNDIALS solvers, the binary installations include pre-compiled dynamic libraries. These are self-contained in the scikit-SUNDAE package and will not affect any existing SUNDIALS installations you may already have on your machine. To be in compliance with SUNDIALS distribution requirements, all scikit-SUNDAE distributions include a copy of the SUNDIALS license. In addition, users and developers should be aware of the SUNDIALS [copyright](https://github.com/LLNL/sundials/blob/main/LICENSE).
+1. **scikits.odes:** includes iterative solvers and some optional solvers (e.g., LAPACK). The package only provides source distributions, so users must configure and compile SUNDAILS on their own.
+2. **Scikit-SUNDAE:** includes more flexible events function capabilities (e.g., direction detection and terminal flags), scipy-like output, and provides both binary and source distributions. Iterative and optional solvers are not available.
+
+Our binary distributions include pre-compiled dynamic SUNDIALS libraries. These are self-contained and will not affect any existing SUNDIALS installations you may already have. To be in compliance with SUNDIALS distribution requirements, all scikit-SUNDAE distributions include a copy of the SUNDIALS license. Users and developers should be aware of the SUNDIALS [copyright](https://github.com/LLNL/sundials/blob/main/LICENSE).
 
 This work was authored by the National Renewable Energy Laboratory (NREL), operated by Alliance for Sustainable Energy, LLC, for the U.S. Department of Energy (DOE). The views expressed in the repository do not necessarily represent the views of the DOE or the U.S. Government.

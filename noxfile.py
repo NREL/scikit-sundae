@@ -24,13 +24,13 @@ def run_flake8(session):
     """
     Run flake8 with the github config file
 
-    Use the optional 'format' argument to run autopep8 on the src and tests
-    directories prior to running the linter.
+    Use the optional 'format' argument to run autopep8 prior to the linter.
 
     """
 
     if 'format' in session.posargs:
-        session.run('autopep8', '--in-place', '--recursive', '.')
+        session.run('autopep8', '.', '--in-place', '--recursive',
+                    '--global-config=.github/linters/.flake8')
 
     session.run('flake8', '--config=.github/linters/.flake8')
 
@@ -70,8 +70,7 @@ def run_spellcheck(session):
 
     run_codespell(session)
 
-    session.run(*command, 'docs/index.html')
-    session.run(*command, 'docs/source/examples')
+    session.run(*command, 'docs/source')
 
 
 @nox.session(name='tests', python=False)
@@ -80,8 +79,8 @@ def run_pytest(session):
     Run pytest and generate test/coverage reports
 
     Use the optional 'parallel' argument to run the tests in parallel. As just
-    a flag, the number of workers will be determined automatically. Otherwise
-    you can specify the number of workers as an int.
+    a flag, the number of workers will be determined automatically. Otherwise,
+    you can specify the number of workers using an int, e.g., parallel=4.
 
     """
 
@@ -124,7 +123,15 @@ def run_genbadge(session):
 
 @nox.session(name='docs', python=False)
 def run_sphinx(session):
-    """Run spellcheck and then use sphinx to build docs"""
+    """
+    Run spellcheck and then use sphinx to build docs
+
+    Use the optional 'clean' argument to remove everything under the 'build'
+    and 'source/api' folders prior to re-building the docs. This is important
+    in cases where the api module names have been changed or when some navbars
+    are not showing new pages. In general, try without 'clean' first.
+
+    """
 
     if 'clean' in session.posargs:
         os.chdir('docs')
@@ -160,13 +167,13 @@ def run_pre_commit(session):
 @nox.session(name='rebuild', python=False)
 def run_build_ext(session):
     """
-    Runs setup.py build_ext --inplace
+    Rebuilds the Cython extensions in place
 
     Use this to rebuild your editable package when the Cython files change.
-    This removes for a full reinstallation. Note, this only works if your
+    This removes the need to fully reinstall. Note, this only works if your
     original install was done in editable mode. Editable mode already takes
-    care of keeping modified python files synced, so only rebuild when the
-    extension files (.pyx, .pxd) are modified.
+    care of keeping modified python files synced, so only rebuild when any
+    extension files (.pyx, .pxd) are updated.
 
     """
 

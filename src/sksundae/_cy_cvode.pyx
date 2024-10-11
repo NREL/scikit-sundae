@@ -23,9 +23,10 @@ from .c_sunlinsol cimport *
 
 # Internal cdef headers
 from ._cy_common cimport *
+from ._cy_common import DTYPE, INT_TYPE  # Python precisions
 
 # Local python dependencies
-from .common import (RichResult, DTYPE, INT_TYPE)
+from .utils import RichResult
 
 
 # Messages shorted from documentation online:
@@ -306,7 +307,9 @@ cdef class CVODE:
         if self.yy is NULL:
             raise MemoryError("N_VNew_Serial returned a NULL pointer for yy.")
 
-        np2svec(y0, self.yy)
+        yy_tmp = y0.copy()
+        
+        np2svec(yy_tmp, self.yy)
 
         # 5) Create CVODE object
         if self._options["method"].lower() == "adams":
@@ -415,7 +418,7 @@ cdef class CVODE:
             if flag < 0:
                 raise RuntimeError("CVodeSetConstraints - " + CVMESSAGES[flag])
 
-        svec2np(self.yy, y0)
+        svec2np(self.yy, yy_tmp)
 
         self._initialized = True
 
@@ -423,7 +426,7 @@ cdef class CVODE:
 
         result = CVODEResult(
             message=CVMESSAGES[flag], success=flag >= 0, status=flag,
-            t=t0, y=y0.copy(), i_events=None, t_events=None, y_events=None,
+            t=t0, y=yy_tmp.copy(), i_events=None, t_events=None, y_events=None,
             nfev=nfev, njev=njev,
         )
 
@@ -804,6 +807,8 @@ def _check_signature(name: str, func: Callable, expected: tuple[int]) -> int:
 
     argspec = getfullargspec(func)
     if isinstance(func, MethodType):  # if method, remove self/cls
+        argspec.args.pop(0)
+    elif argspec.args[0] in ("self", "cls"):
         argspec.args.pop(0)
 
     if argspec.varargs or argspec.varkw:

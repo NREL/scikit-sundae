@@ -1,2 +1,0 @@
-Code style and linting
-======================

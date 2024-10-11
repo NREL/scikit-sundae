@@ -12,7 +12,7 @@ src/sksundae/*.c
 *.pyd
 *.pxi
 
-# VS Code
+# VSCode
 .vscode/
 
 # Distribution / packaging

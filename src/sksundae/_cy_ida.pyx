@@ -23,9 +23,10 @@ from .c_sunlinsol cimport *
 
 # Internal cdef headers
 from ._cy_common cimport *
+from ._cy_common import DTYPE, INT_TYPE  # Python precisions
 
 # Local python dependencies
-from .common import (RichResult, DTYPE, INT_TYPE)
+from .utils import RichResult
 
 
 # Messages shorted from documentation online:
@@ -315,8 +316,11 @@ cdef class IDA:
         if self.yp is NULL:
             raise MemoryError("N_VNew_Serial returned a NULL pointer for yp.")
 
-        np2svec(y0, self.yy)
-        np2svec(yp0, self.yp)
+        yy_tmp = y0.copy()
+        yp_tmp = yp0.copy()
+
+        np2svec(yy_tmp, self.yy)
+        np2svec(yp_tmp, self.yp)
 
         # 4) and 5) Create matrix and linear solver - they must match
         self._create_linsolver()
@@ -450,8 +454,8 @@ cdef class IDA:
             if flag < 0:
                 raise RuntimeError("IDAGetConsistentIC - " + IDAMESSAGES[flag])
 
-        svec2np(self.yy, y0)
-        svec2np(self.yp, yp0)
+        svec2np(self.yy, yy_tmp)
+        svec2np(self.yp, yp_tmp)
 
         self._initialized = True
 
@@ -459,7 +463,7 @@ cdef class IDA:
 
         result = IDAResult(
             message=IDAMESSAGES[flag], success=flag >= 0, status=flag,
-            t=t0, y=y0.copy(), yp=yp0.copy(),
+            t=t0, y=yy_tmp.copy(), yp=yp_tmp.copy(),
             i_events=None, t_events=None, y_events=None, yp_events=None,
             nfev=nfev, njev=njev,
         )
@@ -867,6 +871,8 @@ def _check_signature(name: str, func: Callable, expected: tuple[int]) -> int:
 
     argspec = getfullargspec(func)
     if isinstance(func, MethodType):  # if method, remove self/cls
+        argspec.args.pop(0)
+    elif argspec.args[0] in ("self", "cls"):
         argspec.args.pop(0)
 
     if argspec.varargs or argspec.varkw:

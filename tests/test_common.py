@@ -1,5 +1,5 @@
 import numpy as np
-from sksundae.common import RichResult, _format_float_10
+from sksundae.utils import RichResult, _format_float_10
 
 
 def test_RichResult():

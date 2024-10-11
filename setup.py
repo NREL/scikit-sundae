@@ -12,13 +12,15 @@ from Cython.Build import cythonize
 def find_sundials():
     search_paths = []
 
-    if os.environ.get('SUNDIALS_PREFIX'):
-        search_paths.append(os.environ.get('SUNDIALS_PREFIX'))
+    SUNDIALS_PREFIX = os.environ.get('SUNDIALS_PREFIX')
+    if SUNDIALS_PREFIX:
+        search_paths.append(SUNDIALS_PREFIX)
 
-    if os.environ.get('CONDA_PREFIX'):
+    CONDA_PREFIX = os.environ.get('CONDA_PREFIX')
+    if CONDA_PREFIX:
         search_paths.extend([
-            os.environ.get('CONDA_PREFIX'),
-            os.environ.get('CONDA_PREFIX') + '/Library',
+            CONDA_PREFIX,
+            os.path.join(CONDA_PREFIX, 'Library'),
         ])
 
     search_paths.extend([

@@ -37,7 +37,7 @@ def resfn_8(t, y, yp, res, userdata):
 
 
 def resfn_short(t, y, yp):
-    pass 
+    pass
 
 
 def resfn_long(t, y, yp, res, userdata1, userdata2):
@@ -57,10 +57,10 @@ def test_ida_signature_checks():
 
     assert ida_signature('resfn', resfn_7, (4, 5)) == 0
     assert ida_signature('resfn', resfn_8, (4, 5)) == 1
-    
+
     with pytest.raises(ValueError):
         _ = ida_signature('rhsfn', resfn_short, (4, 5))
-        
+
     with pytest.raises(ValueError):
         _ = ida_signature('rhsfn', resfn_long, (4, 5))
 
@@ -99,7 +99,7 @@ def rhsfn_8(t, y, yp, userdata):
 
 
 def rhsfn_short(t, y):
-    pass 
+    pass
 
 
 def rhsfn_long(t, y, yp, userdata1, userdata2):
@@ -119,9 +119,9 @@ def test_cvode_signature_checks():
 
     assert cvode_signature('rhsfn', rhsfn_7, (3, 4)) == 0
     assert cvode_signature('rhsfn', rhsfn_8, (3, 4)) == 1
-    
+
     with pytest.raises(ValueError):
         _ = cvode_signature('rhsfn', rhsfn_short, (3, 4))
-        
+
     with pytest.raises(ValueError):
         _ = cvode_signature('rhsfn', rhsfn_long, (3, 4))

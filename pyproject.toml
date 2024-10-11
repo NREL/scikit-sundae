@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 name = "scikit-sundae"
 readme = "README.md"
 dynamic = ["version"]
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.9,<3.14"
 license = { file = "LICENSE.txt" }
 description = "SUNDIALS implicit differential algebraic (IDA) solver for DAEs."
 authors = [{ name = "Corey R. Randall", email = "corey.randall@nrel.gov" }]
@@ -20,6 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 dependencies = ["numpy"]
 
@@ -53,7 +54,7 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://example.com"
+Homepage = "https://github.com/NREL/scikit-sundae"
 Documentation = "https://example.com"
-Repository = "https://example.com"
-Issues = "https://example.com"
+Repository = "https://github.com/NREL/scikit-sundae"
+Issues = "https://github.com/NREL/scikit-sundae/issues"
