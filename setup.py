@@ -141,6 +141,7 @@ extensions = [
 
 # Run the setup
 setuptools.setup(
+    include_package_data=True,
     ext_modules=cythonize(
         extensions,
         compiler_directives={'language_level': 3},

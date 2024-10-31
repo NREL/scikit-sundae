@@ -1,7 +1,7 @@
-<img alt='Logo' src='./images/dark_tag.png#gh-dark-mode-only'
- style='width: 75%; min-width: 250px; max-width: 500px;'/>
-<img alt='Logo' src='./images/light_tag.png#gh-light-mode-only'
- style='width: 75%; min-width: 250px; max-width: 500px;'/>
+<img alt='Logo' style='width: 75%; min-width: 250px; max-width: 500px;'
+ src='https://github.com/NREL/scikit-sundae/blob/main/images/dark_tag.png?raw=true#gh-dark-mode-only'/>
+<img alt='Logo' style='width: 75%; min-width: 250px; max-width: 500px;'
+ src='https://github.com/NREL/scikit-sundae/blob/main/images/light_tag.png?raw=true#gh-light-mode-only'/>
 
 [![CI][ci-b]][ci-l] &nbsp;
 ![tests][test-b] &nbsp;
@@ -11,8 +11,8 @@
 [ci-b]: https://github.com/NREL/scikit-sundae/actions/workflows/ci.yml/badge.svg
 [ci-l]: https://github.com/NREL/scikit-sundae/actions/workflows/ci.yml
 
-[test-b]: ./images/tests.svg
-[cov-b]: ./images/coverage.svg
+[test-b]: https://github.com/NREL/scikit-sundae/blob/main/images/tests.svg?raw=true
+[cov-b]: https://github.com/NREL/scikit-sundae/blob/main/images/coverage.svg?raw=true
 
 [pep-b]: https://img.shields.io/badge/code%20style-pep8-orange.svg
 [pep-l]: https://www.python.org/dev/peps/pep-0008

@@ -9,12 +9,21 @@ name = "scikit-sundae"
 readme = "README.md"
 dynamic = ["version"]
 requires-python = ">=3.9,<3.14"
-license = { file = "LICENSE.txt" }
-description = "SUNDIALS implicit differential algebraic (IDA) solver for DAEs."
-authors = [{ name = "Corey R. Randall", email = "corey.randall@nrel.gov" }]
-maintainers = [{ name = "Corey R. Randall", email = "corey.randall@nrel.gov" }]
+license = { file = "LICENSE" }
+description = "SUNDIALS bindings to differential aglebraic equation solvers."
+authors = [
+    { name = "Corey R. Randall" },
+    { email = "corey.randall@nrel.gov" },
+]
+maintainers = [
+    { name = "Corey R. Randall" },
+     { email = "corey.randall@nrel.gov" },
+]
 classifiers = [
     "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Topic :: Scientific/Engineering :: Mathematics",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -24,14 +33,14 @@ classifiers = [
 ]
 dependencies = ["numpy"]
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.setuptools.dynamic]
 version = {attr = "sksundae.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[tool.setuptools.package-data]
-"*" = ["*.txt", ".pyd", ".so", ".dll", ".dylib"]
 
 [project.optional-dependencies]
 dev = [
