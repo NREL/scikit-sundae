@@ -1,5 +1,7 @@
-<img alt='Logo' style='width: 75%; min-width: 250px; max-width: 500px;'
- src='https://github.com/NREL/scikit-sundae/blob/main/images/readme_logo.png?raw=true'/>
+<!-- <img alt='Logo' style='width: 75%; min-width: 250px; max-width: 500px;'
+ src='https://github.com/NREL/scikit-sundae/blob/main/images/readme_logo.png?raw=true'/> -->
+
+ # Scikit-SUNDAE
 
 [![CI][ci-b]][ci-l] &nbsp;
 ![tests][test-b] &nbsp;

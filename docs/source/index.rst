@@ -1,13 +1,13 @@
-.. raw:: html
+.. .. raw:: html
 
-   <embed>
-      </br>
-      <img alt='logo' class='onlight bg-transparent' src='_static/light_tag.png'
-       style='width: 75%; min-width: 250px; max-width: 500px;'>
-      <img alt='logo' class='ondark bg-transparent' src='_static/dark_tag.png'
-       style='width: 75%; min-width: 250px; max-width: 500px;'>
-      </br>
-   </embed>
+..    <embed>
+..       </br>
+..       <img alt='logo' class='onlight bg-transparent' src='_static/light_tag.png'
+..        style='width: 75%; min-width: 250px; max-width: 500px;'>
+..       <img alt='logo' class='ondark bg-transparent' src='_static/dark_tag.png'
+..        style='width: 75%; min-width: 250px; max-width: 500px;'>
+..       </br>
+..    </embed>
 
 =======
 Summary

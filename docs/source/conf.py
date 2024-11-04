@@ -26,7 +26,7 @@ extensions = [
     'autoapi.extension',
     'myst_nb',
     'sphinx_design',
-    'sphinx_favicon',
+    # 'sphinx_favicon',
     'sphinx_copybutton',
 ]
 
@@ -55,21 +55,22 @@ highlight_language = 'console'
 
 html_theme = 'pydata_sphinx_theme'
 
-html_favicon = 'static/favicon.ico'
+# html_favicon = 'static/favicon.ico'
+html_context = {'default_mode': 'dark'}
 
 html_static_path = ['static']
 html_js_files = ['custom.js']
 html_css_files = ['custom.css']
 
-html_context = {'default_mode': 'dark'}
+html_sidebars = {'index': [], '**': ['sidebar-nav-bs']}
 
-html_sidebars = {'index': [], '**': ['sidebar-nav-bs.html']}
+html_logo = None
 
 html_theme_options = {
-    'logo': {
-        'image_light': 'static/light.png',
-        'image_dark': 'static/dark.png',
-    },
+    # 'logo': {
+    #     'image_light': 'static/light.png',
+    #     'image_dark': 'static/dark.png',
+    # },
     'icon_links': [
         {
             'name': 'GitHub',
@@ -82,12 +83,14 @@ html_theme_options = {
             'icon': 'fa-solid fa-box',
         },
     ],
-    'header_links_before_dropdown': 5,
+    'navbar_start': ['navbar-logo'],
     'navbar_align': 'content',
+    'header_links_before_dropdown': 5,
     'footer_start': ['copyright.html'],
     'footer_end': ['sphinx-version.html'],
-    'navbar_persistent': ['search-button-field.html'],
-    'secondary_sidebar_items': ['page-toc.html'],
+    'navbar_persistent': ['search-button-field'],
+    'primary_sidebar_end': ['sidebar-ethical-ads'],
+    'secondary_sidebar_items': ['page-toc'],
     'search_bar_text': 'Search...',
     'show_prev_next': False,
     'collapse_navigation': True,
