@@ -82,6 +82,6 @@ docs = [
 
 [project.urls]
 Homepage = "https://github.com/NREL/scikit-sundae"
-Documentation = "https://example.com"
+Documentation = "https://scikit-sundae.readthedocs.io/"
 Repository = "https://github.com/NREL/scikit-sundae"
 Issues = "https://github.com/NREL/scikit-sundae/issues"

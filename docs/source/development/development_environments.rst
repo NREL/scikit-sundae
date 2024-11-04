@@ -9,12 +9,20 @@ This guide will walk you through setting up a local development environment for 
 1. Fork and clone the repository
     Before setting up your local environment, make sure you have forked the main repository and cloned it from your own fork. This allows you to create pull requests from your fork to the main repo.
 
+1. Install a C compiler 
+    If you are using the Windows operating system, we recommend `Visual Studio <https://visualstudio.microsoft.com/>`_, but if you have another preferred compiler that should work too. For MacOS and other Linux-based operating systems, we recommend `Clang <https://clang.llvm.org/>`_, which can be installed through the terminal using::
+
+        xcode-select --install      (for MacOS)
+        sudo apt install clang      (for Linux)
+
 2. Create a virtual environment
     Since we build scikit-SUNDAE agasint SUNDIALS releases on conda-forge, you will need to set up a virtual environment with ``conda`` access. While there are a few options you can use, we recommend using `Anaconda <https://anaconda.org>`_. With Anaconda installed, open the terminal (MacOS/Linux) or Anaconda Prompt and run::
 
         conda install python=x.x sundials=x.x -c conda-forge
 
-    The ``x.x`` version numbers should be filled in with the latest stable releases of Python and SUNDIALS. Continuous Integration (CI) workflows automatically test older versions. On occasion, if issues arise during tests, you may need to work with older Python versions temporarily.
+    The ``x.x`` version numbers should be filled in with the latest stable releases of Python and SUNDIALS. Continuous Integration (CI) workflows automatically test older versions. 
+    
+    On occasion, if issues arise during tests, you may need to work with older Python versions temporarily. In these cases, please reference the table on the main :doc:`/user_guide/installation` page to verify which SUNDIALS versions are compatible.
 
 3. Set the ``SUNDIALS_PREFIX`` environment variable
     Scikit-SUNDAE expects your SUNDIALS installation to be in either ``$CONDA_PREFIX`` or ``%CONDA_PREFIX%\Library``. Check to see if your installation is in either of these directories. If it isn't, you will need to set the ``SUNDIALS_PREFIX`` environment variable::

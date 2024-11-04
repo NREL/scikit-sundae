@@ -16,12 +16,12 @@
 [pep-l]: https://www.python.org/dev/peps/pep-0008
 
 ## Summary
-Scikit-SUNDAE provides Python bindings to [SUNDIALS](https://sundials.readthedocs.io/en/latest/) integrators. The implicit differential algebraic (IDA) solver and C-based variable-coefficient ordinary differential equations (CVODE) solver are both included.
+Scikit-SUNDAE provides Python bindings to [SUNDIALS](https://sundials.readthedocs.io/) integrators. The implicit differential algebraic (IDA) solver and C-based variable-coefficient ordinary differential equations (CVODE) solver are both included.
 
 The name SUNDAE combines (SUN)DIALS and DAE, which stands for differential algebraic equations. Solvers specific to DAE problems are not frequently available in Python. An ordinary differential equation (ODE) solver is also included for completeness. ODEs can be categorized as a subset of DAEs (i.e., DAEs with no algebraic constraints).
 
 ## Installation
-Scikit-SUNDAE is installable via either `pip` or `conda`. To install from [PyPI](https://pypi.org/project/scikit-sundae) use the following command.
+Scikit-SUNDAE is installable via either `pip` or `conda`. To install from [PyPI](https://pypi.org/project/scikit-sundae/) use the following command.
 
 ```
 pip install scikit-sundae
@@ -33,10 +33,10 @@ If you prefer using the `conda` package manager, you can install scikit-SUNDAE f
 conda install -c conda-forge scikit-sundae
 ```
 
-Both sources contain binary installations. If your combination of operating system and CPU architecture is not supported, please submit an [issue](https://github.com/NREL/scikit-sundae/issues) to let us know. If you'd prefer to build from source, please see the [documentation](https://scikit-sundae.readthedocs.io/en/latest/user_guide/installation.html).
+Both sources contain binary installations. If your combination of operating system and CPU architecture is not supported, please submit an [issue](https://github.com/NREL/scikit-sundae/issues/) to let us know. If you'd prefer to build from source, please see the [documentation](https://scikit-sundae.readthedocs.io/en/latest/user_guide/installation.html).
 
 ## Get Started
-You are now ready to start solving. Run one of the following examples to check your installation. Afterward, checkout the [documentation](https://scikit-sundae.readthedocs.io/en/latest/index.html) for a full list of options (including event functions), detailed examples, and more.
+You are now ready to start solving. Run one of the following examples to check your installation. Afterward, check out the [documentation](https://scikit-sundae.readthedocs.io/) for a full list of options (including event functions), detailed examples, and more.
 
 ```python
 # Use the CVODE integrator to solve the Van der Pol equation
@@ -81,7 +81,7 @@ plt.show()
 * Check the [solve_ivp](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) documentation from scipy or the [scipy-dae](https://pypi.org/project/scipy-dae/) package repository if you are looking for common examples to test out and compare against. Translating an example from another package can help you learn how to use scikit-SUNDAE before trying to solve more challenging problems.
 
 ## Citing this Work
-This project is tracked in NREL's software records under SWR-24-137. If you use use this package in your work, please include the following citation:
+This work was authored by researchers at the National Renewable Energy Laboratory (NREL). The project is tracked in NREL's software records under SWR-24-137 and has a DOI available for citing the work. If you use use this package in your work, please include the following citation:
 
 > Placeholder... waiting for DOI.
 
@@ -91,13 +91,14 @@ For convenience, we also provide the following for your BibTex:
 @misc{Randall2024,
   title = {{scikit-SUNDAE: Python bindings to SUNDIALS DAE solvers}},
   author = {Randall, Corey R.},
+  year = {2024},
   doi = {placeholder... waiting for DOI},
-  year = {2024}
+  url = {https://github.com/NREL/scikit-sundae},
 }
 ```
 
 ## Acknowledgements
-Scikit-SUNDAE was originally inspired by [scikits.odes](https://scikits-odes.readthedocs.io/en/latest/) which also offers Python bindings to SUNDIALS. The API for scikit-SUNDAE was mostly adopted from scikits.odes; however, all of our source code is original. If you are comparing the two:
+Scikit-SUNDAE was originally inspired by [scikits.odes](https://scikits-odes.readthedocs.io/) which also offers Python bindings to SUNDIALS. The API for scikit-SUNDAE was mostly adopted from scikits.odes; however, all of our source code is original. If you are comparing the two:
 
 1. **scikits.odes:** includes iterative solvers and some optional solvers (e.g., LAPACK). The package only provides source distributions, so users must configure and compile SUNDAILS on their own.
 2. **Scikit-SUNDAE:** includes more flexible events function capabilities (e.g., direction detection and terminal flags), scipy-like output, and provides both binary and source distributions. Iterative and optional solvers are not available.
@@ -105,7 +106,7 @@ Scikit-SUNDAE was originally inspired by [scikits.odes](https://scikits-odes.rea
 Our binary distributions include pre-compiled dynamic SUNDIALS libraries. These are self-contained and will not affect other, existing installations you may already have. To be in compliance with SUNDIALS distribution requirements, all scikit-SUNDAE distributions include a copy of the [SUNDIALS license](https://github.com/LLNL/sundials/blob/main/LICENSE).
 
 ## Contributing
-If you'd like to contribute to this package, please look through the existing [issues](https://github.com/NREL/scikit-sundae/issues). If the bug you've caught or the feature you'd like to add isn't already reported, please submit a new issue. You should also read through the [developer guidelines](https://scikit-sundae.readthedocs.io/en/latest/development/index.html) if you plan to work on the issue yourself.
+If you'd like to contribute to this package, please look through the existing [issues](https://github.com/NREL/scikit-sundae/issues). If the bug you've caught or the feature you'd like to add isn't already reported, please submit a new issue. You should also read through the [developer guidelines](https://scikit-sundae.readthedocs.io/en/latest/development/) if you plan to work on the issue yourself.
 
 ## Disclaimer
 This work was authored by the National Renewable Energy Laboratory (NREL), operated by Alliance for Sustainable Energy, LLC, for the U.S. Department of Energy (DOE). The views expressed in the repository do not necessarily represent the views of the DOE or the U.S. Government.

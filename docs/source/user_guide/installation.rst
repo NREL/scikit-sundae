@@ -4,11 +4,13 @@ This page will guide you through the installation process for scikit-SUNDAE. Whe
 
 Installing via PyPI
 -------------------
-Installing with ``pip`` will pull a distribution file from the Python Package Index (PyPI). We provide both binary and source distributions on PyPI. Default settings will use binary distributions, so long as your hardware and OS combination are supported. See below for a list of unsupported platforms.
+Installing with ``pip`` will pull a distribution file from the Python Package Index (PyPI). We provide both binary and source distributions on `PyPI`_. Default settings will use binary distributions, so long as your hardware and OS combination are supported. See below for a list of unsupported platforms.
 
 To install the latest release, simply run the following::
 
     pip install scikit-sundae
+
+.. _PyPI: https://pypi.org/project/scikit-sundae
 
 Python Version Support
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -107,15 +109,23 @@ scikit-SUNDAE Version  Supported SUNDIALS Version(s)
 1.0.x                   >=7.0
 ====================== ==============================
 
-1. Skip to step (2) if you are trying to compile against a custom SUNDIALS build. Otherwise, install a supported SUNDIALS release from conda-forge. Reference the table above to find a version that is compatible with the version of scikit-SUNDAE you are trying to install, and fill in the ``x.x`` below with an appropriate version::
+1. Make sure you have a C compiler installed. If you are using the Windows operating system, we recommend `Visual Studio`_, but if you have another preferred compiler that should work too. For MacOS and other Linux-based operating systems, we recommend `Clang`_, which can be installed through the terminal using::
+
+    xcode-select --install      (for MacOS)
+    sudo apt install clang      (for Linux)
+
+2. Skip to step (2) if you are trying to compile against a custom SUNDIALS build. Otherwise, install a supported SUNDIALS release from conda-forge. Reference the table above to find a version that is compatible with the version of scikit-SUNDAE you are trying to install, and fill in the ``x.x`` below with an appropriate version::
 
     conda install -c conda-forge sundials=x.x 
 
-2. Skip this step if you installed SUNDIALS from conda-forge during step (1). Otherwise, make sure your SUNDIALS version is compatible with the version of scikit-SUNDAE you're trying to install using the table above as a reference. Afterward, find the parent directory for your SUNDIALS files and follow the directions in the :ref:`Cannot Locate SUNDIALS` section to set the ``SUNDIALS_PREFIX`` environment variable.
+3. Skip this step if you installed SUNDIALS from conda-forge during step (1). Otherwise, make sure your SUNDIALS version is compatible with the version of scikit-SUNDAE you're trying to install using the table above as a reference. Afterward, find the parent directory for your SUNDIALS files and follow the directions in the :ref:`Cannot Locate SUNDIALS` section to set the ``SUNDIALS_PREFIX`` environment variable.
 
-3. Force the package to install the source distribution from PyPI:: 
+4. Force the package to install the source distribution from PyPI:: 
 
     pip install --no-binary scikit-sundae scikit-sundae <other packages>
+
+.. _Visual Studio: https://visualstudio.microsoft.com/
+.. _Clang: https://clang.llvm.org/
 
 Developer Versions
 ------------------

@@ -68,8 +68,20 @@ html_sidebars = {'index': [], '**': ['sidebar-nav-bs.html']}
 html_theme_options = {
     'logo': {
         'image_light': 'static/light.png',
-        'image_dark': 'static/dark.png'
+        'image_dark': 'static/dark.png',
     },
+    'icon_links': [
+        {
+            'name': 'GitHub',
+            'url': 'https://github.com/NREL/scikit-sundae',
+            'icon': 'fa-brands fa-github',
+        },
+        {
+            'name': 'PyPI',
+            'url': 'https://pypi.org/project/scikit-sundae',
+            'icon': 'fa-solid fa-box',
+        },
+    ],
     'header_links_before_dropdown': 5,
     'navbar_align': 'content',
     'footer_start': ['copyright.html'],
