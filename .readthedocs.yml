@@ -1,0 +1,20 @@
+# .readthedocs.yaml
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+# Required
+version: 2
+
+# Set OS, Python version, and other tools for the build
+build:
+  os: ubuntu-22.04
+  tools:
+    python: miniconda-latest
+
+# Conda environment to install sundials
+conda:
+  environment: environments/rtd_environment.yml
+
+# Location of sphinx configuration file
+sphinx:
+  configuration: docs/source/conf.py

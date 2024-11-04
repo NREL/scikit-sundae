@@ -6,11 +6,13 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import sksundae as sun
+
 project = 'scikit-sundae'
 copyright = '2024, Corey R. Randall'
 author = 'Corey R. Randall'
-version = '1.0.0'
-release = '1.0.0'
+version = sun.__version__
+release = sun.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -26,7 +28,6 @@ extensions = [
     'sphinx_design',
     'sphinx_favicon',
     'sphinx_copybutton',
-    'sphinx.ext.githubpages',
 ]
 
 templates_path = ['templates']

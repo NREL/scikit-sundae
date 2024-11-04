@@ -2,7 +2,6 @@ name: build-and-test
 
 on:
   push:
-    branches: [main]
     paths-ignore:
       - '*.md'
       - '*.txt'
@@ -10,6 +9,8 @@ on:
       - 'CHANGELOG*'
       - 'docs/*'
       - 'images/*'
+      - 'LICENSE'
+      - 'SUNDIALS_LICENSE'
       - '.github/ISSUE_TEMPLATE/*'
 
   pull_request:
@@ -21,6 +22,8 @@ on:
       - 'CHANGELOG*'
       - 'docs/*'
       - 'images/*'
+      - 'LICENSE'
+      - 'SUNDIALS_LICENSE'
       - '.github/ISSUE_TEMPLATE/*'
 
 jobs:
@@ -76,17 +79,17 @@ jobs:
 
       - name: Setup conda/python
         uses: conda-incubator/setup-miniconda@v3
-        with:
-          channels: conda-forge
-          channel-priority: true
-          activate-environment: sun
-          python-version: ${{ matrix.python-version }}
-          miniconda-version: latest
+        with:  # ci_environment.yml specifies sundials version to compile against
           auto-update-conda: true
+          miniconda-version: latest
+          environment-file: environments/ci_environment.yml
+          python-version: ${{ matrix.python-version }}
+          activate-environment: sun
 
-      - name: Conda dependencies  # Set SUNDIALS version to build/test against
+      - name: Verify environment
         run: |
-          conda install sundials=7.1 -c conda-forge
+          conda info
+          conda list
 
       - name: Install scikit-sundae
         run: |

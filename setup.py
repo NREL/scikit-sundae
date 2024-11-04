@@ -65,85 +65,99 @@ def parse_config_h(file):
     return {k: config[k] for k in sorted(config)}
 
 
-# Parse sundials_config.h
-BASE, CONFIG_H = find_sundials()
-with open(CONFIG_H, 'r') as f:
-    config = parse_config_h(f)
+def get_extensions():
 
-# Write the pxi file to match types to sundials_config.h
-with open('src/sksundae/config.pxi', 'w') as f:
+    # Parse sundials_config.h
+    BASE, CONFIG_H = find_sundials()
+    with open(CONFIG_H, 'r') as f:
+        config = parse_config_h(f)
 
-    SUNDIALS_VERSION = config.get('SUNDIALS_VERSION')
-    MAJOR_VERSION = SUNDIALS_VERSION.split('.')[0]
-    if int(MAJOR_VERSION) < 7:
-        raise RuntimeError(f"Scikit-SUNDAE can't build with {SUNDIALS_VERSION=}"
-                           " MAJOR_VERSION must be at least 7.")
+    # Write the pxi file to match types to sundials_config.h
+    with open('src/sksundae/config.pxi', 'w') as f:
 
-    if config.get('SUNDIALS_SINGLE_PRECISION'):
-        precision = 'single'
-    elif config.get('SUNDIALS_DOUBLE_PRECISION'):
-        precision = 'double'
-    elif config.get('SUNDIALS_EXTENDED_PRECISION'):
-        precision = 'extended'
-    else:
-        warn("Couldn't find SUNDIALS_PRECISION. Defaulting to double.")
-        precision = 'double'
+        SUNDIALS_VERSION = config.get('SUNDIALS_VERSION')
+        MAJOR_VERSION = SUNDIALS_VERSION.split('.')[0]
+        if int(MAJOR_VERSION) < 7:
+            raise RuntimeError(f"sksundae - incompatible {SUNDIALS_VERSION=}."
+                               " MAJOR_VERSION must be at least 7.")
 
-    if config.get('SUNDIALS_INT32_T'):
-        indexsize = 'int32'
-    elif config.get('SUNDIALS_INT64_T'):
-        indexsize = 'int64'
-    else:
-        warn("Couldn't find SUNDIALS_INDEX_SIZE. Defaulting to int32.")
-        indexsize = 'int32'
+        if config.get('SUNDIALS_SINGLE_PRECISION'):
+            precision = 'single'
+        elif config.get('SUNDIALS_DOUBLE_PRECISION'):
+            precision = 'double'
+        elif config.get('SUNDIALS_EXTENDED_PRECISION'):
+            precision = 'extended'
+        else:
+            warn("Couldn't find SUNDIALS_PRECISION. Defaulting to double.")
+            precision = 'double'
 
-    f.write(f"DEF SUNDIALS_VERSION = \"{SUNDIALS_VERSION}\"\n")
-    f.write(f"DEF SUNDIALS_FLOAT_TYPE = \"{precision}\"\n")
-    f.write(f"DEF SUNDIALS_INT_TYPE = \"{indexsize}\"\n")
+        if config.get('SUNDIALS_INT32_T'):
+            indexsize = 'int32'
+        elif config.get('SUNDIALS_INT64_T'):
+            indexsize = 'int64'
+        else:
+            warn("Couldn't find SUNDIALS_INDEX_SIZE. Defaulting to int32.")
+            indexsize = 'int32'
 
-# Specify include_dirs, library_dirs, and libraries for each extension
-SUNDIALS_INCLUDE_DIRS = [numpy.get_include(), os.path.join(BASE, 'include')]
-SUNDIALS_LIBRARY_DIRS = [os.path.join(BASE, 'lib')]
+        f.write(f"DEF SUNDIALS_VERSION = \"{SUNDIALS_VERSION}\"\n")
+        f.write(f"DEF SUNDIALS_FLOAT_TYPE = \"{precision}\"\n")
+        f.write(f"DEF SUNDIALS_INT_TYPE = \"{indexsize}\"\n")
 
-LIBRARIES = [
-    'sundials_core',
-    'sundials_nvecserial',
-    'sundials_sunlinsoldense',
-    'sundials_sunlinsolband',
-    'sundials_sunmatrixdense',
-    'sundials_sunmatrixband',
-]
+    # Specify include_dirs, library_dirs, and libraries for each extension
+    SUNDIALS_INCLUDE_DIRS = [numpy.get_include(), os.path.join(BASE, 'include')]
+    SUNDIALS_LIBRARY_DIRS = [os.path.join(BASE, 'lib')]
 
-# Define the extension modules
-extensions = [
-    setuptools.Extension(
-        name='sksundae._cy_common',
-        sources=['src/sksundae/_cy_common.pyx'],
-        include_dirs=SUNDIALS_INCLUDE_DIRS,
-        library_dirs=SUNDIALS_LIBRARY_DIRS,
-        libraries=LIBRARIES,
-    ),
-    setuptools.Extension(
-        name='sksundae._cy_cvode',
-        sources=['src/sksundae/_cy_cvode.pyx'],
-        include_dirs=SUNDIALS_INCLUDE_DIRS,
-        library_dirs=SUNDIALS_LIBRARY_DIRS,
-        libraries=LIBRARIES + ['sundials_cvode'],
-    ),
-    setuptools.Extension(
-        name='sksundae._cy_ida',
-        sources=['src/sksundae/_cy_ida.pyx'],
-        include_dirs=SUNDIALS_INCLUDE_DIRS,
-        library_dirs=SUNDIALS_LIBRARY_DIRS,
-        libraries=LIBRARIES + ['sundials_ida'],
-    ),
-]
+    LIBRARIES = [
+        'sundials_core',
+        'sundials_nvecserial',
+        'sundials_sunlinsoldense',
+        'sundials_sunlinsolband',
+        'sundials_sunmatrixdense',
+        'sundials_sunmatrixband',
+    ]
 
-# Run the setup
-setuptools.setup(
-    include_package_data=True,
-    ext_modules=cythonize(
+    # Define the extension modules
+    extensions = [
+        setuptools.Extension(
+            name='sksundae._cy_common',
+            sources=['src/sksundae/_cy_common.pyx'],
+            include_dirs=SUNDIALS_INCLUDE_DIRS,
+            library_dirs=SUNDIALS_LIBRARY_DIRS,
+            libraries=LIBRARIES,
+        ),
+        setuptools.Extension(
+            name='sksundae._cy_cvode',
+            sources=['src/sksundae/_cy_cvode.pyx'],
+            include_dirs=SUNDIALS_INCLUDE_DIRS,
+            library_dirs=SUNDIALS_LIBRARY_DIRS,
+            libraries=LIBRARIES + ['sundials_cvode'],
+        ),
+        setuptools.Extension(
+            name='sksundae._cy_ida',
+            sources=['src/sksundae/_cy_ida.pyx'],
+            include_dirs=SUNDIALS_INCLUDE_DIRS,
+            library_dirs=SUNDIALS_LIBRARY_DIRS,
+            libraries=LIBRARIES + ['sundials_ida'],
+        ),
+    ]
+
+    ext_modules = cythonize(
         extensions,
         compiler_directives={'language_level': 3},
-    ),
-)
+    )
+
+    return ext_modules
+
+
+# Run the setup
+BUILD_SDIST = os.environ.get('BUILD_SDIST', 0)
+
+if int(BUILD_SDIST):  # Don't compile extensions if just building sdist
+    setuptools.setup(
+        include_package_data=True,
+    )
+else:
+    setuptools.setup(
+        include_package_data=True,
+        ext_modules=get_extensions(),
+    )

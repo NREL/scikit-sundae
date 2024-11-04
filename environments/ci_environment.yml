@@ -1,0 +1,5 @@
+name: sun
+channels:
+  - conda-forge
+dependencies:
+  - sundials=7.1

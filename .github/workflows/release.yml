@@ -1,18 +1,123 @@
 name: release
 
-on: workflow_dispatch
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+a[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+b[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
 
-jobs:    
+jobs:
+  details:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_version: ${{ steps.release.outputs.tag_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract tag details
+        id: release
+        run: |
+          if [[ "${{ github.ref_type }}" = "tag" ]]; then
+            TAG_VERSION=${GITHUB_REF#refs/tags/v}
+            echo "tag_version=$TAG_VERSION" >> "$GITHUB_OUTPUT"
+            echo "Tag version is $TAG_VERSION"
+          else
+            echo "No tag found"
+            exit 1
+          fi
+
+  check-version:
+    needs: details
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Fetch info from PyPI
+        run: |
+          response=$(curl -s https://pypi.org/pypi/${{ env.PACKAGE_NAME }}/json || echo "{}")
+          latest_pypi_version=$(echo $response | grep -oP '"releases":\{"\K[^"]+' | sort -rV | head -n 1)
+          if [[ -z "$latest_pypi_version" ]]; then
+            echo "Package not found on PyPI."
+            latest_pypi_version="0.0.0"
+          fi
+          echo "Latest version on PyPI: $latest_pypi_version"
+          echo "latest_pypi_version=$latest_pypi_version" >> $GITHUB_ENV
+
+      - name: Compare version against PyPI and exit if not newer
+        run: |
+          TAG_VERSION=${{ needs.details.outputs.tag_version }}
+          PYPI_VERSION=$latest_pypi_version
+          
+          TAG_BASE=${TAG_VERSION%%[a-z]}
+          PYPI_BASE=${PYPI_VERSION%%[a-z]}
+
+          TAG_SUFFIX=${TAG_VERSION#$TAG_BASE}
+          PYPI_SUFFIX=${PYPI_VERSION#$PYPI_BASE}
+
+          suffix_count=0
+
+          [[ -n "$TAG_SUFFIX" ]] && ((suffix_count++))
+          [[ -n "$PYPI_SUFFIX" ]] && ((suffix_count++))
+
+          if [[ "$TAG_VERSION" == "$PYPI_VERSION" ]]; then
+              echo "The tag $TAG_VERSION matches the PyPI version $PYPI_VERSION."
+              exit 1
+          elif [[ "$suffix_count" == 1 && "$TAG_BASE" == "$PYPI_BASE" ]]; then
+              if [[ -n "$PYPI_SUFFIX" ]]; then 
+                  echo "The tag $TAG_VERSION is newer than PyPI $PYPI_VERSION."
+              else
+                  echo "The tag $TAG_VERSION is older than PyPI $PYPI_VERSION."
+                  exit 1
+              fi
+          else
+              newest=$(printf "%s\n%s" "$TAG_VERSION" "$PYPI_VERSION" | sort -V | tail -n 1)
+              if [[ "$TAG_VERSION" == "$newest" ]]; then
+                  echo "The tag $TAG_VERSION is newer than PyPI $PYPI_VERSION."
+              else
+                  echo "The tag $TAG_VERSION is older than PyPI $PYPI_VERSION."
+                  exit 1
+              fi
+          fi
+
+      - name: Verify tag and pyproject.toml versions match
+        env:  # Don't let extensions compile, just grab version
+          BUILD_SDIST: 1  
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools numpy cython
+
+          PKG_VERSION=$(python setup.py --version)
+          TAG_VERSION=${{ needs.details.outputs.tag_version }}
+
+          if [[ "$PKG_VERSION" != "$TAG_VERSION" ]]; then
+            echo "Version mismatch: setup.py has $PKG_VERSION, but tag is $TAG_VERSION."
+            exit 1
+          else
+            echo "Package and tag versions match: $PKG_VERSION == $TAG_VERSION."
+          fi
+
   build-wheels:
-    name: (Wheels ${{ matrix.python-version }}, ${{ matrix.os }})
+    name: (wheel ${{ matrix.python-version }}, ${{ matrix.os }})
+    needs: [details, check-version]
     runs-on: ${{ matrix.os }}
 
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [macos-13, macos-latest, windows-latest, ubuntu-latest]
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
-        
+
     defaults:
       run:
         shell: bash -l {0}
@@ -23,16 +128,12 @@ jobs:
 
       - name: Setup conda/python
         uses: conda-incubator/setup-miniconda@v3
-        with:
-          channel-priority: true
-          activate-environment: sun
-          python-version: ${{ matrix.python-version }}
-          miniconda-version: latest
+        with:  # ci_environment.yml specifies sundials version to compile against
           auto-update-conda: true
-
-      - name: Conda dependencies  # Set SUNDIALS version to build/test against
-        run: |
-          conda install sundials=7.1 -c conda-forge
+          miniconda-version: latest
+          environment-file: environments/ci_environment.yml
+          python-version: ${{ matrix.python-version }}
+          activate-environment: sun
 
       - name: Install build
         run: pip install build
@@ -52,9 +153,9 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           pip install delvewheel
-          for %whl in (dist/*sundae*.whl) do (
-            delvewheel repair "%whl" -w wheels/ || exit 1;
-          )
+          for whl in dist/*sundae*.whl; do 
+            delvewheel repair "$whl" -w wheels/ || exit 1;
+          done
 
       - name: Set dylib path for delocate
         if: runner.os == 'macOS'
@@ -88,13 +189,14 @@ jobs:
         env:  # Remove known SUNDIALS header and lib paths
           DYLD_LIBRARY_PATH:
         run: |
-          conda create -n test_env python=${{ matrix.python-version }}
-          conda activate test_env
+          conda uninstall sundials
+          conda create -n test python=${{ matrix.python-version }}
+          conda activate test
 
           python -m pip install --upgrade pip
+          pip install wheels/*.whl -v
+          
           pip install pandas pytest
-          pip install --no-index --find-links=wheels scikit-sundae
-
           pytest ./tests
 
       - name: Upload wheels
@@ -103,47 +205,68 @@ jobs:
           name: dist-wheels-${{ matrix.python-version }}-${{ matrix.os }}
           path: wheels/*.whl
 
-  build-tarball:
-    name: (Tarball ${{ matrix.python-version }}, ${{ matrix.os }})
+  build-sdist:
+    name: (sdist ${{ matrix.python-version }}, ${{ matrix.os }})
+    needs: [details, check-version]
     runs-on: ${{ matrix.os }}
 
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [ubuntu-latest]
         python-version: ['3.13']
 
+    defaults:
+      run:
+        shell: bash -l {0}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
+      - name: Setup conda/python
+        uses: conda-incubator/setup-miniconda@v3
+        with:  # ci_environment.yml specifies sundials version to compile against
+          auto-update-conda: true
+          miniconda-version: latest
+          environment-file: environments/ci_environment.yml
           python-version: ${{ matrix.python-version }}
+          activate-environment: sun
 
       - name: Install build
         run: pip install build
 
-      - name: Build tarball
-        run: python -m build --sdist       
+      - name: Build sdist
+        env:  # Don't compile extensions if just building sdist
+          BUILD_SDIST: 1
+        run: |
+          echo "BUILD_SDIST is set to: $BUILD_SDIST"
+          python -m build --sdist
+          
+      - name: Test source installation
+        env:  # Make sure extensions compile during actual install
+          BUILD_SDIST: 0
+        run: |
+          echo "BUILD_SDIST is set to: $BUILD_SDIST"
+          python -m pip install --upgrade pip
+          pip install dist/*.tar.gz -v
+          
+          pip install pandas pytest
+          pytest ./tests
 
       - name: Upload tarball
         uses: actions/upload-artifact@v4
         with:
-          name: dist-tarball
+          name: dist-sdist
           path: dist/*.tar.gz
 
-  upload:
-    name: Upload to testpypi
-    needs: [build-wheels, build-tarball]
+  pypi-publish:
+    name: Upload to PyPI
+    needs: [build-wheels, build-sdist]
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download all builds
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           path: dist/
@@ -159,13 +282,12 @@ jobs:
           python-version: '3.13'
 
       - name: Install twine
-        run: |
-          pip install twine
+        run: pip install twine
 
-      - name: Check builds and upload to TestPyPI
+      - name: Check builds and upload to PyPI
         env:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.TESTPYPI_TOKEN }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
           twine check dist/*
-          twine upload --repository testpypi dist/*
+          twine upload dist/*

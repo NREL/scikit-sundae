@@ -17,10 +17,10 @@ authors = [
 ]
 maintainers = [
     { name = "Corey R. Randall" },
-     { email = "corey.randall@nrel.gov" },
+    { email = "corey.randall@nrel.gov" },
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: BSD License",
     "Topic :: Scientific/Engineering :: Mathematics",
@@ -35,6 +35,13 @@ dependencies = ["numpy"]
 
 [tool.setuptools]
 include-package-data = true
+license-files = [
+    "NOTICE*",
+    "AUTHORS*",
+    "COPYING*",
+    "LICENSE*",
+    "SUNDIALS_LICENSE",
+]
 
 [tool.setuptools.dynamic]
 version = {attr = "sksundae.__version__"}
@@ -50,16 +57,27 @@ dev = [
     "pytest-cov",
     "pytest-xdist",
     "genbadge[all]",
-    "codespell",
     "flake8",
     "autopep8",
+    "codespell",
     "sphinx",
-    "sphinx-autoapi",
+    "myst-nb",
     "sphinx-design",
+    "sphinx-autoapi",
     "sphinx-favicon",
     "sphinx-copybutton",
-    "myst-nb",
     "pydata-sphinx-theme",
+    "matplotlib",
+]
+docs = [
+    "sphinx",
+    "myst-nb",
+    "sphinx-design",
+    "sphinx-autoapi",
+    "sphinx-favicon",
+    "sphinx-copybutton",
+    "pydata-sphinx-theme",
+    "matplotlib",
 ]
 
 [project.urls]

@@ -115,7 +115,7 @@ scikit-SUNDAE Version  Supported SUNDIALS Version(s)
 
 3. Force the package to install the source distribution from PyPI:: 
 
-    pip install scikit-sundae --no-binary
+    pip install --no-binary scikit-sundae scikit-sundae <other packages>
 
 Developer Versions
 ------------------
