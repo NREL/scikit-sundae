@@ -93,7 +93,7 @@ the consequences for any action they deem in violation of this Code of Conduct:
 Attribution
 -----------
 This Code of Conduct is a modified copy of the one used by `Cantera`_, another
-open-source Python project that caters to the scientific community. Scikit-SUNDAE
+open-source Python project that caters to the scientific community. scikit-SUNDAE
 maintainers hold the right to modify and update this document at any time as the
 project evolves. Contributors are expected to understand that they will be held
 to whichever Code of Conduct is most recent, even if they began contributing

@@ -1,4 +1,4 @@
-# Scikit-SUNDAE Changelog
+# scikit-SUNDAE Changelog
 
 ## [Unreleased](https://github.com/NREL/scikit-sundae/)
 

@@ -1,7 +1,7 @@
 <!-- <img alt='Logo' style='width: 75%; min-width: 250px; max-width: 500px;'
  src='https://github.com/NREL/scikit-sundae/blob/main/images/readme_logo.png?raw=true'/> -->
 
- # Scikit-SUNDAE
+ # scikit-SUNDAE
 
 [![CI][ci-b]][ci-l] &nbsp;
 ![tests][test-b] &nbsp;
@@ -18,12 +18,12 @@
 [pep-l]: https://www.python.org/dev/peps/pep-0008
 
 ## Summary
-Scikit-SUNDAE provides Python bindings to [SUNDIALS](https://sundials.readthedocs.io/) integrators. The implicit differential algebraic (IDA) solver and C-based variable-coefficient ordinary differential equations (CVODE) solver are both included.
+scikit-SUNDAE provides Python bindings to [SUNDIALS](https://sundials.readthedocs.io/) integrators. The implicit differential algebraic (IDA) solver and C-based variable-coefficient ordinary differential equations (CVODE) solver are both included.
 
 The name SUNDAE combines (SUN)DIALS and DAE, which stands for differential algebraic equations. Solvers specific to DAE problems are not frequently available in Python. An ordinary differential equation (ODE) solver is also included for completeness. ODEs can be categorized as a subset of DAEs (i.e., DAEs with no algebraic constraints).
 
 ## Installation
-Scikit-SUNDAE is installable via either `pip` or `conda`. To install from [PyPI](https://pypi.org/project/scikit-sundae/) use the following command.
+scikit-SUNDAE is installable via either `pip` or `conda`. To install from [PyPI](https://pypi.org/project/scikit-sundae/) use the following command.
 
 ```
 pip install scikit-sundae
@@ -100,10 +100,10 @@ For convenience, we also provide the following for your BibTex:
 ```
 
 ## Acknowledgements
-Scikit-SUNDAE was originally inspired by [scikits.odes](https://scikits-odes.readthedocs.io/) which also offers Python bindings to SUNDIALS. The API for scikit-SUNDAE was mostly adopted from scikits.odes; however, all of our source code is original. If you are comparing the two:
+scikit-SUNDAE was originally inspired by [scikits.odes](https://scikits-odes.readthedocs.io/) which also offers Python bindings to SUNDIALS. The API for scikit-SUNDAE was mostly adopted from scikits.odes; however, all of our source code is original. If you are comparing the two:
 
 1. **scikits.odes:** includes iterative solvers and some optional solvers (e.g., LAPACK). The package only provides source distributions, so users must configure and compile SUNDAILS on their own.
-2. **Scikit-SUNDAE:** includes more flexible events function capabilities (e.g., direction detection and terminal flags), scipy-like output, and provides both binary and source distributions. Iterative and optional solvers are not available.
+2. **scikit-SUNDAE:** includes more flexible events function capabilities (e.g., direction detection and terminal flags), scipy-like output, and provides both binary and source distributions. Iterative and optional solvers are not available.
 
 Our binary distributions include pre-compiled dynamic SUNDIALS libraries. These are self-contained and will not affect other, existing installations you may already have. To be in compliance with SUNDIALS distribution requirements, all scikit-SUNDAE distributions include a copy of the [SUNDIALS license](https://github.com/LLNL/sundials/blob/main/LICENSE).
 

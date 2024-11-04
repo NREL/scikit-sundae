@@ -24,7 +24,7 @@ where ``x.x`` is replaced with a specific major/minor version number. We recomme
 
 Platform Support
 ^^^^^^^^^^^^^^^^
-Scikit-SUNDAE currently supports the following architectures:
+scikit-SUNDAE currently supports the following architectures:
 
 * 64-bit x86 architectures on all major platforms: MacOS, Linux, and Windows
 * ARM support is available for MacOS

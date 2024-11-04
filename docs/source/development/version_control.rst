@@ -29,7 +29,7 @@ Several branching strategies are used in software development, each with its pro
 
 For this project, we use GitHub Flow, which is explained in detail below. Interested parties can read more about any of these branching strategies `here <https://blog.programster.org/git-workflows>`_.
 
-Scikit-SUNDAE Workflow
+scikit-SUNDAE Workflow
 ----------------------
 scikit-SUNDAE uses GitHub Flow as its version control model due to its simplicity and proven success in other scientific packages like `SciPy <https://scipy.org/>`_ and `Cantera <https://cantera.org/>`_. The workflow emphasizes short-lived feature branches, as shown in the figure below, that each address a single bug fix or feature addition.
 

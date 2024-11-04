@@ -1,6 +1,6 @@
 Project Layout
 ==============
-Scikit-SUNDAE is organized to provide clarity and structure, making it easy for developers to navigate and contribute. Below is an outline of the key directories and files, along with guidelines for working within them.
+scikit-SUNDAE is organized to provide clarity and structure, making it easy for developers to navigate and contribute. Below is an outline of the key directories and files, along with guidelines for working within them.
 
 Root Directory
 --------------

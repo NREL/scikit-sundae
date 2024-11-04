@@ -1,6 +1,6 @@
 What is scikit-SUNDAE?
 ======================
-Scikit-SUNDAE is a Python package that provides bindings to `SUNDIALS <https://sundials.readthedocs.io/>`_ CVODE and IDA integrators. These integrators are widely used for solving complex initial value problems, making scikit-SUNDAE a powerful tool for researchers and engineers working in computational science and engineering.
+scikit-SUNDAE is a Python package that provides bindings to `SUNDIALS <https://sundials.readthedocs.io/>`_ CVODE and IDA integrators. These integrators are widely used for solving complex initial value problems, making scikit-SUNDAE a powerful tool for researchers and engineers working in computational science and engineering.
 
 SUNDIALS, or the SUite of Nonlinear and DIfferential/ALgebraic equation Solvers, is a collection of advanced numerical solvers designed for the efficient and robust solution of differential equations. Within the SUNDIALS suite, CVODE and IDA are typically used for the following:
 
@@ -39,6 +39,6 @@ We also acknowledge the `scikits.odes <https://scikits-odes.readthedocs.io/>`_ p
 If you are comparing scikits.odes to scikit-SUNDAE, you should consider the following differences:
 
 * **scikits.odes** includes iterative solvers and some optional solvers (e.g., LAPACK). The package only provides source distributions, so users must configure and compile SUNDAILS on their own.
-* **Scikit-SUNDAE** provides more flexible events function capabilities (e.g., direction detection and terminal flags), scipy-like output, and provides both binary and source distributions. Users not already familiar with SUNDIALS will likely prefer scikit-SUNDAE due to the streamlined installation process.
+* **scikit-SUNDAE** provides more flexible events function capabilities (e.g., direction detection and terminal flags), scipy-like output, and provides both binary and source distributions. Users not already familiar with SUNDIALS will likely prefer scikit-SUNDAE due to the streamlined installation process.
 
-Scikit-SUNDAE was authored by the National Renewable Energy Laboratory (NREL), operated by Alliance for Sustainable Energy, LLC, for the U.S. Department of Energy (DOE). The views expressed in the project and documentation do not necessarily represent the views of the DOE or the U.S. Government.
+scikit-SUNDAE was authored by the National Renewable Energy Laboratory (NREL), operated by Alliance for Sustainable Energy, LLC, for the U.S. Department of Energy (DOE). The views expressed in the project and documentation do not necessarily represent the views of the DOE or the U.S. Government.

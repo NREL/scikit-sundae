@@ -1,5 +1,5 @@
 """
-Scikit-SUNDAE provides Python bindings to `SUNDIALS`_ integrators. The implicit
+scikit-SUNDAE provides Python bindings to `SUNDIALS`_ integrators. The implicit
 differential algebraic (IDA) solver and C-based variable-coefficient ordinary
 differential equations (CVODE) solver are both included.
 
@@ -20,14 +20,14 @@ website includes search functionality and more detailed examples.
 
 Acknowledgements
 ----------------
-Scikit-SUNDAE was written by researchers at the **National Renewable Energy
+scikit-SUNDAE was written by researchers at the **National Renewable Energy
 Laboratory (NREL)**, primarily to solve physics-based battery models. Modeling
 in Python typically allows for rapid development and makes code more shareable.
 However, there was an identified gap in Python's numerical computing ecosystem:
 the lack of accessible DAE solvers. While ODE solvers are widely available in
 many packages, DAE solvers are not as prevalent.
 
-Scikit-SUNDAE started out as a lighter-weight and easy-to-install alternative
+scikit-SUNDAE started out as a lighter-weight and easy-to-install alternative
 to `scikits.odes`_, which similarly provides SUNDIALS bindings, but requires
 building from source. The goal was to offer a simpler installation process,
 with binary distributions that are consistent across major platforms (PyPI and

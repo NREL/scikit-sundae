@@ -12,7 +12,7 @@
 =======
 Summary
 =======
-Scikit-SUNDAE provides Python bindings to `SUNDIALS`_ integrators. The implicit
+scikit-SUNDAE provides Python bindings to `SUNDIALS`_ integrators. The implicit
 differential algebraic (IDA) solver and C-based variable-coefficient ordinary
 differential equations (CVODE) solver are both included.
 
