@@ -11,6 +11,7 @@ dynamic = ["version"]
 requires-python = ">=3.9,<3.14"
 license = { file = "LICENSE" }
 description = "SUNDIALS bindings to differential aglebraic equation solvers."
+keywords = ["sundials", "dae", "ode", "integrator", "ivp"]
 authors = [
     { name = "Corey R. Randall" },
     { email = "corey.randall@nrel.gov" },
