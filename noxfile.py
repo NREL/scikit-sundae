@@ -56,7 +56,7 @@ def run_codespell(session):
 @nox.session(name='spellcheck', python=False)
 def run_spellcheck(session):
     """
-    Run codespell with some docs files indcluded
+    Run codespell with docs files included
 
     Use the optional 'write' argument to write the corrections directly into
     the files. Otherwise, you will only see a summary of the found errors.
@@ -152,8 +152,8 @@ def run_pre_commit(session):
     """
     Run all linters/tests and make new badges
 
-    Order of sessions: flake8, codespell, pytest, genbade. Using 'write' for
-    codespell and/or 'parallel' for pytest is permitted.
+    Order of sessions: flake8, codespell, pytest, genbade. Using 'format' for
+    linter, 'write' for codespell, and/or 'parallel' for pytest is permitted.
 
     """
 

@@ -29,13 +29,12 @@ on:
 jobs:
   lint:
     name: (Lint ${{ matrix.python-version }}, ${{ matrix.os }})
-
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        os: ['ubuntu-latest']
+        os: [ubuntu-latest]
         python-version: ['3.13']
 
     defaults:
@@ -43,8 +42,11 @@ jobs:
         shell: bash -l {0}
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 

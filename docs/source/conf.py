@@ -30,7 +30,7 @@ extensions = [
     'sphinx_copybutton',
 ]
 
-templates_path = ['templates']
+templates_path = ['_templates']
 
 exclude_patterns = [
     'build',
@@ -58,13 +58,11 @@ html_theme = 'pydata_sphinx_theme'
 # html_favicon = 'static/favicon.ico'
 html_context = {'default_mode': 'dark'}
 
-html_static_path = ['static']
+html_static_path = ['_static']
 html_js_files = ['custom.js']
 html_css_files = ['custom.css']
 
 html_sidebars = {'index': [], '**': ['sidebar-nav-bs']}
-
-html_logo = None
 
 html_theme_options = {
     # 'logo': {
@@ -86,8 +84,8 @@ html_theme_options = {
     'navbar_start': ['navbar-logo'],
     'navbar_align': 'content',
     'header_links_before_dropdown': 5,
-    'footer_start': ['copyright.html'],
-    'footer_end': ['sphinx-version.html'],
+    'footer_start': ['copyright'],
+    'footer_end': ['sphinx-version'],
     'navbar_persistent': ['search-button-field'],
     'primary_sidebar_end': ['sidebar-ethical-ads'],
     'secondary_sidebar_items': ['page-toc'],

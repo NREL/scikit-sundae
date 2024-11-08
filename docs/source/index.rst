@@ -68,7 +68,7 @@ DAEs with no algebraic constraints).
          Access installation instructions and in-depth
          information on solver concepts and settings.
 
-         .. image:: static/user_guide.svg
+         .. image:: _static/user_guide.svg
             :class: bg-transparent
             :align: center
             :height: 75px
@@ -88,7 +88,7 @@ DAEs with no algebraic constraints).
       Get detailed documentation on all of the modules,
       functions, classes, etc.
 
-      .. image:: static/api_reference.svg
+      .. image:: _static/api_reference.svg
          :class: bg-transparent
          :align: center
          :height: 75px
@@ -108,7 +108,7 @@ DAEs with no algebraic constraints).
          A great place to learn how to use the package and
          expand your skills.
 
-         .. image:: static/examples.svg
+         .. image:: _static/examples.svg
             :class: bg-transparent
             :align: center
             :height: 75px
@@ -128,7 +128,7 @@ DAEs with no algebraic constraints).
       Trying to fix a typo in the documentation? Looking
       to improve or add a new feature?
 
-      .. image:: static/development.svg
+      .. image:: _static/development.svg
          :class: bg-transparent
          :align: center
          :height: 75px
