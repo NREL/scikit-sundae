@@ -138,6 +138,17 @@ cdef int _jacfn_wrapper(sunrealtype t, N_Vector yy, N_Vector fy, SUNMatrix JJ,
     return 0
 
 
+cdef void _err_handler(int line, const char* func, const char* file,
+                       const char* msg, int err_code, void* err_user_data,
+                       SUNContext ctx) noexcept:
+    """Custom error handler for shorter messages (no line or file)."""
+    
+    decoded_func = func.decode("utf-8")
+    decoded_msg = msg.decode("utf-8").replace(", ,", ",").strip()
+
+    print(f"\n[{decoded_func}, Error: {err_code}] {decoded_msg}\n")
+
+
 cdef class AuxData:
     """
     Auxiliary data.
@@ -374,6 +385,9 @@ cdef class CVODE:
                 raise RuntimeError("CVSetRootDirection - " + CVMESSAGES[flag])
 
         # 16) Set optional inputs
+        SUNContext_ClearErrHandlers(self.ctx)
+        SUNContext_PushErrHandler(self.ctx, _err_handler, NULL)
+
         flag = CVodeSetUserData(self.mem, <void*> self.aux)
         if flag < 0:
             raise RuntimeError("CVodeSetUserData - " + CVMESSAGES[flag])
@@ -511,8 +525,6 @@ cdef class CVODE:
             tend = tspan[ind]
 
             flag = CVode(self.mem, tend, self.yy, &tt, CV_NORMAL)
-            if flag < 0:
-                raise RuntimeError("CVode - " + CVMESSAGES[flag])
 
             svec2np(self.yy, yy_tmp)
 
@@ -594,8 +606,6 @@ cdef class CVODE:
         # 17) Advance solution in time
         while True:
             flag = CVode(self.mem, tend, self.yy, &tt, CV_ONE_STEP)
-            if flag < 0:
-                raise RuntimeError("CVode - " + CVMESSAGES[flag])
 
             svec2np(self.yy, yy_tmp)
 

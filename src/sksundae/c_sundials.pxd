@@ -33,6 +33,9 @@ cdef extern from "sundials/sundials_types.h":
         pass
     ctypedef _SUNContext* SUNContext
     ctypedef int SUNComm
+    ctypedef void (*SUNErrHandlerFn)(int line, const char* func, const char* file,
+                                     const char* msg, int err_code, void* err_user_data,
+                                     SUNContext ctx)
 
     int SUN_COMM_NULL
 
@@ -40,6 +43,10 @@ cdef extern from "sundials/sundials_types.h":
 cdef extern from "sundials/sundials_context.h":
     int SUNContext_Create(int comm, SUNContext* ctx)
     void SUNContext_Free(SUNContext* ctx)
+
+    int SUNContext_ClearErrHandlers(SUNContext ctx)
+    int SUNContext_PushErrHandler(SUNContext ctx, SUNErrHandlerFn err_fn,
+                                  void* err_user_data)
 
 # sundials_nvector.h
 cdef extern from "sundials/sundials_nvector.h":

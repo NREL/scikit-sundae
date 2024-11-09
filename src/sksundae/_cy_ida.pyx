@@ -140,6 +140,17 @@ cdef int _jacfn_wrapper(sunrealtype t, sunrealtype cj, N_Vector yy, N_Vector yp,
     return 0
 
 
+cdef void _err_handler(int line, const char* func, const char* file,
+                       const char* msg, int err_code, void* err_user_data,
+                       SUNContext ctx) noexcept:
+    """Custom error handler for shorter messages (no line or file)."""
+    
+    decoded_func = func.decode("utf-8")
+    decoded_msg = msg.decode("utf-8").replace(", ,", ",").strip()
+
+    print(f"\n[{decoded_func}, Error: {err_code}] {decoded_msg}\n")
+
+
 cdef class AuxData:
     """
     Auxiliary data.
@@ -380,6 +391,9 @@ cdef class IDA:
                 raise RuntimeError("IDASetRootDirection - " + IDAMESSAGES[flag])
 
         # 15) Set optional inputs
+        SUNContext_ClearErrHandlers(self.ctx)
+        SUNContext_PushErrHandler(self.ctx, _err_handler, NULL)
+
         flag = IDASetUserData(self.mem, <void*> self.aux)
         if flag < 0:
             raise RuntimeError("IDASetUserData - " + IDAMESSAGES[flag])
@@ -556,8 +570,6 @@ cdef class IDA:
             tend = tspan[ind]
 
             flag = IDASolve(self.mem, tend, &tt, self.yy, self.yp, IDA_NORMAL)
-            if flag < 0:
-                raise RuntimeError("IDASolve - " + IDAMESSAGES[flag])
 
             svec2np(self.yy, yy_tmp)
             svec2np(self.yp, yp_tmp)
@@ -646,8 +658,6 @@ cdef class IDA:
         # 17) Advance solution in time
         while True:
             flag = IDASolve(self.mem, tend, &tt, self.yy, self.yp, IDA_ONE_STEP)
-            if flag < 0:
-                raise RuntimeError("IDASolve - " + IDAMESSAGES[flag])
 
             svec2np(self.yy, yy_tmp)
             svec2np(self.yp, yp_tmp)
