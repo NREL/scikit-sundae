@@ -465,8 +465,6 @@ cdef class CVODE:
         
         # 17) Advance solution in time
         flag = CVode(self.mem, tt, self.yy, &tout, itask)
-        if flag < 0:
-            raise RuntimeError("CVode - " + CVMESSAGES[flag])
 
         svec2np(self.yy, yy_tmp)
 

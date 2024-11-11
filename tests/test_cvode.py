@@ -111,13 +111,15 @@ def test_cvode_linsolver():
 def test_cvode_constraints():
     y0 = np.array([1, 2])
 
-    with pytest.raises(RuntimeError):  # cannot satisfy constraint
-        solver = CVODE(ode, rtol=1e-9, atol=1e-12, constraints_idx=[0, 1],
-                       constraints_type=[-2, -2])
+    # cannot satisfy constraints
+    solver = CVODE(ode, rtol=1e-9, atol=1e-12, constraints_idx=[0, 1],
+                   constraints_type=[-2, -2])
 
-        _ = solver.init_step(0, y0)
-        _ = solver.step(10)
+    _ = solver.init_step(0, y0)
+    soln = solver.step(10)
+    assert not soln.success
 
+    # can satisfy constraints
     solver = CVODE(ode, rtol=1e-9, atol=1e-12, constraints_idx=[0, 1],
                    constraints_type=[2, 2])
 

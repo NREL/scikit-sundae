@@ -177,13 +177,15 @@ def test_ida_constraints():
     y0 = np.array([1, 2])
     yp0 = np.array([0.1, 0.2])
 
-    with pytest.raises(RuntimeError):  # cannot satisfy constraint
-        solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
-                     constraints_idx=[0, 1], constraints_type=[-2, -2])
+    # cannot satisfy constraints
+    solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
+                 constraints_idx=[0, 1], constraints_type=[-2, -2])
 
-        _ = solver.init_step(0, y0, yp0)
-        _ = solver.step(10)
+    _ = solver.init_step(0, y0, yp0)
+    soln = solver.step(10)
+    assert not soln.success
 
+    # can satisfy constraints
     solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
                  constraints_idx=[0, 1], constraints_type=[2, 2])
 

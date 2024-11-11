@@ -504,8 +504,6 @@ cdef class IDA:
         
         # 17) Advance solution in time
         flag = IDASolve(self.mem, tt, &tout, self.yy, self.yp, itask)
-        if flag < 0:
-            raise RuntimeError("IDASolve - " + IDAMESSAGES[flag])
 
         svec2np(self.yy, yy_tmp)
         svec2np(self.yp, yp_tmp)
