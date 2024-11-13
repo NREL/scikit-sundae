@@ -4,27 +4,21 @@ on:
   push:
     paths-ignore:
       - '*.md'
-      - '*.txt'
-      - 'README*'
-      - 'CHANGELOG*'
-      - 'docs/*'
-      - 'images/*'
+      - 'docs/**'
+      - 'images/**'
       - 'LICENSE'
       - 'SUNDIALS_LICENSE'
-      - '.github/ISSUE_TEMPLATE/*'
+      - '.github/ISSUE_TEMPLATE/**'
 
   pull_request:
     branches: [main]
     paths-ignore:
       - '*.md'
-      - '*.txt'
-      - 'README*'
-      - 'CHANGELOG*'
-      - 'docs/*'
-      - 'images/*'
+      - 'docs/**'
+      - 'images/**'
       - 'LICENSE'
       - 'SUNDIALS_LICENSE'
-      - '.github/ISSUE_TEMPLATE/*'
+      - '.github/ISSUE_TEMPLATE/**'
 
 jobs:
   lint:
@@ -81,7 +75,7 @@ jobs:
 
       - name: Setup conda/python
         uses: conda-incubator/setup-miniconda@v3
-        with:  # ci_environment.yml specifies sundials version to compile against
+        with:  # ci_environment.yml specifies sundials version to compile
           auto-update-conda: true
           miniconda-version: latest
           environment-file: environments/ci_environment.yml

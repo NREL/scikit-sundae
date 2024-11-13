@@ -2,7 +2,7 @@
 
 from .c_sundials cimport *  # Access to types
 
-# ida.h
+# cvode.h
 cdef extern from "cvode/cvode.h":
 
     # user-supplied functions
@@ -62,8 +62,8 @@ cdef extern from "cvode/cvode.h":
     # free functions
     void CVodeFree(void** mem)
 
-# ida_ls.h
-cdef extern from "ida/ida_ls.h":
+# cvode_ls.h
+cdef extern from "cvode/cvode_ls.h":
 
     # user-supplied functions
     ctypedef int (*CVLsJacFn)(sunrealtype t, N_Vector yy, N_Vector fy, SUNMatrix JJ,
