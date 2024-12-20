@@ -93,6 +93,8 @@ jobs:
           environment-file: environments/ci_environment.yml
           python-version: ${{ matrix.python-version }}
           activate-environment: sun
+          channels: conda-forge
+          conda-remove-defaults: "true"
 
       - name: Install build
         run: pip install build
@@ -191,6 +193,8 @@ jobs:
           environment-file: environments/ci_environment.yml
           python-version: ${{ matrix.python-version }}
           activate-environment: sun
+          channels: conda-forge
+          conda-remove-defaults: "true"
 
       - name: Install build
         run: pip install build
