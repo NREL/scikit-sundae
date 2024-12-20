@@ -115,7 +115,8 @@ jobs:
 
       - name: Build wheels
         run: |
-          python -m build --wheel --no-isolation
+          pip install numpy setuptools cython
+          python -m build --wheel --no-isolation --verbose
 
       - name: Repair Windows wheels
         if: runner.os == 'Windows'
