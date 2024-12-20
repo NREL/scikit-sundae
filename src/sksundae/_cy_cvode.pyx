@@ -12,7 +12,7 @@ from typing import Callable, Iterable
 # Dependencies
 import numpy as np
 cimport numpy as np
-from cpython.exc cimport PyErr_CheckSignals
+from cpython.exc cimport PyErr_CheckSignals, PyErr_Occurred
 
 # Extern cdef headers
 from .c_cvode cimport *
@@ -146,7 +146,8 @@ cdef void _err_handler(int line, const char* func, const char* file,
     decoded_func = func.decode("utf-8")
     decoded_msg = msg.decode("utf-8").replace(", ,", ",").strip()
 
-    print(f"\n[{decoded_func}, Error: {err_code}] {decoded_msg}\n")
+    if not PyErr_Occurred():
+        print(f"\n[{decoded_func}, Error: {err_code}] {decoded_msg}\n")
 
 
 cdef class AuxData:
