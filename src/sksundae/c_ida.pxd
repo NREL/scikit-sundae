@@ -6,8 +6,8 @@ from .c_sundials cimport *
 cdef extern from "ida/ida.h":
 
     # user-supplied functions
-    ctypedef int (*IDAResFn)(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr, void* data)
-    ctypedef int (*IDARootFn)(sunrealtype t, N_Vector yy, N_Vector yp, sunrealtype* ee, void* data)
+    ctypedef int (*IDAResFn)(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr, void* data) except? -1
+    ctypedef int (*IDARootFn)(sunrealtype t, N_Vector yy, N_Vector yp, sunrealtype* ee, void* data) except? -1
 
     # itask
     int IDA_NORMAL
@@ -73,7 +73,7 @@ cdef extern from "ida/ida_ls.h":
     # user-supplied functions
     ctypedef int (*IDALsJacFn)(sunrealtype t, sunrealtype cj, N_Vector yy, N_Vector yp,
                                N_Vector rr, SUNMatrix JJ, void* data, N_Vector tmp1,
-                               N_Vector tmp2, N_Vector tmp3)
+                               N_Vector tmp2, N_Vector tmp3) except? -1
 
     # exported functions
     int IDASetLinearSolver(void* mem, SUNLinearSolver LS, SUNMatrix A)

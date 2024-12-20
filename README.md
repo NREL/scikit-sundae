@@ -83,19 +83,19 @@ plt.show()
 * Check the [solve_ivp](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) documentation from scipy or the [scipy-dae](https://pypi.org/project/scipy-dae/) package repository if you are looking for common examples to test out and compare against. Translating an example from another package can help you learn how to use scikit-SUNDAE before trying to solve more challenging problems.
 
 ## Citing this Work
-This work was authored by researchers at the National Renewable Energy Laboratory (NREL). The project is tracked in NREL's software records under SWR-24-137 and has a DOI available for citing the work. If you use use this package in your work, please include the following citation:
+This work was authored by researchers at the National Renewable Energy Laboratory (NREL). If you use use this package in your work, please include the following citation:
 
-> Placeholder... waiting for DOI.
+> Randall, Corey R. "scikit-SUNDAE: A scikit with Python bindings to SUNDIALS Differential Algebraic Equation solvers [SWR-24-137]." Computer software. url: https://github.com/NREL/scikit-sundae. doi: https://doi.org/10.11578/dc.20241104.3.
 
 For convenience, we also provide the following for your BibTex:
 
 ```
-@misc{Randall2024,
-  title = {{scikit-SUNDAE: Python bindings to SUNDIALS DAE solvers}},
+@misc{Randall-2024,
+  title = {{scikit-SUNDAE: A scikit with Python bindings to SUNDIALS Differential Algebraic Equation solvers [SWR-24-137]}},
   author = {Randall, Corey R.},
-  year = {2024},
-  doi = {placeholder... waiting for DOI},
+  doi = {10.11578/dc.20241104.3},
   url = {https://github.com/NREL/scikit-sundae},
+  year = {2024},
 }
 ```
 

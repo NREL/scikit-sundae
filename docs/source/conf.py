@@ -9,7 +9,7 @@
 import sksundae as sun
 
 project = 'scikit-sundae'
-copyright = '2024, Corey R. Randall'
+copyright = 'Alliance for Sustainable Energy, LLC'
 author = 'Corey R. Randall'
 version = sun.__version__
 release = sun.__version__

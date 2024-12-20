@@ -4,7 +4,7 @@ channels:
   - defaults
 dependencies:
   - python=3.12
-  - sundials=7.1
+  - sundials=7.2
   - pip>=24.3
   - pip:
     - ../.[docs]

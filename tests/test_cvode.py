@@ -199,6 +199,51 @@ def test_cvode_jacfn():
     assert np.allclose(soln.y, ode_soln(soln.t, y0))
 
 
+def test_failures_on_exceptions():
+
+    # exception in rhsfn
+    def bad_ode(t, y, yp):
+        if t > 1:
+            raise ValueError("propagated exception")
+
+        yp[0] = 0.1
+        yp[1] = y[1]
+
+    y0 = np.array([1, 2])
+
+    solver = CVODE(bad_ode, rtol=1e-9, atol=1e-12)
+
+    tspan = np.linspace(0, 10, 11)
+    with pytest.raises(ValueError, match='propagated exception'):
+        _ = solver.solve(tspan, y0)
+
+    # exceptions in eventsfn
+    def eventsfn(t, y, events):
+        if t > 1:
+            raise ValueError("propagated exception")
+
+        events[0] = y[0] - 1.55
+
+    solver = CVODE(ode, rtol=1e-9, atol=1e-12, eventsfn=eventsfn, num_events=1)
+
+    tspan = np.linspace(0, 10, 11)
+    with pytest.raises(ValueError, match='propagated exception'):
+        _ = solver.solve(tspan, y0)
+
+    # exceptions in jacfn
+    def jacfn(t, y, fy, JJ):
+        if t > 1:
+            raise ValueError("propagated exception")
+
+        JJ[1, 1] = 1
+
+    solver = CVODE(ode, rtol=1e-9, atol=1e-12, jacfn=jacfn)
+
+    tspan = np.linspace(0, 10, 11)
+    with pytest.raises(ValueError, match='propagated exception'):
+        _ = solver.solve(tspan, y0)
+
+
 def test_CVODEResult():
     y0 = np.array([1, 2])
 
