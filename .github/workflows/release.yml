@@ -3,10 +3,10 @@ name: release
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-      - 'v[0-9]+.[0-9]+.[0-9]+a[0-9]+'
-      - 'v[0-9]+.[0-9]+.[0-9]+b[0-9]+'
-      - 'v[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+a[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+b[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+rc[0-9]+"
 
 jobs:
   details:
@@ -56,7 +56,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: "3.13"
 
       - name: Check version details agasint PyPI, tag, etc.
         run: |
@@ -77,7 +77,7 @@ jobs:
       fail-fast: true
       matrix:
         os: [macos-13, macos-latest, windows-latest, ubuntu-latest]
-        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     defaults:
       run:
@@ -106,10 +106,14 @@ jobs:
           conda info
           conda list
 
+      - name: Set up environment variables for MacOS
+        if: runner.os == 'macOS'
+        run: |
+          echo "MACOSX_DEPLOYMENT_TARGET=11.0" >> $GITHUB_ENV
+          echo "LDFLAGS=-headerpad_max_install_names" >> $GITHUB_ENV
+          echo "DYLD_LIBRARY_PATH=$CONDA_PREFIX/lib" >> $GITHUB_ENV
+
       - name: Build wheels
-        env:
-          MACOSX_DEPLOYMENT_TARGET: '11.0'
-          LDFLAGS: -headerpad_max_install_names
         run: python -m build --wheel
 
       - name: Repair Windows wheels
@@ -119,10 +123,6 @@ jobs:
           for whl in dist/*sundae*.whl; do 
             delvewheel repair "$whl" -w wheels/ || exit 1;
           done
-
-      - name: Set dylib path for delocate
-        if: runner.os == 'macOS'
-        run: echo "DYLD_LIBRARY_PATH=$CONDA_PREFIX/lib" >> $GITHUB_ENV
 
       - name: Repair MacOS wheels
         if: runner.os == 'macOS'
@@ -177,7 +177,7 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.13']
+        python-version: ["3.13"]
 
     defaults:
       run:
@@ -244,7 +244,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: "3.13"
 
       - name: Install twine
         run: pip install twine
