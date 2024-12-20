@@ -14,6 +14,7 @@
 This is the first official release of scikit-SUNDAE. Main features/capabilities are listed below.
 
 ### Features
+- Python errors can be propagated through Cython wrappers
 - Implicit differential algebraic (IDA) solver for differential algebraic equations (DAEs)
 - C-based variable-coeffecients ordinary differential equations (CVODE) solver
 - Events functions with scipy-like API, including "terminal" and "direction" options

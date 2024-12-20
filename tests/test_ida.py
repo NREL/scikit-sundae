@@ -300,7 +300,7 @@ def test_failures_on_exceptions():
     # exception in resfn
     def bad_dae(t, y, yp, res):
         if t > 1:
-            raise ValueError()
+            raise ValueError("propagated exception")
 
         res[0] = yp[0] - 0.1
         res[1] = 2*y[0] - y[1]
@@ -310,30 +310,28 @@ def test_failures_on_exceptions():
 
     solver = IDA(bad_dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1])
 
-    with pytest.raises(ValueError):
-        tspan = np.linspace(0, 10, 11)
-        soln = solver.solve(tspan, y0, yp0)
-        assert soln.status < 0
+    tspan = np.linspace(0, 10, 11)
+    with pytest.raises(ValueError, match='propagated exception'):
+        _ = solver.solve(tspan, y0, yp0)
 
     # exceptions in eventsfn
     def eventsfn(t, y, yp, events):
         if t > 1:
-            raise ValueError()
+            raise ValueError("propagated exception")
 
         events[0] = y[0] - 1.55
 
     solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
                  eventsfn=eventsfn, num_events=1)
 
-    with pytest.raises(ValueError):
-        tspan = np.linspace(0, 10, 11)
-        soln = solver.solve(tspan, y0, yp0)
-        assert soln.status < 0
+    tspan = np.linspace(0, 10, 11)
+    with pytest.raises(ValueError, match='propagated exception'):
+        _ = solver.solve(tspan, y0, yp0)
 
     # exceptions in jacfn
     def jacfn(t, y, yp, res, cj, JJ):
         if t > 1:
-            raise ValueError()
+            raise ValueError("propagated exception")
 
         JJ[0, 0] = cj
         JJ[1, 0] = 2
@@ -342,10 +340,9 @@ def test_failures_on_exceptions():
     solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
                  jacfn=jacfn)
 
-    with pytest.raises(ValueError):
-        tspan = np.linspace(0, 10, 11)
-        soln = solver.solve(tspan, y0, yp0)
-        assert soln.status < 0
+    tspan = np.linspace(0, 10, 11)
+    with pytest.raises(ValueError, match='propagated exception'):
+        _ = solver.solve(tspan, y0, yp0)
 
 
 def test_IDAResult():
