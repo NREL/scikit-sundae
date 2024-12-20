@@ -76,7 +76,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-latest]
         python-version: ["3.9", "3.13"]
 
     defaults:
@@ -111,24 +111,23 @@ jobs:
         run: |
           echo "MACOSX_DEPLOYMENT_TARGET=11.0" >> $GITHUB_ENV
           echo "LDFLAGS=-headerpad_max_install_names" >> $GITHUB_ENV
-          echo "DYLD_LIBRARY_PATH=$CONDA_PREFIX/lib" >> $GITHUB_ENV
-
+          
       - name: Build wheels
-        run: |
-          pip install numpy setuptools cython
-          python -m build --wheel --no-isolation --verbose
-
+        run: python -m build --wheel --verbose
+          
       - name: Repair Windows wheels
         if: runner.os == 'Windows'
         run: |
           pip install delvewheel
           for whl in dist/*sundae*.whl; do 
-            delvewheel repair "$whl" -w wheels/ || exit 1;
+          delvewheel repair "$whl" -w wheels/ || exit 1;
           done
-
+          
       - name: Repair MacOS wheels
         if: runner.os == 'macOS'
         run: |
+          echo "DYLD_LIBRARY_PATH=$CONDA_PREFIX/lib" >> $GITHUB_ENV
+
           pip install delocate
           for whl in dist/*sundae*.whl; do
             delocate-wheel "$whl" -w wheels/ || exit 1;
