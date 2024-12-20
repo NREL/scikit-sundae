@@ -74,10 +74,10 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [macos-13, macos-latest, windows-latest, ubuntu-latest]
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.9", "3.13"]
 
     defaults:
       run:
@@ -114,7 +114,8 @@ jobs:
           echo "DYLD_LIBRARY_PATH=$CONDA_PREFIX/lib" >> $GITHUB_ENV
 
       - name: Build wheels
-        run: python -m build --wheel
+        run: |
+          python -m build --wheel
 
       - name: Repair Windows wheels
         if: runner.os == 'Windows'
@@ -225,34 +226,34 @@ jobs:
           name: dist-sdist
           path: dist/*.tar.gz
 
-  pypi-publish:
-    name: Upload to PyPI
-    needs: [build-wheels, build-sdist]
-    runs-on: ubuntu-latest
+  # pypi-publish:
+  #   name: Upload to PyPI
+  #   needs: [build-wheels, build-sdist]
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: dist/
-          pattern: dist-*
-          merge-multiple: true
+  #   steps:
+  #     - name: Download artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         path: dist/
+  #         pattern: dist-*
+  #         merge-multiple: true
 
-      - name: Check files
-        run: ls dist
+  #     - name: Check files
+  #       run: ls dist
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.13"
 
-      - name: Install twine
-        run: pip install twine
+  #     - name: Install twine
+  #       run: pip install twine
 
-      - name: Check builds and upload to PyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          twine check dist/*
-          twine upload dist/*
+  #     - name: Check builds and upload to PyPI
+  #       env:
+  #         TWINE_USERNAME: __token__
+  #         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+  #       run: |
+  #         twine check dist/*
+  #         twine upload dist/*
