@@ -83,7 +83,7 @@ LSMESSAGES = {
 
 
 cdef int _rhsfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
-                        void* data) noexcept:
+                        void* data) except? -1:
     """Wraps 'rhsfn' by converting between N_Vector and ndarray types."""
 
     aux = <AuxData> data
@@ -101,7 +101,7 @@ cdef int _rhsfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
 
 
 cdef int _eventsfn_wrapper(sunrealtype t, N_Vector yy, sunrealtype* ee,
-                           void* data) noexcept:
+                           void* data) except? -1:
     """Wraps 'eventsfn' by converting between N_Vector and ndarray types."""
 
     aux = <AuxData> data
@@ -120,7 +120,7 @@ cdef int _eventsfn_wrapper(sunrealtype t, N_Vector yy, sunrealtype* ee,
 
 cdef int _jacfn_wrapper(sunrealtype t, N_Vector yy, N_Vector fy, SUNMatrix JJ,
                         void* data, N_Vector tmp1, N_Vector tmp2,
-                        N_Vector tmp3) noexcept:
+                        N_Vector tmp3) except? -1:
     """Wraps 'jacfn' by converting between N_Vector and ndarray types."""
     
     aux = <AuxData> data
@@ -140,7 +140,7 @@ cdef int _jacfn_wrapper(sunrealtype t, N_Vector yy, N_Vector fy, SUNMatrix JJ,
 
 cdef void _err_handler(int line, const char* func, const char* file,
                        const char* msg, int err_code, void* err_user_data,
-                       SUNContext ctx) noexcept:
+                       SUNContext ctx) except *:
     """Custom error handler for shorter messages (no line or file)."""
     
     decoded_func = func.decode("utf-8")

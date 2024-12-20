@@ -2,4 +2,4 @@ name: sun
 channels:
   - conda-forge
 dependencies:
-  - sundials=7.1
+  - sundials=7.2

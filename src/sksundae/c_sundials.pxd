@@ -35,7 +35,7 @@ cdef extern from "sundials/sundials_types.h":
     ctypedef int SUNComm
     ctypedef void (*SUNErrHandlerFn)(int line, const char* func, const char* file,
                                      const char* msg, int err_code, void* err_user_data,
-                                     SUNContext ctx)
+                                     SUNContext ctx) except *
 
     int SUN_COMM_NULL
 

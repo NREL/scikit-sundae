@@ -78,7 +78,7 @@ def test_ida_dae_solve():
     y0 = np.array([1, 2])
     yp0 = np.array([0.1, 0.2])
 
-    solver = IDA(dae, rtol=1e-9, atol=1e-12)
+    solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1])
 
     tspan = np.linspace(0, 10, 11)  # normal solve - user picks times
     soln = solver.solve(tspan, y0, yp0)
@@ -95,7 +95,7 @@ def test_ida_dae_step():
     y0 = np.array([1, 2])
     yp0 = np.array([0.1, 0.2])
 
-    solver = IDA(dae, rtol=1e-9, atol=1e-12)
+    solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1])
 
     with pytest.raises(ValueError):  # have to call init_step first
         _ = solver.step(10)
@@ -122,7 +122,7 @@ def test_ida_userdata():
     with pytest.raises(ValueError):  # userdata keyword arg cannot be None
         _ = IDA(dae_w_data, rtol=1e-9, atol=1e-12)
 
-    solver = IDA(dae_w_data, rtol=1e-9, atol=1e-12,
+    solver = IDA(dae_w_data, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
                  userdata={'rate': 0.1, 'ratio': 2})
 
     tspan = np.linspace(0, 10, 11)
@@ -165,8 +165,8 @@ def test_ida_linsolver():
     with pytest.raises(ValueError):  # forgot bandwidth(s)
         _ = IDA(ode, rtol=1e-9, atol=1e-12, linsolver='band')
 
-    solver = IDA(ode, rtol=1e-9, atol=1e-12, linsolver='band', lband=0,
-                 uband=0)
+    solver = IDA(ode, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
+                 linsolver='band', lband=0, uband=0)
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
@@ -287,19 +287,72 @@ def test_ida_jacfn():
     soln = solver.solve(tspan, y0, yp0)
     assert np.allclose(soln.y, dae_soln(soln.t, y0))
 
-    solver = IDA(dae, rtol=1e-9, atol=1e-12, linsolver='band',
-                 lband=1, uband=0, jacfn=jacfn)
+    solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
+                 linsolver='band', lband=1, uband=0, jacfn=jacfn)
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
     assert np.allclose(soln.y, dae_soln(soln.t, y0))
 
 
+def test_failures_on_exceptions():
+
+    # exception in resfn
+    def bad_dae(t, y, yp, res):
+        if t > 1:
+            raise ValueError()
+
+        res[0] = yp[0] - 0.1
+        res[1] = 2*y[0] - y[1]
+
+    y0 = np.array([1, 2])
+    yp0 = np.array([0.1, 0.2])
+
+    solver = IDA(bad_dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1])
+
+    with pytest.raises(ValueError):
+        tspan = np.linspace(0, 10, 11)
+        soln = solver.solve(tspan, y0, yp0)
+        assert soln.status < 0
+
+    # exceptions in eventsfn
+    def eventsfn(t, y, yp, events):
+        if t > 1:
+            raise ValueError()
+
+        events[0] = y[0] - 1.55
+
+    solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
+                 eventsfn=eventsfn, num_events=1)
+
+    with pytest.raises(ValueError):
+        tspan = np.linspace(0, 10, 11)
+        soln = solver.solve(tspan, y0, yp0)
+        assert soln.status < 0
+
+    # exceptions in jacfn
+    def jacfn(t, y, yp, res, cj, JJ):
+        if t > 1:
+            raise ValueError()
+
+        JJ[0, 0] = cj
+        JJ[1, 0] = 2
+        JJ[1, 1] = -1
+
+    solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
+                 jacfn=jacfn)
+
+    with pytest.raises(ValueError):
+        tspan = np.linspace(0, 10, 11)
+        soln = solver.solve(tspan, y0, yp0)
+        assert soln.status < 0
+
+
 def test_IDAResult():
     y0 = np.array([1, 2])
     yp0 = np.array([0.1, 0.2])
 
-    solver = IDA(dae, rtol=1e-9, atol=1e-12)
+    solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1])
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
