@@ -64,6 +64,8 @@ jobs:
           LOCAL_VERSION=${{ needs.details.outputs.local_version }}
 
           cd scripts
+
+          pip install requests packaging
           python version_checker.py --tag="$TAG_VERSION" --local="$LOCAL_VERSION"
 
   build-wheels:

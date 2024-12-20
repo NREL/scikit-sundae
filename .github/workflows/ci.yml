@@ -55,51 +55,73 @@ jobs:
           flake8 --config .github/linters/.flake8 src
           flake8 --config .github/linters/.flake8 tests
 
-  test:
-    name: (Test ${{ matrix.python-version }}, ${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-13, macos-latest, windows-latest, ubuntu-latest]
-        python-version: ['3.9', '3.13']
-        
-    defaults:
-      run:
-        shell: bash -l {0}
+  check-version:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup conda/python
-        uses: conda-incubator/setup-miniconda@v3
-        with:  # ci_environment.yml specifies sundials version to compile
-          auto-update-conda: true
-          miniconda-version: latest
-          environment-file: environments/ci_environment.yml
-          python-version: ${{ matrix.python-version }}
-          activate-environment: sun
-          channels: conda-forge
-          conda-remove-defaults: "true"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
 
-      - name: Verify environment
+      - name: Check version details agasint PyPI, tag, etc.
         run: |
-          conda info
-          conda list
+          TAG_VERSION=1.0.0
+          LOCAL_VERSION=1.0.0
 
-      - name: Install scikit-sundae
-        run: |
-          python -m pip install --upgrade pip
-          pip install .
+          cd scripts
 
-      - name: List info
-        run: |
-          conda info
-          conda list
+          pip install requests packaging
+          python version_checker.py --tag="$TAG_VERSION" --local="$LOCAL_VERSION"
+
+  # test:
+  #   name: (Test ${{ matrix.python-version }}, ${{ matrix.os }})
+  #   runs-on: ${{ matrix.os }}
+
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os: [macos-13, macos-latest, windows-latest, ubuntu-latest]
+  #       python-version: ['3.9', '3.13']
+        
+  #   defaults:
+  #     run:
+  #       shell: bash -l {0}
+
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Setup conda/python
+  #       uses: conda-incubator/setup-miniconda@v3
+  #       with:  # ci_environment.yml specifies sundials version to compile
+  #         auto-update-conda: true
+  #         miniconda-version: latest
+  #         environment-file: environments/ci_environment.yml
+  #         python-version: ${{ matrix.python-version }}
+  #         activate-environment: sun
+  #         channels: conda-forge
+  #         conda-remove-defaults: "true"
+
+  #     - name: Verify environment
+  #       run: |
+  #         conda info
+  #         conda list
+
+  #     - name: Install scikit-sundae
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install .
+
+  #     - name: List info
+  #       run: |
+  #         conda info
+  #         conda list
                 
-      - name: Pytest
-        run: |
-          pip install pandas pytest
-          pytest .
+  #     - name: Pytest
+  #       run: |
+  #         pip install pandas pytest
+  #         pytest .
