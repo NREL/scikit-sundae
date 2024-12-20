@@ -81,6 +81,8 @@ jobs:
           environment-file: environments/ci_environment.yml
           python-version: ${{ matrix.python-version }}
           activate-environment: sun
+          channels: conda-forge
+          conda-remove-defaults: "true"
 
       - name: Verify environment
         run: |
