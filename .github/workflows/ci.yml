@@ -3,22 +3,22 @@ name: build-and-test
 on:
   push:
     paths-ignore:
-      - '*.md'
-      - 'docs/**'
-      - 'images/**'
-      - 'LICENSE'
-      - 'SUNDIALS_LICENSE'
-      - '.github/ISSUE_TEMPLATE/**'
+      - "*.md"
+      - "docs/**"
+      - "images/**"
+      - "LICENSE"
+      - "SUNDIALS_LICENSE"
+      - ".github/ISSUE_TEMPLATE/**"
 
   pull_request:
     branches: [main]
     paths-ignore:
-      - '*.md'
-      - 'docs/**'
-      - 'images/**'
-      - 'LICENSE'
-      - 'SUNDIALS_LICENSE'
-      - '.github/ISSUE_TEMPLATE/**'
+      - "*.md"
+      - "docs/**"
+      - "images/**"
+      - "LICENSE"
+      - "SUNDIALS_LICENSE"
+      - ".github/ISSUE_TEMPLATE/**"
 
 jobs:
   lint:
@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.13']
+        python-version: ["3.13"]
 
     defaults:
       run: 
@@ -63,7 +63,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-13, macos-latest, windows-latest, ubuntu-latest]
-        python-version: ['3.9', '3.13']
+        python-version: ["3.9", "3.13"]
         
     defaults:
       run:
@@ -81,6 +81,8 @@ jobs:
           environment-file: environments/ci_environment.yml
           python-version: ${{ matrix.python-version }}
           activate-environment: sun
+          channels: conda-forge
+          conda-remove-defaults: "true"
 
       - name: Verify environment
         run: |
