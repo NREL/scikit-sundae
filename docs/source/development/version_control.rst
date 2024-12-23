@@ -44,13 +44,13 @@ Key Features
     ``main`` is the default branch that contains the latest stable developer code. It reflects the current state of development and should always be functional.
 
 2. Release Branches:
-    Each release has its own maintenance branch, e.g., ``v1.1.x``. These branches should only receive bug fixes and are not meant for new feature development.
+    Each release has its own maintenance branch, e.g., ``v1.0.x``. These branches should only receive bug fixes and are not meant for new feature development.
 
 3. Feature and Bugfix Branches:
     New features or bug fixes should be developed on separate branches off main. The naming conventions are:
 
-    - Feature branches: ``description-issue#``
-    - Bugfix branches: ``bug-description-issue#``
+    - Feature branches: ``feature/description-issue``
+    - Bugfix branches: ``bugfix/description-issue``
 
 Note that only bug fixes should have a prefix, but all branches should reference an issue number. Use underscores between words as needed and keep to shorter names. The issue can always be referenced in cases where more information is needed.
 
@@ -69,7 +69,7 @@ Always prioritize fixing bugs in the ``main`` branch first. Older releases shoul
 1. Fetch the release branches and create a new branch off the release you are patching::
 
     git fetch upstream
-    git checkout -b bug-description-#123 upstream/v1.1.x
+    git checkout -b bugfix/description-123 upstream/v1.1.x
 
 2. If you setup your environment correctly, the package should be installed in editable mode. This means that any differences to Python files will automatically be applied, however, this is not true to the Cython extensions. Run the following to rebuild the Cython extensions in place. You will also need to run this command any time you make changes to any Cython files, otherwise they will not be recompiled and you will not see the changes reflected in your package::
 
@@ -79,17 +79,17 @@ Always prioritize fixing bugs in the ``main`` branch first. Older releases shoul
 
     git add .
     git commit -m "Resolved bug causing ... (#123)"
-    git push origin bug-description-#123
+    git push origin bugfix/description-123
 
 4. Submit a pull request (PR) targeting the specific release branch (e.g., ``v1.1.x``). Only bug fixes should be submitted to release branches -- no new features. Make sure you fill out the pull request template and include more detail than was provided in your commit messages. After all continuous integration (CI) checks are passing, a reviewer will be assigned and will follow up as discussed in the :doc:`review_process` section.
 
-5. If you opened a PR and any CI checks are failing, simply continue working on your branch and committing. All extra commits will automatically be added to the PR.
+5. If you opened a PR and any CI checks are failing, simply continue working on your branch and committing. Extra commits will automatically be added to the PR.
 
 6. After the PR is accepted and merged into the upstream repository, delete your new branch locally and in your GitHub repo::
 
     git checkout main
-    git branch -d branch-name-#456
-    git push origin --delete branch-name-#456
+    git branch -d bugfix/description-123
+    git push origin --delete bugfix/description-123
     git fetch --prune
 
 7. Repeat this processes as necessary to patch additional older versions. Unfortunately, each version needs to be patched individually, which creates more work for developers, and is the reason we prioritize which versions get patched and which do not. At a minimum, patches should always be applied to all versions between the original patched release and ``main``. For example, patches to ``v1.1.x`` should also be applied for ``v1.2.x`` and above, including ``main``, but do not necessarily need to be submitted for ``v1.0.x``.
@@ -112,7 +112,7 @@ or, if you setup the ``upstream`` remote, you can do this all in the command lin
 
 You should NEVER commit directly to a ``main`` branch, even including your forked ``main`` branch. Instead, your ``main`` branch should always either be synced with the upstream repo, or should simply be behind by some number of commits depending on the last time it was synced. After syncing, create a new branch. Your new branch should be named according to the directions above depending on whether it is a bug fix or for a new feature. Here we demonstrate a new feature::
 
-    git checkout -b branch-name-#456
+    git checkout -b feature/description-456
 
 Once the new branch is created, follow the steps below to add your new feature:
 
@@ -124,7 +124,7 @@ Once the new branch is created, follow the steps below to add your new feature:
 
     git add .
     git commit -m "Working new feature (#456)"
-    git push origin branch-name-#456
+    git push origin feature/description-456
 
 3. Submit a pull request targeting the upstream ``main`` branch. Make sure you fill out the pull request template and include more detail than was provided in your commit messages.  After all CI checks are passing, a reviewer will be assigned and will follow up as discussed in the :doc:`review_process` section.
 
@@ -133,8 +133,8 @@ Once the new branch is created, follow the steps below to add your new feature:
 5. After the PR is accepted and merged into the upstream repository, delete your new branch locally and in your GitHub repo::
 
     git checkout main
-    git branch -d branch-name-#456
-    git push origin --delete branch-name-#456
+    git branch -d feature/description-456
+    git push origin --delete feature/description-456
     git fetch --prune
 
 Merge Conflicts
@@ -150,7 +150,7 @@ If you've submitted a PR and are seeing merge conflicts you should take the foll
 
 2. Rebase your local bug/feature branch onto ``main``::
 
-    git checkout branch-name-#456
+    git checkout feature/description-456
     git rebase main
 
 3. Address merge conflicts as needed and continue the rebase::

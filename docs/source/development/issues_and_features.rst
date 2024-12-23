@@ -38,7 +38,7 @@ Once your issue is approved and assigned, follow the GitHub flow branching strat
 
 1. **Fork the Repo:** If you haven't already, create a fork of the repository.
 
-2. **Create a Branch:** Start by creating a new branch from the main branch. Name your branch with a short description of the bug or feature. Include the issue number in the name as well.
+2. **Create a Branch:** Start by creating a new branch from the main branch. Name your branch with a short description of the bug or feature. Include the issue number in the branch name.
 
 3. **Work in Manageable Chunks:** Ensure your pull request is manageable for reviewers. If your changes involve many files or a large number of lines, consider splitting the work into smaller, logical pull requests. This makes it easier for maintainers to review and approve your changes.
 
