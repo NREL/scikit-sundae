@@ -5,6 +5,8 @@ import shutil
 
 import nox
 
+nox.options.sessions = []
+
 
 @nox.session(name='cleanup', python=False)
 def run_cleanup(_):
@@ -27,6 +29,8 @@ def run_flake8(session):
     Use the optional 'format' argument to run autopep8 prior to the linter.
 
     """
+    
+    session.run('pip', 'install', '--upgrade', 'flake8')
 
     if 'format' in session.posargs:
         session.run('autopep8', '.', '--in-place', '--recursive',
@@ -44,9 +48,10 @@ def run_codespell(session):
     the files. Otherwise, you will only see a summary of the found errors.
 
     """
+    
+    session.run('pip', 'install', '--upgrade', 'codespell')
 
     command = ['codespell', '--config=.github/linters/.codespellrc']
-
     if 'write' in session.posargs:
         command.insert(1, '-w')
 
@@ -84,14 +89,21 @@ def run_pytest(session):
 
     """
 
-    command = [
-        'pytest',
-        '--cov=src/sksundae',
-        '--cov-report=html:reports/htmlcov',
-        '--cov-report=xml:reports/coverage.xml',
-        '--junitxml=reports/junit.xml',
-        'tests/',
-    ]
+    if 'no-reports' in session.posargs:
+        command = [
+            'pytest',
+            '--cov=src/sksundae',
+            'tests/',
+        ]
+    else:
+        command = [
+            'pytest',
+            '--cov=src/sksundae',
+            '--cov-report=html:reports/htmlcov',
+            '--cov-report=xml:reports/coverage.xml',
+            '--junitxml=reports/junit.xml',
+            'tests/',
+        ]
 
     for arg in session.posargs:
         if arg.startswith('parallel='):
