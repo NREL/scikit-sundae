@@ -4,9 +4,9 @@
 # cython: embedsignature=True, embeddedsignature.format='python'
 
 # Standard library
+import inspect
 from warnings import warn
 from types import MethodType
-from inspect import getfullargspec
 from typing import Callable, Iterable
 
 # Dependencies
@@ -814,27 +814,25 @@ cdef _collect_stats(void* mem):
 def _check_signature(name: str, func: Callable, expected: tuple[int]) -> int:
     """Check 'rhsfn', 'eventsfn', and 'jacfn' signatures."""
 
-    argspec = getfullargspec(func)
-    if isinstance(func, MethodType):  # if method, remove self/cls
-        argspec.args.pop(0)
-    elif argspec.args[0] in ("self", "cls"):
-        argspec.args.pop(0)
+    signature = inspect.signature(func)
+    parameters = signature.parameters.values()
 
-    if argspec.varargs or argspec.varkw:
+    has_args = any([p.kind == inspect._VAR_POSITIONAL for p in parameters])
+    has_kwargs = any([p.kind == inspect._VAR_KEYWORD for p in parameters])
+
+    if has_args or has_kwargs:
         raise ValueError(f"'{name}' cannot include *args or **kwargs.")
-    elif argspec.kwonlyargs:
-        raise ValueError(f"'{name}' cannot include keyword-only args.")
 
-    if name == "rhsfn" and len(argspec.args) not in expected:
+    if name == "resfn" and len(parameters) not in expected:
         raise ValueError(f"'{name}' has an invalid signature. It must only"
                           " have 3 (w/o userdata) or 4 (w/ userdata) args.")
-    elif len(argspec.args) not in expected:
+    elif len(parameters) not in expected:
         raise ValueError(f"'{name}' signature is inconsistent with 'rhsfn'."
                          " look for a missing or extraneous 'userdata' arg.")
     
-    if name == "rhsfn" and len(argspec.args) == 3:
+    if name == "rhsfn" and len(parameters) == 3:
         with_userdata = 0
-    elif name == "rhsfn" and len(argspec.args) == 4:
+    elif name == "rhsfn" and len(parameters) == 4:
         with_userdata = 1
     else:
         with_userdata = None

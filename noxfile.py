@@ -189,4 +189,5 @@ def run_build_ext(session: nox.Session) -> None:
 
     """
 
+    session.run('pip', 'install', '--upgrade', '--quiet', 'cython')
     session.run('python', 'setup.py', 'build_ext', '--inplace')

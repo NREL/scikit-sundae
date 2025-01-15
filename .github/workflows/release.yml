@@ -87,24 +87,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup conda/python
-        uses: conda-incubator/setup-miniconda@v3
-        with:  # ci_environment.yml specifies sundials version to compile against
-          auto-update-conda: true
-          miniconda-version: latest
+      - name: Setup Python and SUNDIALS
+        uses: mamba-org/setup-micromamba@v2
+        with:  # ci_environment.yml specifies sundials version to compile
           environment-file: environments/ci_environment.yml
-          python-version: ${{ matrix.python-version }}
-          activate-environment: sun
-          channels: conda-forge
-          conda-remove-defaults: "true"
+          create-args: python=${{ matrix.python-version }}
 
       - name: Install build
         run: pip install build
 
       - name: List info
         run: |
-          conda info
-          conda list
+          micromamba info
+          micromamba list
 
       - name: Set up environment variables for MacOS
         if: runner.os == 'macOS'
@@ -153,9 +148,9 @@ jobs:
         env:  # Remove known SUNDIALS header and lib paths
           DYLD_LIBRARY_PATH:
         run: |
-          conda uninstall sundials
-          conda create -n test python=${{ matrix.python-version }}
-          conda activate test
+          micromamba remove sundials
+          micromamba create -n test python=${{ matrix.python-version }}
+          micromamba activate test
 
           python -m pip install --upgrade pip
           pip install wheels/*.whl -v
@@ -188,16 +183,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup conda/python
-        uses: conda-incubator/setup-miniconda@v3
-        with:  # ci_environment.yml specifies sundials version to compile against
-          auto-update-conda: true
-          miniconda-version: latest
+      - name: Setup Python and SUNDIALS
+        uses: mamba-org/setup-micromamba@v2
+        with:  # ci_environment.yml specifies sundials version to compile
           environment-file: environments/ci_environment.yml
-          python-version: ${{ matrix.python-version }}
-          activate-environment: sun
-          channels: conda-forge
-          conda-remove-defaults: "true"
+          create-args: python=${{ matrix.python-version }}
 
       - name: Install build
         run: pip install build
