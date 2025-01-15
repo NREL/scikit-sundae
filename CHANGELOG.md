@@ -3,8 +3,10 @@
 ## [Unreleased](https://github.com/NREL/scikit-sundae/)
 
 ### New Features
+- Changed signature inspections to support decorated `jit` functions ([PR #3](https://github.com/NREL/scikit-sundae/pull/3))
 
 ### Optimizations
+- Use `micromamba` instead of `miniconda` in CI ([PR #3](https://github.com/NREL/scikit-sundae/pull/3))
 
 ### Bug Fixes
 
