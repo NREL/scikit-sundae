@@ -15,8 +15,8 @@ Accessing the documentation
 ---------------------------
 Documentation is accessible via Python's ``help()`` function which prints
 docstrings from a package, module, function, class, etc. You can also access
-the documentation by visiting the website, hosted through GitHub pages. The
-website includes search functionality and more detailed examples.
+the documentation by visiting the website, hosted on Read the Docs. The website
+includes search functionality and more detailed examples.
 
 Acknowledgements
 ----------------
@@ -28,10 +28,10 @@ the lack of accessible DAE solvers. While ODE solvers are widely available in
 many packages, DAE solvers are not as prevalent.
 
 scikit-SUNDAE started out as a lighter-weight and easy-to-install alternative
-to `scikits.odes`_, which similarly provides SUNDIALS bindings, but requires
+to `scikits-odes`_, which similarly provides SUNDIALS bindings, but requires
 building from source. The goal was to offer a simpler installation process,
 with binary distributions that are consistent across major platforms (PyPI and
-conda). While scikit-SUNDAE's API was mostly modeled after scikits.odes, we
+conda). While scikit-SUNDAE's API was mostly modeled after scikits-odes, we
 want to point out that our codebase was written from scratch and that this is
 a separate, independent package. During development we prioritized:
 
@@ -46,7 +46,7 @@ SUNDIALS also requires that their copyright be shared: Copyright (c) 2002-2024,
 Lawrence Livermore National Security and Southern Methodist University. All
 rights reserved.
 
-.. _scikits.odes: https://scikits-odes.readthedocs.io
+.. _scikits-odes: https://scikits-odes.readthedocs.io
 .. _conda-forge: https://anaconda.org/conda-forge/sundials
 .. _scipy.integrate: https://docs.scipy.org/doc/scipy/reference/integrate.html
 .. _SUNDIALS license: https://github.com/LLNL/sundials/blob/main/LICENSE

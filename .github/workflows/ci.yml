@@ -44,16 +44,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Spell check
-        run: |
-          pip install codespell
-          codespell --config .github/linters/.codespellrc
-          
+      - name: Install nox
+        run: pip install nox
+
       - name: Code format
-        run: |
-          pip install flake8
-          flake8 --config .github/linters/.flake8 src
-          flake8 --config .github/linters/.flake8 tests
+        run: nox -s linter
+
+      - name: Spell check
+        run: nox -s codespell          
 
   test:
     name: (Test ${{ matrix.python-version }}, ${{ matrix.os }})
@@ -73,33 +71,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup conda/python
-        uses: conda-incubator/setup-miniconda@v3
+      - name: Setup Python and SUNDIALS
+        uses: mamba-org/setup-micromamba@v2
         with:  # ci_environment.yml specifies sundials version to compile
-          auto-update-conda: true
-          miniconda-version: latest
           environment-file: environments/ci_environment.yml
-          python-version: ${{ matrix.python-version }}
-          activate-environment: sun
-          channels: conda-forge
-          conda-remove-defaults: "true"
+          create-args: python=${{ matrix.python-version }}
 
       - name: Verify environment
         run: |
-          conda info
-          conda list
+          micromamba info
+          micromamba list
 
       - name: Install scikit-sundae
         run: |
           python -m pip install --upgrade pip
-          pip install .
+          python -m pip install --upgrade nox
+          pip install .[tests]
 
       - name: List info
         run: |
-          conda info
-          conda list
+          micromamba info
+          micromamba list
                 
       - name: Pytest
-        run: |
-          pip install pandas pytest
-          pytest .
+        run: nox -s tests -- no-reports
