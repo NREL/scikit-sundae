@@ -95,11 +95,3 @@ jobs:
                 
       - name: Pytest
         run: nox -s tests -- no-reports
-
-      - name: learn micromamba
-        run: |
-          micromamba remove sundials
-          micromamba create -n test python=${{ matrix.python-version }}
-          micromamba activate test
-          micromamba info
-          micromamba list

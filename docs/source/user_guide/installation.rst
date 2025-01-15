@@ -97,7 +97,7 @@ Installing scikit-SUNDAE from source is recommended only in the following cases:
 
 .. note:: 
 
-    Please be aware that we do not provide installation support for users compiling or against custom SUNDIALS builds. Our package is built and tested against releases available on conda-forge, and we cannot guarantee compatibility with custom builds. We simply include this in the installation instructions for those interested. However, you are on your own if the package does not compile against your custom-configured SUNDIALS. In you experience issues, we recommend compiling against SUNDIALS releases from conda-forge instead, which we do provide support for. 
+    Please be aware that we do not provide installation support for users compiling against custom SUNDIALS builds. Our package is built and tested against releases available on conda-forge, and we cannot guarantee compatibility with custom builds. We simply include this in the installation instructions for those interested. However, you are on your own if the package does not compile against your custom configuration. In you experience issues, we recommend compiling against SUNDIALS releases from conda-forge instead, which we provide support for. 
 
 Instructions
 ^^^^^^^^^^^^

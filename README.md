@@ -100,9 +100,9 @@ For convenience, we also provide the following for your BibTex:
 ```
 
 ## Acknowledgements
-scikit-SUNDAE was originally inspired by [scikits.odes](https://scikits-odes.readthedocs.io/) which also offers Python bindings to SUNDIALS. The API for scikit-SUNDAE was mostly adopted from scikits.odes; however, all of our source code is original. If you are comparing the two:
+scikit-SUNDAE was originally inspired by [scikits-odes](https://scikits-odes.readthedocs.io/) which also offers Python bindings to SUNDIALS. The API for scikit-SUNDAE was mostly adopted from scikits-odes; however, all of our source code is original. If you are comparing the two:
 
-1. **scikits.odes:** includes iterative solvers and some optional solvers (e.g., LAPACK). The package only provides source distributions, so users must configure and compile SUNDAILS on their own.
+1. **scikits-odes:** includes iterative solvers and some optional solvers (e.g., LAPACK). The package only provides source distributions, so users must configure and compile SUNDAILS on their own.
 2. **scikit-SUNDAE:** includes more flexible events function capabilities (e.g., direction detection and terminal flags), scipy-like output, and provides both binary and source distributions. Iterative and optional solvers are not available.
 
 Our binary distributions include pre-compiled dynamic SUNDIALS libraries. These are self-contained and will not affect other, existing installations you may already have. To be in compliance with SUNDIALS distribution requirements, all scikit-SUNDAE distributions include a copy of the [SUNDIALS license](https://github.com/LLNL/sundials/blob/main/LICENSE).
