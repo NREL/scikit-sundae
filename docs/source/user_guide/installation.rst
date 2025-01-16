@@ -114,15 +114,15 @@ scikit-SUNDAE Version  Supported SUNDIALS Version(s)
     xcode-select --install      (for MacOS)
     sudo apt install clang      (for Linux)
 
-2. Skip to step (2) if you are trying to compile against a custom SUNDIALS build. Otherwise, install a supported SUNDIALS release from conda-forge. Reference the table above to find a version that is compatible with the version of scikit-SUNDAE you are trying to install, and fill in the ``x.x`` below with an appropriate version::
+2. Skip to step (3) if you are trying to compile against a custom SUNDIALS build. Otherwise, install a supported SUNDIALS release from conda-forge. Reference the table above to find a version that is compatible with the version of scikit-SUNDAE you are trying to install, and fill in the ``x.x`` below with an appropriate version::
 
     conda install -c conda-forge sundials=x.x 
 
-3. Skip this step if you installed SUNDIALS from conda-forge during step (1). Otherwise, make sure your SUNDIALS version is compatible with the version of scikit-SUNDAE you're trying to install using the table above as a reference. Afterward, find the parent directory for your SUNDIALS files and follow the directions in the :ref:`Cannot Locate SUNDIALS` section to set the ``SUNDIALS_PREFIX`` environment variable.
+3. Skip this step if you installed SUNDIALS from conda-forge during step (2). Otherwise, make sure your SUNDIALS version is compatible with the version of scikit-SUNDAE you're trying to install using the table above as a reference. Afterward, find the parent directory for your SUNDIALS files and follow the directions in the :ref:`Cannot Locate SUNDIALS` section to set the ``SUNDIALS_PREFIX`` environment variable.
 
-4. Force the package to install the source distribution from PyPI:: 
+4. Force the package to install the source distribution from PyPI, with the verbose option:: 
 
-    pip install --no-binary scikit-sundae scikit-sundae <other packages>
+    pip install scikit-sundae --no-binary scikit-sundae -v
 
 .. _Visual Studio: https://visualstudio.microsoft.com/
 .. _Clang: https://clang.llvm.org/
