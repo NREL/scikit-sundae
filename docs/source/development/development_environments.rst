@@ -18,11 +18,11 @@ This guide will walk you through setting up a local development environment for 
 2. Create a virtual environment
     Since we build scikit-SUNDAE agasint SUNDIALS releases on conda-forge, you will need to set up a virtual environment with ``conda`` access. While there are a few options you can use, we recommend using `Anaconda <https://anaconda.org>`_. With Anaconda installed, open the terminal (MacOS/Linux) or Anaconda Prompt and run::
 
-        conda install python=x.x sundials=x.x -c conda-forge
+        conda create -n sun -c conda-forge python=x.x sundials=x.x
 
-    The ``x.x`` version numbers should be filled in with the latest stable releases of Python and SUNDIALS. Continuous Integration (CI) workflows automatically test older versions. 
+    The ``x.x`` version numbers should be filled in with the latest stable releases of Python and SUNDIALS. Continuous Integration (CI) workflows automatically test older Python versions. 
     
-    On occasion, if issues arise during tests, you may need to work with older Python versions temporarily. In these cases, please reference the table on the main :doc:`/user_guide/installation` page to verify which SUNDIALS versions are compatible.
+    On occasion, you may need to work with older Python and/or SUNDIALS versions (e.g., patching old versions, or resolving version-specific CI failures). In cases where you are not working with the latest version of scikit-SUNDAE, please reference the table on the main :doc:`/user_guide/installation` page to verify SUNDIALS compatibilities.
 
 3. Set the ``SUNDIALS_PREFIX`` environment variable
     scikit-SUNDAE expects your SUNDIALS installation to be in either ``$CONDA_PREFIX`` or ``%CONDA_PREFIX%\Library``. Check to see if your installation is in either of these directories. If it isn't, you will need to set the ``SUNDIALS_PREFIX`` environment variable::
