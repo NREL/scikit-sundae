@@ -170,7 +170,7 @@ cdef class AuxData:
     cdef object eventsfn
     cdef object jacfn
 
-    def __cinit__(self, np.npy_intp NEQ, object options):
+    def __cinit__(self, sunindextype NEQ, object options):
         self.np_yy = np.empty(NEQ, DTYPE)
         self.np_yp = np.empty(NEQ, DTYPE)
         self.np_fy = np.empty(NEQ, DTYPE)
@@ -203,7 +203,7 @@ cdef class CVODE:
     cdef N_Vector yy
     cdef SUNMatrix A 
     cdef SUNLinearSolver LS
-    cdef np.npy_intp NEQ
+    cdef sunindextype NEQ
     cdef AuxData aux
 
     cdef object _options
@@ -312,7 +312,7 @@ cdef class CVODE:
         # 3) Set problem dimensions
         
         # 4) Create vectors of initial values        
-        self.NEQ = y0.size
+        self.NEQ = <sunindextype> y0.size
         self.aux = AuxData(self.NEQ, self._options)
 
         self.yy = N_VNew_Serial(self.NEQ, self.ctx)

@@ -72,36 +72,51 @@ def get_extensions():
     with open(CONFIG_H, 'r') as f:
         config = parse_config_h(f)
 
-    # Write the pxi file to match types to sundials_config.h
-    with open('src/sksundae/config.pxi', 'w') as f:
+    # Write pxi files for C and Python to match types to sundials_config.h
+    SUNDIALS_VERSION = config.get('SUNDIALS_VERSION')
+    MAJOR_VERSION = SUNDIALS_VERSION.split('.')[0]
+    if int(MAJOR_VERSION) < 7:
+        raise RuntimeError(f"sksundae - incompatible {SUNDIALS_VERSION=}."
+                           " MAJOR_VERSION must be at least 7.")
 
-        SUNDIALS_VERSION = config.get('SUNDIALS_VERSION')
-        MAJOR_VERSION = SUNDIALS_VERSION.split('.')[0]
-        if int(MAJOR_VERSION) < 7:
-            raise RuntimeError(f"sksundae - incompatible {SUNDIALS_VERSION=}."
-                               " MAJOR_VERSION must be at least 7.")
+    if config.get('SUNDIALS_SINGLE_PRECISION'):
+        precision = 'float'
+        np_precision = 'np.float32_t'
+    elif config.get('SUNDIALS_DOUBLE_PRECISION'):
+        precision = 'double'
+        np_precision = 'np.float64_t'
+    elif config.get('SUNDIALS_EXTENDED_PRECISION'):
+        precision = 'long double'
+        np_precision = 'np.float128_t'
+    else:
+        warn("Couldn't find SUNDIALS_PRECISION. Defaulting to double.")
+        precision = 'double'
+        np_precision = 'np.float64_t'
 
-        if config.get('SUNDIALS_SINGLE_PRECISION'):
-            precision = 'single'
-        elif config.get('SUNDIALS_DOUBLE_PRECISION'):
-            precision = 'double'
-        elif config.get('SUNDIALS_EXTENDED_PRECISION'):
-            precision = 'extended'
-        else:
-            warn("Couldn't find SUNDIALS_PRECISION. Defaulting to double.")
-            precision = 'double'
+    if config.get('SUNDIALS_INT32_T'):
+        indexsize = 'int'
+        np_indexsize = 'np.int32_t'
+    elif config.get('SUNDIALS_INT64_T'):
+        indexsize = 'long int'
+        np_indexsize = 'np.int64_t'
+    else:
+        warn("Couldn't find SUNDIALS_INDEX_SIZE. Defaulting to int.")
+        indexsize = 'int'
+        np_indexsize = 'np.int32_t'
 
-        if config.get('SUNDIALS_INT32_T'):
-            indexsize = 'int32'
-        elif config.get('SUNDIALS_INT64_T'):
-            indexsize = 'int64'
-        else:
-            warn("Couldn't find SUNDIALS_INDEX_SIZE. Defaulting to int32.")
-            indexsize = 'int32'
+    with open('src/sksundae/py_config.pxi', 'w') as f:  # Python config
+        f.write(f"SUNDIALS_VERSION = \"{SUNDIALS_VERSION}\"\n")
+        f.write(f"SUNDIALS_FLOAT_TYPE = \"{precision}\"\n")
+        f.write(f"SUNDIALS_INT_TYPE = \"{indexsize}\"\n")
 
-        f.write(f"DEF SUNDIALS_VERSION = \"{SUNDIALS_VERSION}\"\n")
-        f.write(f"DEF SUNDIALS_FLOAT_TYPE = \"{precision}\"\n")
-        f.write(f"DEF SUNDIALS_INT_TYPE = \"{indexsize}\"\n")
+    with open('src/sksundae/c_config.pxi', 'w') as f:  # C config
+        f.write("cimport numpy as np\n\n")
+
+        f.write(f"ctypedef {precision} sunrealtype\n")
+        f.write(f"ctypedef {np_precision} DTYPE_t\n\n")
+
+        f.write(f"ctypedef {indexsize} sunindextype\n")
+        f.write(f"ctypedef {np_indexsize} INT_TYPE_t\n")
 
     # Specify include_dirs, library_dirs, and libraries for each extension
     SUNDIALS_INCLUDE_DIRS = [numpy.get_include(), os.path.join(BASE, 'include')]
@@ -124,6 +139,7 @@ def get_extensions():
             include_dirs=SUNDIALS_INCLUDE_DIRS,
             library_dirs=SUNDIALS_LIBRARY_DIRS,
             libraries=LIBRARIES,
+            define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
         ),
         setuptools.Extension(
             name='sksundae._cy_cvode',
@@ -131,6 +147,7 @@ def get_extensions():
             include_dirs=SUNDIALS_INCLUDE_DIRS,
             library_dirs=SUNDIALS_LIBRARY_DIRS,
             libraries=LIBRARIES + ['sundials_cvode'],
+            define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
         ),
         setuptools.Extension(
             name='sksundae._cy_ida',
@@ -138,6 +155,7 @@ def get_extensions():
             include_dirs=SUNDIALS_INCLUDE_DIRS,
             library_dirs=SUNDIALS_LIBRARY_DIRS,
             libraries=LIBRARIES + ['sundials_ida'],
+            define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
         ),
     ]
 
