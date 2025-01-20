@@ -172,7 +172,7 @@ cdef class AuxData:
     cdef object eventsfn
     cdef object jacfn
 
-    def __cinit__(self, np.npy_intp NEQ, object options):
+    def __cinit__(self, sunindextype NEQ, object options):
         self.np_yy = np.empty(NEQ, DTYPE)
         self.np_yp = np.empty(NEQ, DTYPE)
         self.np_rr = np.empty(NEQ, DTYPE)
@@ -206,7 +206,7 @@ cdef class IDA:
     cdef N_Vector yp
     cdef SUNMatrix A 
     cdef SUNLinearSolver LS
-    cdef np.npy_intp NEQ
+    cdef sunindextype NEQ
     cdef AuxData aux
 
     cdef object _options
@@ -317,7 +317,7 @@ cdef class IDA:
         if len(y0) != len(yp0):
             raise ValueError("'y0' and 'yp0' must be the same size.")
         
-        self.NEQ = y0.size
+        self.NEQ = <sunindextype> y0.size
         self.aux = AuxData(self.NEQ, self._options)
 
         self.yy = N_VNew_Serial(self.NEQ, self.ctx)

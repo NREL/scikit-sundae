@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import importlib
 
 import nox
 
@@ -89,10 +90,13 @@ def run_pytest(session: nox.Session) -> None:
 
     """
 
+    package = importlib.util.find_spec('sksundae')
+    coverage_folder = os.path.dirname(package.origin)
+
     if 'no-reports' in session.posargs:
         command = [
             'pytest',
-            '--cov=src/sksundae',
+            f'--cov={coverage_folder}',  # for editable or site-packages
             'tests/',
         ]
     else:
