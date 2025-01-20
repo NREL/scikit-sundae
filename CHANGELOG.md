@@ -7,7 +7,7 @@
 
 ### Optimizations
 - Use `micromamba` instead of `miniconda` in CI ([PR #3](https://github.com/NREL/scikit-sundae/pull/3))
-- Updates to be compliant with Cython deprecations of `IF/ELIF/ELSE` and `DEF` ([PR # 5](https://github.com/NREL/scikit-sundae/pull/5))
+- Updates to be compliant with Cython deprecations of `IF/ELIF/ELSE` and `DEF` ([PR #5](https://github.com/NREL/scikit-sundae/pull/5))
 - Replace loops that write data between 1D numpy arrays and SUNDIALS NVectors in favor of single-line memory views with pointer addressing ([PR #5](https://github.com/NREL/scikit-sundae/pull/5))
 
 ### Bug Fixes
