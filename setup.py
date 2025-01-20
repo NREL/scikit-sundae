@@ -139,7 +139,7 @@ def get_extensions():
             include_dirs=SUNDIALS_INCLUDE_DIRS,
             library_dirs=SUNDIALS_LIBRARY_DIRS,
             libraries=LIBRARIES,
-            define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
+            define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
         ),
         setuptools.Extension(
             name='sksundae._cy_cvode',
@@ -147,7 +147,7 @@ def get_extensions():
             include_dirs=SUNDIALS_INCLUDE_DIRS,
             library_dirs=SUNDIALS_LIBRARY_DIRS,
             libraries=LIBRARIES + ['sundials_cvode'],
-            define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
+            define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
         ),
         setuptools.Extension(
             name='sksundae._cy_ida',
@@ -155,7 +155,7 @@ def get_extensions():
             include_dirs=SUNDIALS_INCLUDE_DIRS,
             library_dirs=SUNDIALS_LIBRARY_DIRS,
             libraries=LIBRARIES + ['sundials_ida'],
-            define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
+            define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
         ),
     ]
 
