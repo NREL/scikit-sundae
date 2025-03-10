@@ -40,20 +40,20 @@ a separate, independent package. During development we prioritized:
 3. Maintaining and testing builds using SUNDIALS releases on `conda-forge`_
 4. Setuping the package for binary distribution
 
-Since scikit-SUNDAE installations may include pre-built SUNDIALS libraries, the
-`SUNDIALS license`_ is linked here and is also included with all distributions.
-SUNDIALS also requires that their copyright be shared: Copyright (c) 2002-2024,
-Lawrence Livermore National Security and Southern Methodist University. All
-rights reserved.
+Since scikit-SUNDAE installations may include pre-built SUNDIALS libraries, a
+`bundled license file`_ is included with all distributions. The bundled license
+acknowledges not only SUNDIALS, but any optional solvers that are linked and
+distributed as well (e.g., SuperLU_MT and OpenBLAS).
 
 .. _scikits-odes: https://scikits-odes.readthedocs.io
 .. _conda-forge: https://anaconda.org/conda-forge/sundials
 .. _scipy.integrate: https://docs.scipy.org/doc/scipy/reference/integrate.html
-.. _SUNDIALS license: https://github.com/LLNL/sundials/blob/main/LICENSE
+.. _bundled license file: https://github.com/NREL/scikit-sundae/blob/main/ \
+                          LICENSES_bundled
 
 """
 
-from ._cy_common import sundials_version as SUNDIALS_VERSION
+from ._cy_common import SUNDIALS_VERSION
 
 from . import ida
 from . import utils

@@ -48,6 +48,7 @@ cdef extern from "sundials/sundials_matrix.h":
     ctypedef enum SUNMatrix_ID:
         SUNMATRIX_DENSE
         SUNMATRIX_BAND
+        SUNMATRIX_SPARSE
 
     SUNMatrix_ID SUNMatGetID(SUNMatrix A)
 

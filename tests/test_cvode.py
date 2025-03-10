@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+
 from sksundae.cvode import CVODE, CVODEResult
 
 
@@ -108,6 +109,24 @@ def test_cvode_linsolver():
     assert np.allclose(soln.y, ode_soln(soln.t, y0))
 
 
+@pytest.mark.parametrize('linsolver', ['dense', 'band'])
+def test_cvode_sparsity(linsolver):  # using cvLSSparseDQJac for dense/band
+    y0 = np.array([1, 2])
+
+    sparsity = np.array([[0, 0], [0, 1]])
+
+    options = {}
+    if linsolver == 'band':
+        options.update({'lband': 0, 'uband': 0})
+
+    solver = CVODE(ode, rtol=1e-9, atol=1e-12, linsolver=linsolver,
+                   sparsity=sparsity, **options)
+
+    tspan = np.linspace(0, 10, 11)
+    soln = solver.solve(tspan, y0)
+    assert np.allclose(soln.y, ode_soln(soln.t, y0))
+
+
 def test_cvode_constraints():
     y0 = np.array([1, 2])
 
@@ -184,6 +203,10 @@ def test_cvode_jacfn():
 
     def jacfn(t, y, fy, JJ):
         JJ[1, 1] = 1
+
+    # preference between sparsity and jacfn
+    with pytest.warns(UserWarning):
+        _ = CVODE(ode, jacfn=jacfn, sparsity=np.ones((2, 2)))
 
     solver = CVODE(ode, rtol=1e-9, atol=1e-12, jacfn=jacfn)
 

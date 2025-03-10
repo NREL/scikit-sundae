@@ -15,7 +15,7 @@ class IDA:
     def __init__(self, resfn: Callable, **options) -> None:
         """
         This class wraps the implicit differential algebraic (IDA) solver from
-        SUNDIALS. It can be used to solve both ordinary differential equations
+        SUNDIALS [1]_ [2]_. IDA solves both ordinary differential equations
         (ODEs) and differiential agebraic equatinos (DAEs).
 
         Parameters
@@ -61,9 +61,11 @@ class IDA:
             Absolute tolerance. Can be a scalar float to apply the same value
             for all state variables, or an array with a length matching 'y' to
             provide tolerances specific to each variable. The default is 1e-6.
-        linsolver : {'dense', 'band'}, optional
+        linsolver : {'dense', 'band', 'sparse'}, optional
             Choice of linear solver. When using 'band', don't forget to provide
-            'lband' and 'uband' values. The default is 'dense'.
+            'lband' and 'uband' values. Using 'sparse' requires that 'sparsity'
+            also be set. The 'sparse' option uses SuperLU_MT [3]_. The default
+            is 'dense'.
         lband : int or None, optional
             Lower Jacobian bandwidth. Given a DAE system ``0 = F(t, y, yp)``,
             the Jacobian is ``J = dF_i/dy_j + c_j*dF_i/dyp_j`` where 'c_j' is
@@ -78,6 +80,18 @@ class IDA:
             and the non-zero elements above the diagonal. This option cannot be
             None (default) if 'linsolver' is 'band'. Use zero if no elements
             are above the main diagonal.
+        sparsity : array_like, sparse matrix or None, optional
+            Defines the sparsity structure of the Jacobian for finite difference
+            approximations. The shape must be (n, n) where n is the size of the
+            system. A zero entry means that a corresponding Jacobian element is
+            always zero. This argument is ignored if 'jacfn' is not None. All
+            linear solvers support 'sparsity', but it can sometimes introduce
+            greater instabilities. The default is None.
+        nthreads : int or None, optional
+            Number of threads to use in the 'sparse' linear solver. If 'sparse'
+            is used and nthreads is None, one thread will be used. Set as -1 to
+            use all available CPU threads. This argument is ignored for both the
+            'dense' and 'band' solvers. The default is None.
         max_order : int, optional
             Specifies the maximum order for the linear multistep BDF method.
             The value must be in the range [1, 5]. The default is 5.
@@ -162,6 +176,20 @@ class IDA:
         the data into a single tuple, dict, dataclass, etc. and pass them all
         together as 'userdata'. The data can be unpacked as needed within a
         function.
+
+        References
+        ----------
+        .. [1] A. C. Hindmarsh, P. N. Brown, K. E. Grant, S. L. Lee, R.
+           Serban, D. E. Shumaker, and C. S. Woodward, "SUNDIALS: Suite of
+           Nonlinear and Differential/Algebraic Equation Solvers," ACM TOMS,
+           2005, DOI: 10.1145/1089014.1089020
+        .. [2] D. J. Gardner, D. R. Reynolds, C. S. Woodward, C. J. Balos,
+           "Enabling new flexibility in the SUNDIALS suite of nonlinear and
+           differential/algebraic equation solvers," ACM TOMS, 2022,
+           DOI: 10.1145/3539801
+        .. [3] J. W. Demmel, J. R. Gilbert, and X. S. Li, "An Asynchronous
+           Parallel Supernodal Algorithm for Sparse Gaussian Elimination,"
+           SIMAX, 1999, DOI: 10.1137/S0895479897317685
 
         Examples
         --------

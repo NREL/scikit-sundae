@@ -4,7 +4,9 @@
 # cython: embedsignature=True, embeddedsignature.format='python'
 
 # Standard library
+import os
 import inspect
+
 from warnings import warn
 from types import MethodType
 from typing import Callable, Iterable
@@ -12,18 +14,21 @@ from typing import Callable, Iterable
 # Dependencies
 import numpy as np
 cimport numpy as np
+
+from scipy import sparse as sp
+from scipy.optimize._numdiff import group_columns
 from cpython.exc cimport PyErr_CheckSignals, PyErr_Occurred
 
 # Extern cdef headers
 from .c_cvode cimport *
-from .c_sundials cimport *
 from .c_nvector cimport *
+from .c_sundials cimport *
 from .c_sunmatrix cimport *
 from .c_sunlinsol cimport *
 
 # Internal cdef headers
 from ._cy_common cimport *
-from ._cy_common import DTYPE, INT_TYPE  # Python precisions
+from ._cy_common import DTYPE, INT_TYPE, config  # Python precisions/config
 
 # Local python dependencies
 from .utils import RichResult
@@ -133,7 +138,7 @@ cdef int _jacfn_wrapper(sunrealtype t, N_Vector yy, N_Vector fy, SUNMatrix JJ,
     else:
         _ = aux.jacfn(t, aux.np_yy, aux.np_fy, aux.np_JJ)
 
-    np2smat(aux.np_JJ, JJ)
+    np2smat(aux.np_JJ, JJ, aux.sparsity)
 
     return 0
 
@@ -165,10 +170,12 @@ cdef class AuxData:
     cdef np.ndarray np_JJ       # Jacobian matrix
     cdef bint with_userdata
 
-    cdef object rhsfn
-    cdef object userdata
-    cdef object eventsfn
-    cdef object jacfn
+    cdef object rhsfn           # Callable
+    cdef object userdata        # Any
+    cdef object eventsfn        # Callable
+    cdef object jacfn           # Callable
+    cdef object linsolver       # str
+    cdef object sparsity        # csc_matrix, shape(NEQ, NEQ)
 
     def __cinit__(self, sunindextype NEQ, object options):
         self.np_yy = np.empty(NEQ, DTYPE)
@@ -188,6 +195,109 @@ cdef class AuxData:
         else:
             self.np_JJ = np.empty(0, DTYPE)
 
+        self.linsolver = options["linsolver"]
+        self.sparsity = options["sparsity"]
+
+
+cdef class _cvLSSparseDQJac:
+    """
+    Sparse Jacobian approximation.
+    
+    This routine generates a sparse difference quotient approximation to the
+    system Jacobian. If the dense or banded solvers are being used the routine
+    fills a 2D array and is therefore less memory efficient, however, this can
+    still improve computational times to evaluate the Jacobian. In contrast,
+    if the sparse linear solver is used then a 1D array with NNZ elements is
+    used to carry around the output.
+
+    """
+    cdef void* mem
+    cdef AuxData aux
+
+    cdef object groups      # dict[int, np.ndarray[int]]
+    cdef object sparsity    # sparse.csc_matrix, shape(NEQ, NEQ)
+
+    def __cinit__(self, AuxData aux, object sparsity):
+
+        grouped_cols = group_columns(sparsity)
+        ngroups = np.max(grouped_cols) + 1
+
+        groups = {}
+        for i in range(ngroups):
+            cols = np.where(grouped_cols == i)[0]           
+            groups[i] = np.array(cols, dtype=INT_TYPE)       
+            
+        self.aux = aux
+        self.groups = groups
+        self.sparsity = sparsity
+
+    def __call__(
+        self,
+        sunrealtype t,
+        np.ndarray[DTYPE_t, ndim=1] y,
+        np.ndarray[DTYPE_t, ndim=1] yp,
+        np.ndarray JJ,  # support for 1D (sparse) and 2D (dense, band)
+        *userdata,
+    ):
+
+        cdef sunrealtype uround, srur
+        cdef sunindextype j, k, start, end
+        cdef np.ndarray[INT_TYPE_t, ndim=1] cols, indices
+        cdef np.ndarray[DTYPE_t, ndim=1] diff, inc, inc_inv, ytemp, yptemp
+        
+        aux = <AuxData> self.aux
+        sparsity = self.sparsity
+
+        ytemp = y.copy()
+        yptemp = yp.copy()
+
+        uround = np.finfo(DTYPE).eps
+        srur = np.sqrt(uround)
+
+        sign = (y >= 0).astype(float) * 2 - 1
+        inc = srur * sign * np.maximum(srur, np.abs(y))
+        inc_inv = 1. / inc
+
+        ngroups = len(self.groups)
+        for k in range(ngroups):
+            cols = self.groups[k]
+
+            ytemp[cols] += inc[cols]
+          
+            if aux.with_userdata:
+                _ = aux.rhsfn(t, ytemp, yptemp, aux.userdata)
+            else:
+                _ = aux.rhsfn(t, ytemp, yptemp)
+
+            diff = yptemp - yp
+            
+            for j in cols:
+                start = sparsity.indptr[j]
+                end = sparsity.indptr[j+1]
+
+                indices = sparsity.indices[start:end]
+                if JJ.ndim == 1:
+                    JJ[start:end] = inc_inv[j]*diff[indices]
+                elif JJ.ndim == 2:
+                    JJ[indices, j] = inc_inv[j]*diff[indices]
+                
+            ytemp[cols] = y[cols]
+
+    cdef _setup_memory(self, void* mem, sunindextype NEQ):
+        """
+        Store mem for access to current step, and prep either 1D or 2D array
+        for Jacobian storage. 
+        
+        """
+        self.mem = mem
+        self.aux.jacfn = self
+
+        if self.aux.linsolver == 'sparse':
+            nnz = self.sparsity.nnz
+            self.aux.np_JJ = np.zeros(nnz, DTYPE)
+        else:
+            self.aux.np_JJ = np.zeros((NEQ, NEQ), DTYPE)
+
 
 class CVODEResult(RichResult):
     _order_keys = ["message", "success", "status", "t", "y", "i_events",
@@ -206,8 +316,8 @@ cdef class CVODE:
     cdef sunindextype NEQ
     cdef AuxData aux
 
-    cdef object _options
-    cdef object _initialized
+    cdef object _options        # dict[str, Any]
+    cdef object _initialized    # bool
 
     def __cinit__(self, object rhsfn, **options):
         self.ctx = NULL
@@ -225,6 +335,8 @@ cdef class CVODE:
             "linsolver": "dense",
             "lband": None,
             "uband": None,
+            "sparsity": None,
+            "nthreads": None,
             "max_order": 5,
             "max_num_steps": 500,
             "max_nonlin_iters": 3,
@@ -242,8 +354,8 @@ cdef class CVODE:
         
         self._options.update(options)
 
-        if (options.get("method", "").lower() == "adams" 
-                and "max_order" not in options.keys()):
+        method = options.get("method", "").lower()
+        if method == "adams" and "max_order" not in options:
             self._options["max_order"] = 12
 
         _check_options(self._options)
@@ -262,6 +374,13 @@ cdef class CVODE:
 
             self.A = SUNBandMatrix(self.NEQ, uband, lband, self.ctx)
             self.LS = SUNLinSol_Band(self.yy, self.A, self.ctx)
+
+        elif self._options["linsolver"].lower() == "sparse":
+            nnz = <sunindextype> self._options["sparsity"].nnz
+            nthreads = <int> self._options["nthreads"]
+
+            self.A = SUNSparseMatrix(self.NEQ, self.NEQ, nnz, CSC_MAT, self.ctx)
+            self.LS = SUNLinSol_SuperLUMT(self.yy, self.A, nthreads, self.ctx)
 
         if self.A is NULL:
             raise MemoryError("SUNMatrix constructor returned NULL.")
@@ -350,6 +469,14 @@ cdef class CVODE:
             raise RuntimeError("CVodeSetLinearSolver - " + LSMESSAGES[flag])
 
         # 11) Set linear solver optional inputs
+        sparsity = self._options["sparsity"]
+        if sparsity is not None:
+            spjac = _cvLSSparseDQJac(self.aux, sparsity)
+            spjac._setup_memory(self.mem, self.NEQ)
+            
+            if self._options["jacfn"] is None:
+                self._options["jacfn"] = spjac 
+
         jacfn = self._options["jacfn"]
         if jacfn:
             flag = CVodeSetJacFn(self.mem, _jacfn_wrapper)
@@ -659,8 +786,9 @@ cdef class CVODE:
 
     def step(self, DTYPE_t t, object method, object tstop):
 
-        valid = {"normal", "onestep",}
-        if method.lower() not in valid:
+        method = method.lower()
+        valid = {"normal", "onestep"}
+        if method not in valid:
             raise ValueError(f"'method' is invalid. Valid values are {valid}.")
         elif not self._initialized:
             raise ValueError("'init_step' must be run prior to 'step'.")
@@ -856,11 +984,11 @@ def _check_options(options: dict) -> None:
         warn("'userdata' will be ignored since 'rhsfn' only has 3 args.")
 
     # method
-    valid = {"Adams", "BDF"}
-    method = options["method"]
+    valid = {"adams", "bdf"}
+    method = options["method"].lower()
     if not isinstance(method, str):
         raise TypeError("'method' must be type str.")
-    elif method.lower() not in {val.lower() for val in valid}:
+    elif method not in valid:
         raise ValueError(f"{method=} is invalid. Must be in {valid}.")
     
     # first_step
@@ -892,12 +1020,15 @@ def _check_options(options: dict) -> None:
         raise TypeError("'atol' must be type float or Iterable.")
 
     # linsolver
-    valid =  {"dense", "band",}
+    valid =  {"dense", "band", "sparse"}
     linsolver = options["linsolver"].lower()
     if not isinstance(linsolver, str):
         raise TypeError("'linsolver' must be type str.")
     elif linsolver not in valid:
         raise ValueError(f"{linsolver=} is invalid. Must be in {valid}.")
+
+    if linsolver == "sparse" and not config["SUNDIALS_SUPERLUMT_ENABLED"]:
+        raise ValueError("Cannot use 'sparse' solver. SuperLU_MT not enabled.")
 
     # lband
     lband = options["lband"]
@@ -917,22 +1048,63 @@ def _check_options(options: dict) -> None:
     elif uband < 0:
         raise ValueError("'uband' must be positive or zero.")
 
+    # sparsity
+    sparsity = options["sparsity"]
+    if sparsity is None:
+        pass 
+    elif sp.issparse(sparsity):
+        sparsity = sparsity.tocsc()
+    elif isinstance(sparsity, np.ndarray):
+        sparsity = sp.csc_matrix(sparsity)
+    else:
+        raise TypeError("'sparsity' must be either a sparse scipy matrix or a"
+                        " 2D numpy array.")
+
+    if sparsity is None:
+        pass
+    elif sparsity.shape[0] != sparsity.shape[1]:
+        raise ValueError("'sparsity' must be a square matrix.")
+
+    options["sparsity"] = sparsity  # save update to CSC sparse, if done
+
+    # nthreads
+    ncpu_cores = os.cpu_count()
+    nthreads = options["nthreads"]
+    if linsolver == "sparse" and sparsity is not None:
+        if nthreads is None:
+            nthreads = 1
+        elif nthreads == 0:
+            nthreads = 1
+        elif nthreads <= -1 or nthreads > ncpu_cores:
+            nthreads = ncpu_cores
+        elif not isinstance(nthreads, int):
+            raise TypeError("'nthreads' must be type int.")
+
+        options["nthreads"] = nthreads  # save defaults update, if done
+
     # consistency between linsolver and lband/uband
     if linsolver == "band" and (lband is None or uband is None):
-        raise ValueError("'lband', 'uband' can't be None if linsolver='band'.")
-    elif linsolver == "dense" and (lband is not None or uband is not None):
-        warn("Integer 'lband', 'uband' are ignored when linsolver='dense'.")
+        raise ValueError("'band' solver requires integer 'lband', 'uband'.")
+    elif linsolver != "band" and (lband is not None or uband is not None):
+        warn("Ignoring 'lband', 'uband' since 'linsolver' is not 'band'.")
+
+    # consistency between linsolver and sparsity/nthreads
+    if linsolver == "sparse" and sparsity is None:
+        raise ValueError("'sparse' solver requires 'sparsity' not be None.")
+
+    elif linsolver != "sparse" and nthreads is not None:
+        warn("Ignoring 'nthreads' since 'linsolver' is not 'sparse'.")
 
     # max_order
-    if method.lower() == "bdf":
+    if method == "bdf":
         max_allowed = 5
-    elif method.lower() == "adams":
+    elif method == "adams":
         max_allowed = 12
 
     if not isinstance(options["max_order"], int):
-        raise TypeError("'order' must be type int.")
+        raise TypeError("'max_order' must be type int.")
     elif options["max_order"] < 1 or options["max_order"] > max_allowed:
-        raise ValueError(f"'order' must be in range [1, {max_allowed}].")
+        raise ValueError(f"'max_order' must be in range [1, {max_allowed}].")
 
     # max_num_steps
     if not isinstance(options["max_num_steps"], int):
@@ -1019,3 +1191,8 @@ def _check_options(options: dict) -> None:
     else:
         expected = (4 + with_userdata,)
         _ = _check_signature("jacfn", jacfn, expected)
+    
+    # preference between sparsity and jacfn
+    if (sparsity is not None) and (jacfn is not None):
+        warn("Sparse Jacobian approximation will be ignored in favor of"
+             " 'jacfn'.")

@@ -32,6 +32,7 @@ def run_flake8(session: nox.Session) -> None:
     """
 
     session.run('pip', 'install', '--upgrade', '--quiet', 'flake8')
+    session.run('pip', 'install', '--upgrade', '--quiet', 'autopep8')
 
     if 'format' in session.posargs:
         session.run('autopep8', '.', '--in-place', '--recursive',
@@ -155,6 +156,9 @@ def run_sphinx(session: nox.Session) -> None:
 
         if os.path.exists('source/api'):
             shutil.rmtree('source/api')
+
+        if os.path.exists('jupyter_execute'):
+            shutil.rmtree('jupyter_execute')
 
         os.chdir('..')
 

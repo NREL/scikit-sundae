@@ -1,5 +1,16 @@
 import numpy as np
+import sksundae as sun
+
 from sksundae.utils import RichResult, _format_float_10
+
+
+def test_expected_config():
+    config = sun._cy_common.config
+
+    assert config['SUNDIALS_FLOAT_TYPE'] == 'double'
+    assert config['SUNDIALS_INT_TYPE'] == 'int'
+    assert config['SUNDIALS_SUPERLUMT_ENABLED']
+    assert config['SUNDIALS_SUPERLUMT_THREAD_TYPE'] == 'OPENMP'
 
 
 def test_RichResult():
