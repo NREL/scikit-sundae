@@ -58,7 +58,8 @@ from ._cy_common import SUNDIALS_VERSION
 from . import ida
 from . import utils
 from . import cvode
+from . import jacband
 
-__all__ = ['ida', 'utils', 'cvode', 'SUNDIALS_VERSION']
+__all__ = ['ida', 'utils', 'cvode', 'jacband', 'SUNDIALS_VERSION']
 
 __version__ = '1.1.0.dev'

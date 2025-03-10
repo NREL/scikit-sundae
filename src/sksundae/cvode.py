@@ -21,35 +21,30 @@ class CVODE:
         ----------
         rhsfn : Callable
             Right-hand-side function with signature ``f(t, y, yp[, userdata])``.
-            If 'rhsfn' has return values, they are ignored. Instead of using
-            returns, the solver interacts directly with the 'yp' array memory.
-            For more info see the notes.
+            See the notes for more information.
         **options : dict, optional
             Keyword arguments to describe the solver options. A full list of
             names, types, descriptions, and defaults is given below.
         userdata : object or None, optional
-            Additional data object to supply to all user-defined callables. If
-            'rhsfn' takes in 4 arguments, including the optional 'userdata',
-            then this option cannot be None (default). See notes for more info.
+            Additional data object to supply to all user-defined callables.
+            Cannot be None (default) if 'rhsfn' takes in 4 arguments.
         method : {'Adams', 'BDF'}, optional
-            Specifies the linear multistep method. The suggested settings are
-            to use 'Adams' for nonstiff problems and 'BDF' for stiff problems.
-            The default is 'BDF'.
+            Specifies the linear multistep method. It is suggested to use 'BDF'
+            (default) for stiff problems and 'Adams' for nonstiff problems.
         first_step : float, optional
-            Specifies the initial step size. The default is 0, which uses an
-            estimated value internally determined by SUNDIALS.
+            The initial step size. The default is 0, which uses an estimated
+            value internally determined by SUNDIALS.
         min_step : float, optional
             Minimum allowable step size. The default is 0.
         max_step : float, optional
             Maximum allowable step size. Use 0 (default) for unbounded steps.
         rtol : float, optional
-            Relative tolerance. For example, 1e-4 means errors are controlled
-            to within 0.01%. It is recommended to not use values larger than
-            1e-3 nor smaller than 1e-15. The default is 1e-5.
+            Relative tolerance. It is recommended to not use values larger than
+            1e-3 or smaller than 1e-15. The default is 1e-5.
         atol : float or array_like[float], optional
-            Absolute tolerance. Can be a scalar float to apply the same value
-            for all state variables, or an array with a length matching 'y' to
-            provide tolerances specific to each variable. The default is 1e-6.
+            Absolute tolerance. A scalar will apply to all variables equally,
+            while an array (matching 'y' length) sets specific tolerances for
+            eqch variable. The default is 1e-6.
         linsolver : {'dense', 'band', 'sparse'}, optional
             Choice of linear solver. When using 'band', don't forget to provide
             'lband' and 'uband' values. Using 'sparse' requires that 'sparsity'
@@ -57,35 +52,29 @@ class CVODE:
             is 'dense'.
         lband : int or None, optional
             Lower Jacobian bandwidth. Given an ODE system ``yp = f(t, y)``,
-            the Jacobian is ``J = df_i/dy_j``. 'lband' should be set to the max
-            distance between the main diagonal and the non-zero elements below
-            the diagonal. This option cannot be None (default) if 'linsolver'
-            is 'band'. Use zero if no values are below the main diagonal.
+            the Jacobian is ``J = df_i/dy_j``. Required when 'linsolver' is
+            'band'. Use zero if no values are below the main diagonal. Defaults
+            to None.
         uband : int or None, optional
-            Upper Jacobian bandwidth. See 'lband' for the Jacobian description.
-            'uband' should be set to the max distance between the main diagonal
-            and the non-zero elements above the diagonal. This option cannot be
-            None (default) if 'linsolver' is 'band'. Use zero if no elements
-            are above the main diagonal.
+            Upper Jacobian bandwidth. Required when 'linsolver' is 'band'. Use
+            zero if no elements are above the main diagonal. Defaults to None.
         sparsity : array_like, sparse matrix or None, optional
-            Defines the sparsity structure of the Jacobian for finite difference
-            approximations. The shape must be (n, n) where n is the size of the
-            system. A zero entry means that a corresponding Jacobian element is
-            always zero. This argument is ignored if 'jacfn' is not None. All
-            linear solvers support 'sparsity', but it can sometimes introduce
-            greater instabilities. The default is None.
+            Jacobian sparsity pattern. Required when 'linsolver' is 'sparse'.
+            The shape must be (N, N) where N is the size of the system. Zero
+            entries indicate fixed zeros in the Jacobian. If 'jacfn' is None,
+            this argument will activate a custom Jacobian routine. The routine
+            works with all linear solvers but may increase step count. Reduce
+            'max_step' to help with this, if needed. The default is None.
         nthreads : int or None, optional
-            Number of threads to use in the 'sparse' linear solver. If 'sparse'
-            is used and nthreads is None, one thread will be used. Set as -1 to
-            use all available CPU threads. This argument is ignored for both the
-            'dense' and 'band' solvers. The default is None.
+            Number of threads to use with the 'sparse' linear solver. If None
+            (default), 1 is used. Use -1 to use all available threads.
         max_order : int, optional
             Specifies the maximum order for the linear multistep method. BDF
             and Adams allow values in ranges [1, 5] and [1, 12], respectively.
-            The default if the method's max, i.e., 5 for BDF and 12 for Adams.
+            The default is the method's max, i.e., 5 for BDF and 12 for Adams.
         max_num_steps : int, optional
-            Specifies the maximum number of steps taken by the solver in each
-            attempt to reach the next output time. The default is 500.
+            The maximum number of steps taken by the solver in each attempt to
+            reach the next output time. The default is 500.
         max_nonlin_iters : int, optional
             Specifies the maximum number of nonlinear solver iterations in one
             step. The default is 3.
@@ -94,7 +83,7 @@ class CVODE:
             in one step. The default is 10.
         constraints_idx : array_like[int] or None, optional
             Specifies indices 'i' in the 'y' state variable array for which
-            inequality constraints should be applied. Constraints types must be
+            inequality constraints should be applied. Constraint types must be
             specified in 'constraints_type', see below. The default is None.
         constraints_type : array_like[int] or None, optional
             If 'constraints_idx' is not None, then this option must include an
@@ -104,41 +93,30 @@ class CVODE:
             default is None.
         eventsfn : Callable or None, optional
             Events function with signature ``g(t, y, events[, userdata])``.
-            Return values from this function are ignored. Instead, the solver
-            directly interacts with the 'events' array. Each 'events[i]' should
-            be an expression that triggers an event when equal to zero. If None
-            (default), no events are tracked. See the notes for more info.
+            If None (default), no events are tracked. See the notes for more
+            information. Requires 'num_events' be set when not None.
 
-            The 'num_events' option is required when 'eventsfn' is not None so
-            memory can be allocated for the events array. The events function
-            can also have the following attributes:
+            The function may also have these optional attributes:
 
                 terminal: list[bool, int], optional
-                    A list with length 'num_events' that tells how the solver
-                    how to respond to each event. If boolean, the solver will
-                    terminate when True and will simply record the event when
-                    False. If integer, termination occurs at the given number
-                    of occurrences. The default is ``[True]*num_events``.
+                    Specifies solver behavior for each event. A boolean stops
+                    the solver (True) or just records the event (False). An
+                    integer stops the solver after than many occurrences. The
+                    default is ``[True]*num_events``.
                 direction: list[int], optional
-                    A list with length 'num_events' that tells the solver which
-                    event directions to track. Values must be in ``{-1, 0, 1}``.
-                    Negative values will only trigger events when the slope is
-                    negative (i.e., 'events[i]' went from positive to negative).
-                    Alternatively, positive values track events with positive
-                    slope. If zero, either direction triggers the event. When
-                    not assigned, ``direction = [0]*num_events``.
+                    Determines which event slopes to track: ``-1`` (negative),
+                    ``1`` (positive), or ``0`` (both). If not provided the
+                    default ``[0]*num_events`` is used.
 
             You can assign attributes like ``eventsfn.terminal = [True]`` to
             any function in Python, after it has been defined.
         num_events : int, optional
-            Number of events to track. Must be greater than zero if 'eventsfn'
-            is not None. The default is 0.
+            Number of events to track. The default is 0.
         jacfn : Callable or None, optional
             Jacobian function like ``J(t, y, yp, JJ[, userdata])``. Fills the
             pre-allocated 2D matrix 'JJ' with values defined by the Jacobian
             ``JJ[i,j] = dyp_i/dy_j``. An internal finite difference method is
-            applied when None (default). As with other user-defined callables,
-            return values from 'jacfn' are ignored. See notes for more info.
+            applied when None (default).
 
         Notes
         -----
@@ -148,10 +126,7 @@ class CVODE:
         should be filled within each respective function. When setting values
         across the entire array/matrix at once, don't forget to use ``[:]`` to
         fill the existing array rather than overwriting it. For example, using
-        ``yp[:] = f(t, y)`` is correct whereas ``yp = f(t, y)`` is not. Using
-        this method of pre-allocated memory helps pass data between Python and
-        the SUNDIALS C functions. It also keeps the solver fast, especially for
-        large problems.
+        ``yp[:] = f(t, y)`` is correct whereas ``yp = f(t, y)`` is not.
 
         When 'rhsfn' (or 'eventsfn', or 'jacfn') require data outside of their
         normal arguments, you can supply 'userdata' as an option. When given,
