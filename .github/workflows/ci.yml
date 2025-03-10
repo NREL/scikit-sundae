@@ -7,7 +7,7 @@ on:
       - "docs/**"
       - "images/**"
       - "LICENSE"
-      - "SUNDIALS_LICENSE"
+      - "LICENSES_bundled"
       - ".github/ISSUE_TEMPLATE/**"
 
   pull_request:
@@ -17,7 +17,7 @@ on:
       - "docs/**"
       - "images/**"
       - "LICENSE"
-      - "SUNDIALS_LICENSE"
+      - "LICENSES_bundled"
       - ".github/ISSUE_TEMPLATE/**"
 
 jobs:

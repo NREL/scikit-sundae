@@ -17,3 +17,15 @@ cdef extern from "sunmatrix/sunmatrix_band.h":
     sunindextype SUNBandMatrix_LowerBandwidth(SUNMatrix A)
     sunindextype SUNBandMatrix_UpperBandwidth(SUNMatrix A)
     sunrealtype** SUNBandMatrix_Cols(SUNMatrix A)
+
+# sunmatrix_sparse.h
+cdef extern from "sunmatrix/sunmatrix_sparse.h":
+    int CSC_MAT
+    int CSR_MAT
+
+    SUNMatrix SUNSparseMatrix(sunindextype M, sunindextype N, sunindextype NNZ,
+                              int sparsetype, SUNContext ctx)
+
+    sunrealtype* SUNSparseMatrix_Data(SUNMatrix A)
+    sunindextype* SUNSparseMatrix_IndexValues(SUNMatrix A)
+    sunindextype* SUNSparseMatrix_IndexPointers(SUNMatrix A)

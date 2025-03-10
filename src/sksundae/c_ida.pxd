@@ -63,6 +63,7 @@ cdef extern from "ida/ida.h":
     int IDAGetConsistentIC(void* mem, N_Vector yy0_mod, N_Vector yp0_mod)
     int IDAGetRootInfo(void* mem, int* rootsfound)
     int IDAGetNumResEvals(void* mem, long int* nrevals)
+    int IDAGetCurrentStep(void* mem, sunrealtype* hcur)
     
     # free functions
     void IDAFree(void** mem)

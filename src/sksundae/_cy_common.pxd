@@ -15,4 +15,4 @@ cdef ptr2np(sunrealtype* nv_ptr, np.ndarray[DTYPE_t, ndim=1] np_array)
 cdef np2ptr(np.ndarray[DTYPE_t, ndim=1] np_array, sunrealtype* nv_ptr)
 
 # Fill SUNMatrrix with values from 2D numpy array
-cdef np2smat(np.ndarray[DTYPE_t, ndim=2] np_A, SUNMatrix smat)
+cdef np2smat(np.ndarray np_A, SUNMatrix smat, object sparsity)

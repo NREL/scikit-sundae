@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+
 from sksundae.ida import IDA, IDAResult
 
 
@@ -173,6 +174,25 @@ def test_ida_linsolver():
     assert np.allclose(soln.y, ode_soln(soln.t, y0))
 
 
+@pytest.mark.parametrize('linsolver', ['dense', 'band'])
+def test_ida_sparsity(linsolver):  # using idaLSSparseDQJac for dense/band
+    y0 = np.array([1, 2])
+    yp0 = np.array([0.1, 0.2])
+
+    sparsity = np.array([[1, 0], [1, 1]])
+
+    options = {}
+    if linsolver == 'band':
+        options.update({'lband': 1, 'uband': 0})
+
+    solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
+                 linsolver=linsolver, sparsity=sparsity, **options)
+
+    tspan = np.linspace(0, 10, 11)
+    soln = solver.solve(tspan, y0, yp0)
+    assert np.allclose(soln.y, dae_soln(soln.t, y0))
+
+
 def test_ida_constraints():
     y0 = np.array([1, 2])
     yp0 = np.array([0.1, 0.2])
@@ -259,6 +279,10 @@ def test_ida_jacfn():
     def jacfn(t, y, yp, res, cj, JJ):
         JJ[0, 0] = cj
         JJ[1, 1] = -1 + cj
+
+    # preference between sparsity and jacfn
+    with pytest.warns(UserWarning):
+        _ = IDA(dae, jacfn=jacfn, sparsity=np.ones((2, 2)))
 
     solver = IDA(ode, rtol=1e-9, atol=1e-12, jacfn=jacfn)
 

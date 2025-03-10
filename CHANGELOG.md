@@ -3,6 +3,9 @@
 ## [Unreleased](https://github.com/NREL/scikit-sundae/)
 
 ### New Features
+- Expose linear solver option that uses SuperLU_MT ([PR #6](https://github.com/NREL/scikit-sundae/pull/6))
+- New `jacband` module for support finding sparsity/bandwidth ([PR #6](https://github.com/NREL/scikit-sundae/pull/6))
+- Custom `sparseDQJac` routines available by supplying `sparsity` ([PR #6](https://github.com/NREL/scikit-sundae/pull/6))
 - Changed signature inspections to support decorated `jit` functions ([PR #3](https://github.com/NREL/scikit-sundae/pull/3))
 
 ### Optimizations

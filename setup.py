@@ -72,6 +72,11 @@ def get_extensions():
     with open(CONFIG_H, 'r') as f:
         config = parse_config_h(f)
 
+    print("\n\n")
+    for k, v in config.items():
+        print(k, v)
+    print("\n\n")
+
     # Write pxi files for C and Python to match types to sundials_config.h
     SUNDIALS_VERSION = config.get('SUNDIALS_VERSION')
     MAJOR_VERSION = SUNDIALS_VERSION.split('.')[0]
@@ -104,10 +109,30 @@ def get_extensions():
         indexsize = 'int'
         np_indexsize = 'np.int32_t'
 
+    if 'SUNDIALS_SUPERLUMT_ENABLED' in config:
+        has_superlu = True
+        superlu_threads = config['SUNDIALS_SUPERLUMT_THREAD_TYPE']
+    else:
+        has_superlu = False
+        superlu_threads = None
+
+    superlu_dir = os.path.join(BASE, 'include', 'superlu_mt')
+    if has_superlu and not os.path.exists(superlu_dir):
+        warn("SuperLU_MT was enabled, but is not on the expected path. It is"
+             " expected that the header and library files for SuperLU_MT are"
+             " in the same include and lib dirs as SUNDIALS. scikit-SUNDAE"
+             " will build without SuperLU_MT. If you need these capabilities"
+             " please move your installation and try again.")
+
+        has_superlu = False
+        superlu_threads = None
+
     with open('src/sksundae/py_config.pxi', 'w') as f:  # Python config
         f.write(f"SUNDIALS_VERSION = \"{SUNDIALS_VERSION}\"\n")
         f.write(f"SUNDIALS_FLOAT_TYPE = \"{precision}\"\n")
         f.write(f"SUNDIALS_INT_TYPE = \"{indexsize}\"\n")
+        f.write(f"SUNDIALS_SUPERLUMT_ENABLED = {has_superlu}\n")
+        f.write(f"SUNDIALS_SUPERLUMT_THREAD_TYPE = \"{superlu_threads}\"\n")
 
     with open('src/sksundae/c_config.pxi', 'w') as f:  # C config
         f.write("cimport numpy as np\n\n")
@@ -116,7 +141,7 @@ def get_extensions():
         f.write(f"ctypedef {np_precision} DTYPE_t\n\n")
 
         f.write(f"ctypedef {indexsize} sunindextype\n")
-        f.write(f"ctypedef {np_indexsize} INT_TYPE_t\n")
+        f.write(f"ctypedef {np_indexsize} INT_TYPE_t\n\n")
 
     # Specify include_dirs, library_dirs, and libraries for each extension
     SUNDIALS_INCLUDE_DIRS = [numpy.get_include(), os.path.join(BASE, 'include')]
@@ -129,7 +154,25 @@ def get_extensions():
         'sundials_sunlinsolband',
         'sundials_sunmatrixdense',
         'sundials_sunmatrixband',
+        'sundials_sunmatrixsparse',
     ]
+
+    MACROS = [('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')]
+
+    # Optional solvers - SuperLU_MT
+    if has_superlu:
+
+        SUNDIALS_INCLUDE_DIRS.append(
+            os.path.join(BASE, 'include', 'superlu_mt'),
+        )
+
+        LIBRARIES.extend([
+            'sundials_sunlinsolsuperlumt',
+            'superlu_mt_' + superlu_threads,
+        ])
+
+        MACROS.append(('__' + superlu_threads, None))
+        MACROS.append(('SUNDIALS_HAS_SUPERLUMT', None))
 
     # Define the extension modules
     extensions = [
@@ -139,7 +182,7 @@ def get_extensions():
             include_dirs=SUNDIALS_INCLUDE_DIRS,
             library_dirs=SUNDIALS_LIBRARY_DIRS,
             libraries=LIBRARIES,
-            define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
+            define_macros=MACROS,
         ),
         setuptools.Extension(
             name='sksundae._cy_cvode',
@@ -147,7 +190,7 @@ def get_extensions():
             include_dirs=SUNDIALS_INCLUDE_DIRS,
             library_dirs=SUNDIALS_LIBRARY_DIRS,
             libraries=LIBRARIES + ['sundials_cvode'],
-            define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
+            define_macros=MACROS,
         ),
         setuptools.Extension(
             name='sksundae._cy_ida',
@@ -155,7 +198,7 @@ def get_extensions():
             include_dirs=SUNDIALS_INCLUDE_DIRS,
             library_dirs=SUNDIALS_LIBRARY_DIRS,
             libraries=LIBRARIES + ['sundials_ida'],
-            define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
+            define_macros=MACROS,
         ),
     ]
 

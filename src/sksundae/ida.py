@@ -15,75 +15,72 @@ class IDA:
     def __init__(self, resfn: Callable, **options) -> None:
         """
         This class wraps the implicit differential algebraic (IDA) solver from
-        SUNDIALS. It can be used to solve both ordinary differential equations
+        SUNDIALS [1]_ [2]_. IDA solves both ordinary differential equations
         (ODEs) and differiential agebraic equatinos (DAEs).
 
         Parameters
         ----------
         resfn : Callable
             Residual function with signature ``f(t, y, yp, res[, userdata])``.
-            If 'resfn' has return values, they are ignored. Instead of using
-            returns, the solver interacts directly with the 'res' array memory.
-            For more info see the notes.
+            See the notes for more information.
         **options : dict, optional
             Keyword arguments to describe the solver options. A full list of
             names, types, descriptions, and defaults is given below.
         userdata : object or None, optional
-            Additional data object to supply to all user-defined callables. If
-            'resfn' takes in 5 arguments, including the optional 'userdata',
-            then this option cannot be None (default). See notes for more info.
+            Additional data object to supply to all user-defined callables.
+            Cannot be None (default) if 'resfn' takes in 5 arguments.
         calc_initcond : {'y0', 'yp0', None}, optional
-            Specifies which initial condition, if any, to calculate prior to
-            the first time step. The options 'y0' and 'yp0' will correct 'y0'
-            or 'yp0' values at 't0', respectively. When not None (default),
-            the 'calc_init_dt' value should be used to specify the direction
-            of integration.
+            Determines whether or not 'y0' or 'yp0' are corrected before the
+            first step. Requires 'calc_init_dt' if not None (default).
         calc_init_dt : float, optional
-            Relative time step to take during the initial condition correction.
-            Positive vs. negative values provide the direction of integration
-            as forwards or backwards, respectively. The default is 0.01.
+            Step size for initial condition correction. Positive for forward,
+            negative for backward integration. Default is 0.01.
         algebraic_idx : array_like[int] or None, optional
-            Specifies indices 'i' in the 'y[i]' state variable array that are
-            purely algebraic. This option should always be provided for DAEs;
-            otherwise, the solver can be unstable. The default is None.
+            Indices 'i' for 'y[i]' that are for purely algebraic variables. If
+            None (default) the problem is assumed to be a pure ODE.
         first_step : float, optional
-            Specifies the initial step size. The default is 0, which uses an
-            estimated value internally determined by SUNDIALS.
+            The initial step size. The default is 0, which uses an estimated
+            value internally determined by SUNDIALS.
         min_step : float, optional
             Minimum allowable step size. The default is 0.
         max_step : float, optional
             Maximum allowable step size. Use 0 (default) for unbounded steps.
         rtol : float, optional
-            Relative tolerance. For example, 1e-4 means errors are controlled
-            to within 0.01%. It is recommended to not use values larger than
-            1e-3 nor smaller than 1e-15. The default is 1e-5.
+            Relative tolerance. It is recommended to not use values larger than
+            1e-3 or smaller than 1e-15. The default is 1e-5.
         atol : float or array_like[float], optional
-            Absolute tolerance. Can be a scalar float to apply the same value
-            for all state variables, or an array with a length matching 'y' to
-            provide tolerances specific to each variable. The default is 1e-6.
-        linsolver : {'dense', 'band'}, optional
+            Absolute tolerance. A scalar will apply to all variables equally,
+            while an array (matching 'y' length) sets specific tolerances for
+            eqch variable. The default is 1e-6.
+        linsolver : {'dense', 'band', 'sparse'}, optional
             Choice of linear solver. When using 'band', don't forget to provide
-            'lband' and 'uband' values. The default is 'dense'.
+            'lband' and 'uband' values. Using 'sparse' requires that 'sparsity'
+            also be set. The 'sparse' option uses SuperLU_MT [3]_. The default
+            is 'dense'.
         lband : int or None, optional
             Lower Jacobian bandwidth. Given a DAE system ``0 = F(t, y, yp)``,
-            the Jacobian is ``J = dF_i/dy_j + c_j*dF_i/dyp_j`` where 'c_j' is
-            determined internally based on both step size and order. 'lband'
-            should be set to the max distance between the main diagonal and the
-            non-zero elements below the diagonal. This option cannot be None
-            (default) if 'linsolver' is 'band'. Use zero if no values are below
-            the main diagonal.
+            the Jacobian is ``J = dF_i/dy_j + cj*dF_i/dyp_j``. Required when
+            'linsolver' is 'band'. Use zero if no values are below the main
+            diagonal. Defaults to None.
         uband : int or None, optional
-            Upper Jacobian bandwidth. See 'lband' for the Jacobian description.
-            'uband' should be set to the max distance between the main diagonal
-            and the non-zero elements above the diagonal. This option cannot be
-            None (default) if 'linsolver' is 'band'. Use zero if no elements
-            are above the main diagonal.
+            Upper Jacobian bandwidth. Required when 'linsolver' is 'band'. Use
+            zero if no elements are above the main diagonal. Defaults to None.
+        sparsity : array_like, sparse matrix or None, optional
+            Jacobian sparsity pattern. Required when 'linsolver' is 'sparse'.
+            The shape must be (N, N) where N is the size of the system. Zero
+            entries indicate fixed zeros in the Jacobian. If 'jacfn' is None,
+            this argument will activate a custom Jacobian routine. The routine
+            works with all linear solvers but may increase step count. Reduce
+            'max_step' to help with this, if needed. The default is None.
+        nthreads : int or None, optional
+            Number of threads to use with the 'sparse' linear solver. If None
+            (default), 1 is used. Use -1 to use all available threads.
         max_order : int, optional
             Specifies the maximum order for the linear multistep BDF method.
             The value must be in the range [1, 5]. The default is 5.
         max_num_steps : int, optional
-            Specifies the maximum number of steps taken by the solver in each
-            attempt to reach the next output time. The default is 500.
+            The maximum number of steps taken by the solver in each attempt to
+            reach the next output time. The default is 500.
         max_nonlin_iters : int, optional
             Specifies the maximum number of nonlinear solver iterations in one
             step. The default is 4.
@@ -92,7 +89,7 @@ class IDA:
             in one step. The default is 10.
         constraints_idx : array_like[int] or None, optional
             Specifies indices 'i' in the 'y' state variable array for which
-            inequality constraints should be applied. Constraints types must be
+            inequality constraints should be applied. Constraint types must be
             specified in 'constraints_type', see below. The default is None.
         constraints_type : array_like[int] or None, optional
             If 'constraints_idx' is not None, then this option must include an
@@ -102,42 +99,30 @@ class IDA:
             default is None.
         eventsfn : Callable or None, optional
             Events function with signature ``g(t, y, yp, events[, userdata])``.
-            Return values from this function are ignored. Instead, the solver
-            directly interacts with the 'events' array. Each 'events[i]' should
-            be an expression that triggers an event when equal to zero. If None
-            (default), no events are tracked. See the notes for more info.
+            If None (default), no events are tracked. See the notes for more
+            information. Requires 'num_events' be set when not None.
 
-            The 'num_events' option is required when 'eventsfn' is not None so
-            memory can be allocated for the events array. The events function
-            can also have the following attributes:
+            The function may also have these optional attributes:
 
                 terminal: list[bool, int], optional
-                    A list with length 'num_events' that tells how the solver
-                    how to respond to each event. If boolean, the solver will
-                    terminate when True and will simply record the event when
-                    False. If integer, termination occurs at the given number
-                    of occurrences. The default is ``[True]*num_events``.
+                    Specifies solver behavior for each event. A boolean stops
+                    the solver (True) or just records the event (False). An
+                    integer stops the solver after than many occurrences. The
+                    default is ``[True]*num_events``.
                 direction: list[int], optional
-                    A list with length 'num_events' that tells the solver which
-                    event directions to track. Values must be in ``{-1, 0, 1}``.
-                    Negative values will only trigger events when the slope is
-                    negative (i.e., 'events[i]' went from positive to negative).
-                    Alternatively, positive values track events with positive
-                    slope. If zero, either direction triggers the event. When
-                    not assigned, ``direction = [0]*num_events``.
+                    Determines which event slopes to track: ``-1`` (negative),
+                    ``1`` (positive), or ``0`` (both). If not provided the
+                    default ``[0]*num_events`` is used.
 
             You can assign attributes like ``eventsfn.terminal = [True]`` to
             any function in Python, after it has been defined.
         num_events : int, optional
-            Number of events to track. Must be greater than zero if 'eventsfn'
-            is not None. The default is 0.
+            Number of events to track. The default is 0.
         jacfn : Callable or None, optional
             Jacobian function like ``J(t, y, yp, res, cj, JJ[, userdata])``.
             The function should fill the pre-allocated 2D matrix 'JJ' with the
             values defined by ``JJ[i,j] = dres_i/dy_j + cj*dres_i/dyp_j``. An
             internal finite difference method is applied when None (default).
-            As with other user-defined callables, return values from 'jacfn'
-            are ignored. See notes for more info.
 
         Notes
         -----
@@ -148,9 +133,7 @@ class IDA:
         across the entire array/matrix at once, don't forget to use ``[:]`` to
         fill the existing array rather than overwriting it. For example, using
         ``res[:] = F(t, y, yp)`` is correct whereas ``res = F(t, y, yp)`` is
-        not. Using this method of pre-allocated memory helps pass data between
-        Python and the SUNDIALS C functions. It also keeps the solver fast,
-        especially for large problems.
+        not.
 
         When 'resfn' (or 'eventsfn', or 'jacfn') require data outside of their
         normal arguments, you can supply 'userdata' as an option. When given,
@@ -162,6 +145,20 @@ class IDA:
         the data into a single tuple, dict, dataclass, etc. and pass them all
         together as 'userdata'. The data can be unpacked as needed within a
         function.
+
+        References
+        ----------
+        .. [1] A. C. Hindmarsh, P. N. Brown, K. E. Grant, S. L. Lee, R.
+           Serban, D. E. Shumaker, and C. S. Woodward, "SUNDIALS: Suite of
+           Nonlinear and Differential/Algebraic Equation Solvers," ACM TOMS,
+           2005, DOI: 10.1145/1089014.1089020
+        .. [2] D. J. Gardner, D. R. Reynolds, C. S. Woodward, C. J. Balos,
+           "Enabling new flexibility in the SUNDIALS suite of nonlinear and
+           differential/algebraic equation solvers," ACM TOMS, 2022,
+           DOI: 10.1145/3539801
+        .. [3] J. W. Demmel, J. R. Gilbert, and X. S. Li, "An Asynchronous
+           Parallel Supernodal Algorithm for Sparse Gaussian Elimination,"
+           SIMAX, 1999, DOI: 10.1137/S0895479897317685
 
         Examples
         --------

@@ -99,13 +99,15 @@ For convenience, we also provide the following for your BibTex:
 }
 ```
 
+You should also cite SUNDIALS following their recommendations [here](https://computing.llnl.gov/projects/sundials/publications). Lastly, if you use the sparse linear solver, please cite the SuperLU_MT library using their [reference guide](https://portal.nersc.gov/project/sparse/superlu/referencing.html).
+
 ## Acknowledgements
 scikit-SUNDAE was originally inspired by [scikits-odes](https://scikits-odes.readthedocs.io/) which also offers Python bindings to SUNDIALS. The API for scikit-SUNDAE was mostly adopted from scikits-odes; however, all of our source code is original. If you are comparing the two:
 
 1. **scikits-odes:** includes iterative solvers and some optional solvers (e.g., LAPACK). The package only provides source distributions, so users must configure and compile SUNDAILS on their own.
-2. **scikit-SUNDAE:** includes more flexible events function capabilities (e.g., direction detection and terminal flags), scipy-like output, and provides both binary and source distributions. Iterative and optional solvers are not available.
+2. **scikit-SUNDAE:** includes sparse solvers, more flexible events function capabilities (e.g., direction detection and terminal flags), scipy-like output, and provides both binary and source distributions. Iterative and optional solvers are not available.
 
-Our binary distributions include pre-compiled dynamic SUNDIALS libraries. These are self-contained and will not affect other, existing installations you may already have. To be in compliance with SUNDIALS distribution requirements, all scikit-SUNDAE distributions include a copy of the [SUNDIALS license](https://github.com/LLNL/sundials/blob/main/LICENSE).
+Our binary distributions include pre-compiled dynamic SUNDIALS libraries that also reference libraries like SuperLU_MT and OpenBLAS. These are self-contained and will not affect other, existing installations you may already have. To be in compliance with each library's distribution requirements, all scikit-SUNDAE distributions include a summary of all licenses (see the `LICENSES_bundled` file).
 
 ## Contributing
 If you'd like to contribute to this package, please look through the existing [issues](https://github.com/NREL/scikit-sundae/issues). If the bug you've caught or the feature you'd like to add isn't already reported, please submit a new issue. You should also read through the [developer guidelines](https://scikit-sundae.readthedocs.io/en/latest/development/) if you plan to work on the issue yourself.
