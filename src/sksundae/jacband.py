@@ -35,7 +35,8 @@ def _cvode_pattern(rhsfn: Callable, t0: float, y0: ndarray,
     srur = np.sqrt(uround)
 
     # perturbed variables
-    y = np.maximum(srur, y0)
+    sign_y = (y0 >= 0).astype(float) * 2 - 1
+    y = sign_y * np.maximum(uround, np.abs(y0))
 
     # initial derivatives
     yp_0 = np.zeros_like(y)
@@ -88,8 +89,11 @@ def _ida_pattern(resfn: Callable, t0: float, y0: ndarray, yp0: ndarray = None,
     srur = np.sqrt(uround)
 
     # perturbed variables
-    y = np.maximum(srur, y0)
-    yp = np.maximum(srur, yp0)
+    sign_y = (y0 >= 0).astype(float) * 2 - 1
+    y = sign_y * np.maximum(uround, np.abs(y0))
+
+    sign_yp = (yp0 >= 0).astype(float) * 2 - 1
+    yp = sign_yp * np.maximum(uround, np.abs(yp0))
 
     # initial residuals
     res_0 = np.zeros_like(y)
