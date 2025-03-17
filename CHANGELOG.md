@@ -3,19 +3,21 @@
 ## [Unreleased](https://github.com/NREL/scikit-sundae/)
 
 ### New Features
-- Expose linear solver option that uses SuperLU_MT ([PR #6](https://github.com/NREL/scikit-sundae/pull/6))
-- New `jacband` module for support finding sparsity/bandwidth ([PR #6](https://github.com/NREL/scikit-sundae/pull/6))
-- Custom `sparseDQJac` routines available by supplying `sparsity` ([PR #6](https://github.com/NREL/scikit-sundae/pull/6))
-- Changed signature inspections to support decorated `jit` functions ([PR #3](https://github.com/NREL/scikit-sundae/pull/3))
+- Expose linear solver option that uses SuperLU_MT ([#6](https://github.com/NREL/scikit-sundae/pull/6))
+- New `jacband` module for support finding sparsity/bandwidth ([#6](https://github.com/NREL/scikit-sundae/pull/6))
+- Custom `sparseDQJac` routines available by supplying `sparsity` ([#6](https://github.com/NREL/scikit-sundae/pull/6))
+- Changed signature inspections to support decorated `jit` functions ([#3](https://github.com/NREL/scikit-sundae/pull/3))
 
 ### Optimizations
-- Use `micromamba` instead of `miniconda` in CI ([PR #3](https://github.com/NREL/scikit-sundae/pull/3))
-- Updates to be compliant with Cython deprecations of `IF/ELIF/ELSE` and `DEF` ([PR #5](https://github.com/NREL/scikit-sundae/pull/5))
-- Replace loops that write data between 1D numpy arrays and SUNDIALS NVectors in favor of single-line memory views with pointer addressing ([PR #5](https://github.com/NREL/scikit-sundae/pull/5))
+- Use `micromamba` instead of `miniconda` in CI ([#3](https://github.com/NREL/scikit-sundae/pull/3))
+- Updates to be compliant with Cython deprecations of `IF/ELIF/ELSE` and `DEF` ([#5](https://github.com/NREL/scikit-sundae/pull/5))
+- Replace loops that write data between 1D numpy arrays and SUNDIALS NVectors in favor of single-line memory views with pointer addressing ([#5](https://github.com/NREL/scikit-sundae/pull/5))
 
 ### Bug Fixes
+- Add `sign_y` terms and default to `np.float64` for floating type in `j_pattern` ([#7](https://github.com/NREL/scikit-sundae/pull/7))
 
 ### Breaking Changes
+None.
 
 ## [v1.0.0](https://github.com/NREL/scikit-sundae/tree/v1.0.0)
 This is the first official release of scikit-SUNDAE. Main features/capabilities are listed below.
