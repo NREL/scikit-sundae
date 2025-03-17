@@ -1,4 +1,4 @@
-# mstructs.py
+# jacband.py
 
 from __future__ import annotations
 from typing import Callable, Any, TYPE_CHECKING
@@ -31,7 +31,8 @@ def _cvode_pattern(rhsfn: Callable, t0: float, y0: ndarray,
         raise ValueError("'rhsfn' signature must have either 3 or 4 inputs.")
 
     # recommended minimum perturbation
-    uround = np.finfo(y0.dtype).eps
+    dtype = y0.dtype if np.issubdtype(y0.dtype, np.floating) else np.float64
+    uround = np.finfo(dtype).eps
     srur = np.sqrt(uround)
 
     # perturbed variables
@@ -85,7 +86,8 @@ def _ida_pattern(resfn: Callable, t0: float, y0: ndarray, yp0: ndarray = None,
         raise ValueError("'rhsfn' signature must have either 4 or 5 inputs.")
 
     # recommended minimum perturbation
-    uround = np.finfo(y0.dtype).eps
+    dtype = y0.dtype if np.issubdtype(y0.dtype, np.floating) else np.float64
+    uround = np.finfo(dtype).eps
     srur = np.sqrt(uround)
 
     # perturbed variables

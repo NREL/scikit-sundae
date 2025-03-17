@@ -38,7 +38,7 @@ a separate, independent package. During development we prioritized:
 1. Using scipy-like output containers
 2. Adopting event function APIs like `scipy.integrate`_, with a few exceptions
 3. Maintaining and testing builds using SUNDIALS releases on `conda-forge`_
-4. Setuping the package for binary distribution
+4. Setting up the package for binary distribution
 
 Since scikit-SUNDAE installations may include pre-built SUNDIALS libraries, a
 `bundled license file`_ is included with all distributions. The bundled license
