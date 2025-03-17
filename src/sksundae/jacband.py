@@ -1,4 +1,4 @@
-# mstructs.py
+# jacband.py
 
 from __future__ import annotations
 from typing import Callable, Any, TYPE_CHECKING
@@ -31,11 +31,13 @@ def _cvode_pattern(rhsfn: Callable, t0: float, y0: ndarray,
         raise ValueError("'rhsfn' signature must have either 3 or 4 inputs.")
 
     # recommended minimum perturbation
-    uround = np.finfo(y0.dtype).eps
+    dtype = y0.dtype if np.issubdtype(y0.dtype, np.floating) else np.float64
+    uround = np.finfo(dtype).eps
     srur = np.sqrt(uround)
 
     # perturbed variables
-    y = np.maximum(srur, y0)
+    sign_y = (y0 >= 0).astype(float) * 2 - 1
+    y = sign_y * np.maximum(uround, np.abs(y0))
 
     # initial derivatives
     yp_0 = np.zeros_like(y)
@@ -84,12 +86,16 @@ def _ida_pattern(resfn: Callable, t0: float, y0: ndarray, yp0: ndarray = None,
         raise ValueError("'rhsfn' signature must have either 4 or 5 inputs.")
 
     # recommended minimum perturbation
-    uround = np.finfo(y0.dtype).eps
+    dtype = y0.dtype if np.issubdtype(y0.dtype, np.floating) else np.float64
+    uround = np.finfo(dtype).eps
     srur = np.sqrt(uround)
 
     # perturbed variables
-    y = np.maximum(srur, y0)
-    yp = np.maximum(srur, yp0)
+    sign_y = (y0 >= 0).astype(float) * 2 - 1
+    y = sign_y * np.maximum(uround, np.abs(y0))
+
+    sign_yp = (yp0 >= 0).astype(float) * 2 - 1
+    yp = sign_yp * np.maximum(uround, np.abs(yp0))
 
     # initial residuals
     res_0 = np.zeros_like(y)
