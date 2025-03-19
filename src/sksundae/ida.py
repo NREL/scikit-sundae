@@ -164,7 +164,7 @@ class IDA:
         --------
         The following example solves the Robertson problem, which is a classic
         test problem for programs that solve stiff ODEs. A full description of
-        the problem is provided by `MATLAB`_. Note that while initializing the
+        the problem is provided by `MATLAB <Rob-Ex_>`_. While initializing the
         solver, ``algebraic_idx=[2]`` specifies ``y[2]`` is purely algebraic,
         and ``calc_initcond='yp0'`` tells the solver to determine the values
         for 'yp0' at 'tspan[0]' before starting to integrate. That is why 'yp0'
@@ -172,7 +172,7 @@ class IDA:
         to the residuals expressions actually gives ``yp0 = [-0.04, 0.04, 0]``.
         The initialization is checked against the correct answer after solving.
 
-        .. _MATLAB:
+        .. _Rob-Ex:
             https://mathworks.com/help/matlab/math/
             solve-differential-algebraic-equations-daes.html
 
