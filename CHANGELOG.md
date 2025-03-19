@@ -3,15 +3,16 @@
 ## [Unreleased](https://github.com/NREL/scikit-sundae/)
 
 ### New Features
+- Allow `numpy` types in options checks for both `CVODE` and `IDA` ([#8](https://github.com/NREL/scikit-sundae/pull/8))
 - Expose linear solver option that uses SuperLU_MT ([#6](https://github.com/NREL/scikit-sundae/pull/6))
 - New `jacband` module for support finding sparsity/bandwidth ([#6](https://github.com/NREL/scikit-sundae/pull/6))
 - Custom `sparseDQJac` routines available by supplying `sparsity` ([#6](https://github.com/NREL/scikit-sundae/pull/6))
 - Changed signature inspections to support decorated `jit` functions ([#3](https://github.com/NREL/scikit-sundae/pull/3))
 
 ### Optimizations
-- Use `micromamba` instead of `miniconda` in CI ([#3](https://github.com/NREL/scikit-sundae/pull/3))
 - Updates to be compliant with Cython deprecations of `IF/ELIF/ELSE` and `DEF` ([#5](https://github.com/NREL/scikit-sundae/pull/5))
-- Replace loops that write data between 1D numpy arrays and SUNDIALS NVectors in favor of single-line memory views with pointer addressing ([#5](https://github.com/NREL/scikit-sundae/pull/5))
+- Replace loops between 1D numpy arrays and SUNDIALS NVectors with single-line memory views and pointer addressing ([#5](https://github.com/NREL/scikit-sundae/pull/5))
+- Use `micromamba` instead of `miniconda` in CI ([#3](https://github.com/NREL/scikit-sundae/pull/3))
 
 ### Bug Fixes
 - Add `sign_y` terms and default to `np.float64` for floating type in `j_pattern` ([#7](https://github.com/NREL/scikit-sundae/pull/7))
