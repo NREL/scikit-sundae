@@ -73,6 +73,8 @@ def resfn(t, y, yp, res):
 solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0')
 soln = solver.solve([4e-6, 4e6], [1, 0, 0], [0, 0, 0])
 
+soln.y[:, 1] *= 1e4  # scale y1 so it is visible in the figure
+
 plt.plot(soln.t, soln.y)
 plt.legend(['y0', 'y1', 'y2'])
 plt.show()
