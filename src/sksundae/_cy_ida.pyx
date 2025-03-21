@@ -375,10 +375,12 @@ cdef class IDA:
     cdef _create_linsolver(self):
         
         if self._options["linsolver"].lower() == "dense":
+            method = "direct"
             self.A = SUNDenseMatrix(self.NEQ, self.NEQ, self.ctx)
             self.LS = SUNLinSol_Dense(self.yy, self.A, self.ctx)
 
         elif self._options["linsolver"].lower() == "band":
+            method = "direct"
             uband = <int> self._options["uband"]
             lband = <int> self._options["lband"]
 
@@ -386,13 +388,26 @@ cdef class IDA:
             self.LS = SUNLinSol_Band(self.yy, self.A, self.ctx)
 
         elif self._options["linsolver"].lower() == "sparse":
+            method = "direct"
             nnz = <sunindextype> self._options["sparsity"].nnz
             nthreads = <int> self._options["nthreads"]
 
             self.A = SUNSparseMatrix(self.NEQ, self.NEQ, nnz, CSC_MAT, self.ctx)
             self.LS = SUNLinSol_SuperLUMT(self.yy, self.A, nthreads, self.ctx)
 
-        if self.A is NULL:
+        elif self._options["linsolver"].lower() == "gmres":
+            method = "iteratrive"
+            self.LS = SUNLinSol_SPGMR(self.yy, SUN_PREC_NONE, 0, self.ctx)
+
+        elif self._options["linsolver"].lower() == "bicgstab":
+            method = "iteratrive"
+            self.LS = SUNLinSol_SPBCGS(self.yy, SUN_PREC_NONE, 0, self.ctx)
+
+        elif self._options["linsolver"].lower() == "tfqmr":
+            method = "iteratrive"
+            self.LS = SUNLinSol_SPTFQMR(self.yy, SUN_PREC_NONE, 0, self.ctx)
+
+        if method == "direct" and self.A is NULL:
             raise MemoryError("SUNMatrix constructor returned NULL.")
         elif self.LS is NULL:
             raise MemoryError("SUNLinSol constructor returned NULL.")
@@ -1114,7 +1129,7 @@ def _check_options(options: dict) -> None:
         raise TypeError("When iterable, all 'atol' values must be float.")
 
     # linsolver
-    valid =  {"dense", "band", "sparse"}
+    valid =  {"dense", "band", "sparse", "gmres", "bicgstab", "tfqmr"}
     linsolver = options["linsolver"].lower()
     if not isinstance(linsolver, str):
         raise TypeError("'linsolver' must be type str.")
