@@ -8,6 +8,12 @@ from ._cy_ida import IDA as _IDA, IDAResult as _IDAResult
 if TYPE_CHECKING:  # pragma: no cover
     from numpy import ndarray
 
+# Extra text for linsolver once LAPACK gets added:
+# ------------------------------------------------
+# 'lapackdense' and 'lapackband' can also be used as alternatives to
+# 'dense' and 'band'. They use OpenBLAS-linked LAPACK [4]_ routines,
+# but have noticeable overhead for small (<100) systems.
+
 
 class IDA:
     """SUNDIALS IDA solver."""
@@ -54,10 +60,9 @@ class IDA:
             eqch variable. The default is 1e-6.
         linsolver : {'dense', 'band', 'sparse', ...}, optional
             Choice of linear solver, default 'dense'. 'band' requires that both
-            'lband' and 'uband' be set. 'sparse' uses uses SuperLU_MT [3]_ and
-            requires 'sparsity' be set. When using iterative methods ('gmres',
-            'bicgstab', 'tfqmr') the number of Krylov basis vectors can be set
-            using 'krylov_dim'.
+            'lband' and 'uband'. 'sparse' uses SuperLU_MT [3]_ and requires
+            'sparsity'. When using an iterative method ('gmres', 'bicgstab',
+            'tfqmr') the number of Krylov dimensions is set using 'krylov_dim'.
         lband : int or None, optional
             Lower Jacobian bandwidth. Given a DAE system ``0 = F(t, y, yp)``,
             the Jacobian is ``J = dF_i/dy_j + cj*dF_i/dyp_j``. Required when

@@ -8,6 +8,12 @@ from ._cy_cvode import CVODE as _CVODE, CVODEResult as _CVODEResult
 if TYPE_CHECKING:  # pragma: no cover
     from numpy import ndarray
 
+# Extra text for linsolver once LAPACK gets added:
+# ------------------------------------------------
+# 'lapackdense' and 'lapackband' can also be used as alternatives to
+# 'dense' and 'band'. They use OpenBLAS-linked LAPACK [4]_ routines,
+# but have noticeable overhead for small (<100) systems.
+
 
 class CVODE:
     """SUNDIALS CVODE solver."""
@@ -47,10 +53,9 @@ class CVODE:
             eqch variable. The default is 1e-6.
         linsolver : {'dense', 'band', 'sparse', ...}, optional
             Choice of linear solver, default 'dense'. 'band' requires that both
-            'lband' and 'uband' be set. 'sparse' uses uses SuperLU_MT [3]_ and
-            requires 'sparsity' be set. When using iterative methods ('gmres',
-            'bicgstab', 'tfqmr') the number of Krylov basis vectors can be set
-            using 'krylov_dim'.
+            'lband' and 'uband'. 'sparse' uses SuperLU_MT [3]_ and requires
+            'sparsity'. When using an iterative method ('gmres', 'bicgstab',
+            'tfqmr') the number of Krylov dimensions is set using 'krylov_dim'.
         lband : int or None, optional
             Lower Jacobian bandwidth. Given an ODE system ``yp = f(t, y)``,
             the Jacobian is ``J = df_i/dy_j``. Required when 'linsolver' is
