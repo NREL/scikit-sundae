@@ -57,7 +57,9 @@ DAEs with no algebraic constraints).
 **Useful links:** 
 `SUNDIALS <https://sundials.readthedocs.io/en/latest/>`_ |
 `conda-forge/sundials <https://anaconda.org/conda-forge/sundials>`_ | 
-`github/sundials-feedstock <https://github.com/conda-forge/sundials-feedstock>`_
+`anaconda <https://www.anaconda.com/download>`_ |
+`numpy <https://numpy.org/doc/stable>`_ |
+`scipy <https://docs.scipy.org/doc/scipy>`_ 
 
 .. grid:: 1 2 2 2
 
