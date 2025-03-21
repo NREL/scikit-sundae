@@ -7,8 +7,8 @@ from sksundae.cvode import CVODE
 def ode(t, y, yp):
     yp[0] = 0.1
     yp[1] = y[1]
-    
-    
+
+
 def ode_soln(t, y0):
     if hasattr(t, 'size'):
         y = np.zeros([t.size, 2])
@@ -19,8 +19,8 @@ def ode_soln(t, y0):
         y[0] = 0.1*t + y0[0]
         y[1] = y0[1]*np.exp(t)
     return y
-    
-    
+
+
 @pytest.mark.parametrize('linsolver', ('gmres', 'bicgstab', 'tfqmr'))
 def test_iterative_no_precond(linsolver):
     y0 = np.array([1, 2])
@@ -36,14 +36,14 @@ def test_iterative_no_precond(linsolver):
     soln = solver.solve(tspan, y0)
     assert len(tspan) == 2 and len(soln.t) > 2
     assert np.allclose(soln.y, ode_soln(soln.t, y0))
-    
-    
+
+
 @pytest.mark.parametrize('linsolver', ('gmres', 'bicgstab', 'tfqmr'))
 def test_incompatible_options(linsolver):
 
     def jacfn(t, y, yp, JJ):
         pass
-    
+
     with pytest.raises(ValueError):
         _ = CVODE(ode, linsolver=linsolver, sparisty=np.eye(2))
 
