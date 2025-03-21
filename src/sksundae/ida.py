@@ -52,11 +52,12 @@ class IDA:
             Absolute tolerance. A scalar will apply to all variables equally,
             while an array (matching 'y' length) sets specific tolerances for
             eqch variable. The default is 1e-6.
-        linsolver : {'dense', 'band', 'sparse'}, optional
-            Choice of linear solver. When using 'band', don't forget to provide
-            'lband' and 'uband' values. Using 'sparse' requires that 'sparsity'
-            also be set. The 'sparse' option uses SuperLU_MT [3]_. The default
-            is 'dense'.
+        linsolver : {'dense', 'band', 'sparse', ...}, optional
+            Choice of linear solver, default 'dense'. 'band' requires that both
+            'lband' and 'uband' be set. 'sparse' uses uses SuperLU_MT [3]_ and
+            requires 'sparsity' be set. When using iterative methods ('gmres',
+            'bicgstab', 'tfqmr') the number of Krylov basis vectors can be set
+            using 'krylov_dim'.
         lband : int or None, optional
             Lower Jacobian bandwidth. Given a DAE system ``0 = F(t, y, yp)``,
             the Jacobian is ``J = dF_i/dy_j + cj*dF_i/dyp_j``. Required when
@@ -70,11 +71,16 @@ class IDA:
             The shape must be (N, N) where N is the size of the system. Zero
             entries indicate fixed zeros in the Jacobian. If 'jacfn' is None,
             this argument will activate a custom Jacobian routine. The routine
-            works with all linear solvers but may increase step count. Reduce
-            'max_step' to help with this, if needed. The default is None.
+            works with all direct linear solvers but may increase step count.
+            Reduce 'max_step' to help with this, if needed. Defaults to None.
         nthreads : int or None, optional
             Number of threads to use with the 'sparse' linear solver. If None
             (default), 1 is used. Use -1 to use all available threads.
+        krylov_dim : int or None, optional
+            Maximum number of Krylov basis vectors for iterative solvers. Will
+            default to 5 if invalid/None when required. Larger values improve
+            convergence but increase memory usage. Only applies to the 'gmres',
+            'bicgstab', and 'tfqmr' linear solvers.
         max_order : int, optional
             Specifies the maximum order for the linear multistep BDF method.
             The value must be in the range [1, 5]. The default is 5.

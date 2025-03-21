@@ -36,3 +36,16 @@ def test_iterative_no_precond(linsolver):
     soln = solver.solve(tspan, y0)
     assert len(tspan) == 2 and len(soln.t) > 2
     assert np.allclose(soln.y, ode_soln(soln.t, y0))
+    
+    
+@pytest.mark.parametrize('linsolver', ('gmres', 'bicgstab', 'tfqmr'))
+def test_incompatible_options(linsolver):
+
+    def jacfn(t, y, yp, JJ):
+        pass
+    
+    with pytest.raises(ValueError):
+        _ = CVODE(ode, linsolver=linsolver, sparisty=np.eye(2))
+
+    with pytest.raises(ValueError):
+        _ = CVODE(ode, linsolver=linsolver, jacfn=jacfn)
