@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/NREL/scikit-sundae/)
 
 ### New Features
+- Add iterative linear solvers to IDA and CVODE ([#10](https://github.com/NREL/scikit-sundae/pull/10))
 - Allow `numpy` types in options checks for both `CVODE` and `IDA` ([#8](https://github.com/NREL/scikit-sundae/pull/8))
 - Expose linear solver option that uses SuperLU_MT ([#6](https://github.com/NREL/scikit-sundae/pull/6))
 - New `jacband` module for support finding sparsity/bandwidth ([#6](https://github.com/NREL/scikit-sundae/pull/6))
