@@ -351,6 +351,7 @@ cdef class IDA:
             "uband": None,
             "sparsity": None,
             "nthreads": None,
+            "krylov_dim": None,
             "max_order": 5,
             "max_num_steps": 500,
             "max_nonlin_iters": 4,
@@ -373,26 +374,42 @@ cdef class IDA:
         self._initialized = False
 
     cdef _create_linsolver(self):
+        direct_solvers = {"dense", "band", "sparse"}
+        iterative_solvers = {"gmres", "bicgstab", "tfqmr"}
+
+        linsolver = self._options["linsolver"].lower()
         
-        if self._options["linsolver"].lower() == "dense":
+        if linsolver == "dense":
             self.A = SUNDenseMatrix(self.NEQ, self.NEQ, self.ctx)
             self.LS = SUNLinSol_Dense(self.yy, self.A, self.ctx)
 
-        elif self._options["linsolver"].lower() == "band":
+        elif linsolver == "band":
             uband = <int> self._options["uband"]
             lband = <int> self._options["lband"]
 
             self.A = SUNBandMatrix(self.NEQ, uband, lband, self.ctx)
             self.LS = SUNLinSol_Band(self.yy, self.A, self.ctx)
 
-        elif self._options["linsolver"].lower() == "sparse":
+        elif linsolver == "sparse":
             nnz = <sunindextype> self._options["sparsity"].nnz
             nthreads = <int> self._options["nthreads"]
 
             self.A = SUNSparseMatrix(self.NEQ, self.NEQ, nnz, CSC_MAT, self.ctx)
             self.LS = SUNLinSol_SuperLUMT(self.yy, self.A, nthreads, self.ctx)
 
-        if self.A is NULL:
+        elif linsolver == "gmres":
+            maxl = <int> self._options["krylov_dim"]
+            self.LS = SUNLinSol_SPGMR(self.yy, SUN_PREC_NONE, maxl, self.ctx)
+
+        elif linsolver == "bicgstab":
+            maxl = <int> self._options["krylov_dim"]
+            self.LS = SUNLinSol_SPBCGS(self.yy, SUN_PREC_NONE, maxl, self.ctx)
+
+        elif linsolver == "tfqmr":
+            maxl = <int> self._options["krylov_dim"]
+            self.LS = SUNLinSol_SPTFQMR(self.yy, SUN_PREC_NONE, maxl, self.ctx)
+
+        if (linsolver in direct_solvers) and (self.A is NULL):
             raise MemoryError("SUNMatrix constructor returned NULL.")
         elif self.LS is NULL:
             raise MemoryError("SUNLinSol constructor returned NULL.")
@@ -1114,7 +1131,11 @@ def _check_options(options: dict) -> None:
         raise TypeError("When iterable, all 'atol' values must be float.")
 
     # linsolver
-    valid =  {"dense", "band", "sparse"}
+    direct_solvers = {"dense", "band", "sparse"}
+    iterative_solvers = {"gmres", "bicgstab", "tfqmr"}
+    
+    valid = direct_solvers | iterative_solvers
+
     linsolver = options["linsolver"].lower()
     if not isinstance(linsolver, str):
         raise TypeError("'linsolver' must be type str.")
@@ -1159,6 +1180,10 @@ def _check_options(options: dict) -> None:
     elif sparsity.shape[0] != sparsity.shape[1]:
         raise ValueError("'sparsity' must be a square matrix.")
 
+    if (linsolver in iterative_solvers) and (sparsity is not None):
+        raise ValueError("'sparsity' is not compatitle with iterative linear"
+                         f" solvers: {iterative_solvers}.")
+
     options["sparsity"] = sparsity  # save update to CSC sparse, if done
 
     # nthreads
@@ -1175,6 +1200,21 @@ def _check_options(options: dict) -> None:
             raise TypeError("'nthreads' must be type int.")
 
         options["nthreads"] = nthreads  # save defaults update, if done
+
+    # krylov_dim
+    krylov_dim = options["krylov_dim"]
+    if linsolver in iterative_solvers:
+        if krylov_dim is None:
+            krylov_dim = 5
+        elif krylov_dim < 0:
+            krylov_dim = 5
+        elif not isinstance(krylov_dim, Integral):
+            raise TypeError("'krylov_dim' must be type int.")
+
+        options["krylov_dim"] = krylov_dim  # save defaults update, if done
+
+    elif (linsolver in direct_solvers) and (krylov_dim is not None):
+        warn("Ignoring 'krylov_dim' since 'linsolver' is not iterative.")
 
     # consistency between linsolver and lband/uband
     if linsolver == "band" and (lband is None or uband is None):
@@ -1280,6 +1320,10 @@ def _check_options(options: dict) -> None:
     else:
         expected = (6 + with_userdata,)
         _ = _check_signature("jacfn", jacfn, expected)
+
+    if jacfn and linsolver in iterative_solvers:
+        raise ValueError("'jacfn' is not compatitle with iterative linear"
+                         f" solvers: {iterative_solvers}.")
 
     # preference between sparsity and jacfn
     if (sparsity is not None) and (jacfn is not None):

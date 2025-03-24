@@ -155,6 +155,9 @@ def get_extensions():
         'sundials_sunmatrixdense',
         'sundials_sunmatrixband',
         'sundials_sunmatrixsparse',
+        'sundials_sunlinsolspgmr',
+        'sundials_sunlinsolspbcgs',
+        'sundials_sunlinsolsptfqmr',
     ]
 
     MACROS = [('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')]

@@ -61,3 +61,11 @@ cdef extern from "sundials/sundials_linearsolver.h":
     ctypedef _SUNLinearSolver* SUNLinearSolver
 
     int SUNLinSolFree(SUNLinearSolver LS)
+
+# sundials_iterative.h
+cdef extern from "sundials/sundials_iterative.h":
+    cdef enum:
+        SUN_PREC_NONE
+        SUN_PREC_LEFT
+        SUN_PREC_RIGHT
+        SUN_PREC_BOTH

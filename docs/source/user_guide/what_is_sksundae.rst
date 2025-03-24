@@ -20,8 +20,8 @@ Bindings limitations
 ====================
 While scikit-SUNDAE brings the powerful functionality of CVODE and IDA into the Python ecosystem, it does not wrap every feature available in the SUNDIALS library. In particular:
 
-* Only direct solvers are currently included. There is no access to the iterative solvers. If you need access to these, we recommend using `scikits-odes <https://scikits-odes.readthedocs.io/>`_ instead.
-* The package focuses on providing access to the SUNDIALS serial vector interface and default linear/nonlinear solvers. Where appropriate, optional solvers licensed under BSD-3 may also be incorporated (e.g., SuperLU_MT and OpenBLAS).
+* Iterative linear solvers have limited options: no preconditioning or Jacobian-vector products. If you need access to these, we recommend using `scikits-odes <https://scikits-odes.readthedocs.io/>`_ instead.
+* The package focuses on providing access to the SUNDIALS serial vector interface and default linear/nonlinear solvers. Where appropriate, optional solvers licensed under BSD-3 may also be incorporated (e.g., SuperLU_MT, OpenBLAS, and LAPACK).
 * There are no plans to wrap advanced parallel vector interfaces (e.g., MPI, PThreads, CUDA, etc.) nor optional solvers (e.g., KLU) that may have licensing conflicts with our BSD-3.
 
 While scikit-SUNDAE offers a convenient interface to key solvers in the SUNDIALS suite, there is no intention to wrap the entire SUNDIALS library. Given the large number of optional solvers and interfaces available (shown in the figure below), wrapping everything would be a significant challenge. Instead, scikit-SUNDAE focuses on providing efficient and streamlined access to the essential features of the CVODE and IDA integrators, ensuring the package remains lightweight and user-friendly.
@@ -38,7 +38,13 @@ We also acknowledge the `scikits-odes <https://scikits-odes.readthedocs.io/>`_ p
 
 If you are comparing scikits-odes to scikit-SUNDAE, you should consider the following differences:
 
-* **scikits-odes** includes iterative solvers and some optional solvers (e.g., LAPACK). The package only provides source distributions, so users must configure and compile SUNDAILS on their own.
-* **scikit-SUNDAE** includes sparse solvers, more flexible events function capabilities (e.g., direction detection and terminal flags), scipy-like output, and provides both binary and source distributions. Users not already familiar with SUNDIALS will likely prefer scikit-SUNDAE due to the streamlined installation process.
+* **scikits-odes:** includes preconditioner and Jacobian-vector product interfaces for the iterative linear solvers. The package only provides source distributions, so users must configure and compile SUNDAILS on their own. By not providing binary distributions scikits-odes does not have to worry about licensing conflicts.
+* **scikit-SUNDAE:** includes sparse solvers, more flexible events function capabilities (e.g., direction detection and terminal flags), scipy-like output, and provides both binary and source distributions. Iterative solver options are more limited: no preconditioning, no user-defined Jacobian-vector products.
 
+Our binary distributions include pre-compiled dynamic SUNDIALS libraries that also reference libraries like SuperLU_MT, OpenBLAS, and LAPACK. These are self-contained and will not affect other, existing installations you may already have. To be in compliance with each library's distribution requirements, all scikit-SUNDAE distributions include a summary of all licenses (see the `LICENSES_bundled`_ file). Note that we only link against and distribute packages with BSD-3 license. Some solvers and options, like KLU, have LGPL licenses and therefore will not be compatible to implement/distribute.
+
+.. _LICENSES_bundled: https://github.com/NREL/scikit-sundae/blob/main/LICENSES_bundled
+
+Disclaimer
+==========
 scikit-SUNDAE was authored by the National Renewable Energy Laboratory (NREL), operated by Alliance for Sustainable Energy, LLC, for the U.S. Department of Energy (DOE). The views expressed in the project and documentation do not necessarily represent the views of the DOE or the U.S. Government.
