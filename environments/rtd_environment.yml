@@ -4,5 +4,6 @@ channels:
 dependencies:
   - python=3.13
   - sundials=7.2
+  - libblas=*=*openblas
   - pip:
     - ../.[docs]

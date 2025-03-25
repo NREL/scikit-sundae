@@ -128,7 +128,7 @@ def get_extensions():
         superlu_threads = None
 
     if 'SUNDIALS_BLAS_LAPACK_ENABLED' in config:
-        has_lapack = True
+        has_lapack = False
     else:
         has_lapack = False
 
