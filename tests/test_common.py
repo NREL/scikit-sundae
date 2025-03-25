@@ -11,7 +11,7 @@ def test_expected_config():
     assert config['SUNDIALS_INT_TYPE'] == 'int'
     assert config['SUNDIALS_SUPERLUMT_ENABLED'] == 'True'
     assert config['SUNDIALS_SUPERLUMT_THREAD_TYPE'] == 'OPENMP'
-    assert config['SUNDIALS_BLAS_LAPACK_ENABLED'] == 'False'
+    assert config['SUNDIALS_BLAS_LAPACK_ENABLED'] == 'True'
 
 
 def test_RichResult():
