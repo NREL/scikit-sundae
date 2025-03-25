@@ -8,12 +8,6 @@ from ._cy_cvode import CVODE as _CVODE, CVODEResult as _CVODEResult
 if TYPE_CHECKING:  # pragma: no cover
     from numpy import ndarray
 
-# Extra text for linsolver once LAPACK gets added:
-# ------------------------------------------------
-# 'lapackdense' and 'lapackband' can also be used as alternatives to
-# 'dense' and 'band'. They use OpenBLAS-linked LAPACK [4]_ routines,
-# but have noticeable overhead for small (<100) systems.
-
 
 class CVODE:
     """SUNDIALS CVODE solver."""
@@ -56,6 +50,9 @@ class CVODE:
             'lband' and 'uband'. 'sparse' uses SuperLU_MT [3]_ and requires
             'sparsity'. When using an iterative method ('gmres', 'bicgstab',
             'tfqmr') the number of Krylov dimensions is set using 'krylov_dim'.
+            'lapackdense' and 'lapackband' can also be used as alternatives to
+            'dense' and 'band'. They use OpenBLAS-linked LAPACK [4]_ routines,
+            but have noticeable overhead for small (<100) systems.
         lband : int or None, optional
             Lower Jacobian bandwidth. Given an ODE system ``yp = f(t, y)``,
             the Jacobian is ``J = df_i/dy_j``. Required when 'linsolver' is
@@ -163,6 +160,10 @@ class CVODE:
         .. [3] J. W. Demmel, J. R. Gilbert, and X. S. Li, "An Asynchronous
            Parallel Supernodal Algorithm for Sparse Gaussian Elimination,"
            SIMAX, 1999, DOI: 10.1137/S0895479897317685
+        .. [4] E. Anderson, Z. Bai, C. Bischof, S. Blackford, J. Demmel, J.
+           Dongarra, J. Du Croz, A. Greenbaum, S. Hammarling, A. McKenney, D.
+           Sorensen, "LAPACK Users' Guide," Society for Industrial and Applied
+           Mathematics, 1999, Philidelphia, PA.
 
         Examples
         --------

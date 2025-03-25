@@ -32,7 +32,7 @@ While scikit-SUNDAE offers a convenient interface to key solvers in the SUNDIALS
 
 Acknowledgements
 ================
-We extend our appreciation to the developers and maintainers of the SUNDIALS project for their exceptional work in creating a robust, reliable, and open-source suite of solvers. Full details on the SUNDIALS license and copyright information can be found `here <https://github.com/LLNL/sundials/blob/main/LICENSE>`_. For the sparse solver implementation we would also like to thank the developers of `SuperLU_MT <https://github.com/xiaoyeli/superlu_mt>`.
+We extend our appreciation to the developers and maintainers of the SUNDIALS project for their exceptional work in creating a robust, reliable, and open-source suite of solvers. Full details on the SUNDIALS license and copyright information can be found `here <https://github.com/LLNL/sundials/blob/main/LICENSE>`_. For the sparse solver implementation we would also like to thank the developers of `SuperLU_MT <https://github.com/xiaoyeli/superlu_mt>`_.
 
 We also acknowledge the `scikits-odes <https://scikits-odes.readthedocs.io/>`_ package, which similarly provides Python bindings to SUNDIALS. While scikit-SUNDAE's API was largely modeled after scikits-odes to maintain a familiar structure, it is important to note that scikit-SUNDAE is an independently developed package, sharing no source code with scikits-odes.
 

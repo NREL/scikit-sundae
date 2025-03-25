@@ -1,10 +1,9 @@
 name: sun
 channels:
   - conda-forge
-  - defaults
 dependencies:
-  - python=3.12
+  - python=3.13
   - sundials=7.2
-  - pip>=24.3
+  - libblas=*=*openblas
   - pip:
     - ../.[docs]

@@ -6,7 +6,7 @@ from sksundae import cvode
 from sksundae._cy_common import config
 
 N = 10  # number of repeats for Van der Pol problem
-has_superlu = config['SUNDIALS_SUPERLUMT_ENABLED']
+has_superlu = config['SUNDIALS_SUPERLUMT_ENABLED'] == "True"
 
 
 def rhsfn_narrow(t, y, yp):
@@ -26,9 +26,7 @@ def rhsfn_wide(t, y, yp):
 
 
 @pytest.mark.skipif(not has_superlu, reason='SuperLU_MT not enabled')
-def test_w_sparse_solver():
-
-    tspan = np.linspace(0, 3000, 1000)
+def test_sparse_err_warn():
 
     # forgot sparsity
     with pytest.raises(ValueError):
@@ -37,6 +35,12 @@ def test_w_sparse_solver():
     # nthreads ignored if linsolver != 'sparse'
     with pytest.warns(UserWarning):
         _ = cvode.CVODE(rhsfn_narrow, nthreads=-1)
+
+
+@pytest.mark.skipif(not has_superlu, reason='SuperLU_MT not enabled')
+def test_sparse_solver():
+
+    tspan = np.linspace(0, 3000, 1000)
 
     # narrow bandwidth repeating Van der Pol problem, w/ array 'sparsity'
     y0 = np.tile([2, 0], reps=N)
