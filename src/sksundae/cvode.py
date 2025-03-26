@@ -46,13 +46,13 @@ class CVODE:
             while an array (matching 'y' length) sets specific tolerances for
             eqch variable. The default is 1e-6.
         linsolver : {'dense', 'band', 'sparse', ...}, optional
-            Choice of linear solver, default 'dense'. 'band' requires that both
+            Choice of linear solver, defaults to 'dense'. 'band' requires both
             'lband' and 'uband'. 'sparse' uses SuperLU_MT [3]_ and requires
             'sparsity'. When using an iterative method ('gmres', 'bicgstab',
             'tfqmr') the number of Krylov dimensions is set using 'krylov_dim'.
             'lapackdense' and 'lapackband' can also be used as alternatives to
             'dense' and 'band'. They use OpenBLAS-linked LAPACK [4]_ routines,
-            but have noticeable overhead for small (<100) systems.
+            but can have noticeable overhead for small (<100) systems.
         lband : int or None, optional
             Lower Jacobian bandwidth. Given an ODE system ``yp = f(t, y)``,
             the Jacobian is ``J = df_i/dy_j``. Required when 'linsolver' is

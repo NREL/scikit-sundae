@@ -77,11 +77,6 @@ jobs:
           environment-file: environments/ci_environment.yml
           create-args: python=${{ matrix.python-version }}
 
-      - name: Force MKL BLAS/LAPACK on Linux
-        if: runner.os == 'Linux'
-        run: |
-          micromamba install libblas=*=*mkl liblapack=*=*mkl
-
       - name: Verify environment
         run: |
           micromamba info
