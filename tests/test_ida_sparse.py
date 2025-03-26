@@ -6,7 +6,7 @@ from sksundae import ida
 from sksundae._cy_common import config
 
 N = 10  # number of repeats for Robertson problem
-has_superlu = config['SUNDIALS_SUPERLUMT_ENABLED']
+has_superlu = config['SUNDIALS_SUPERLUMT_ENABLED'] == "True"
 
 
 def resfn_narrow(t, y, yp, res):
@@ -30,9 +30,7 @@ def resfn_wide(t, y, yp, res):
 
 
 @pytest.mark.skipif(not has_superlu, reason='SuperLU_MT not enabled')
-def test_w_sparse_solver():
-
-    tspan = 4*np.logspace(-6, 6, 50)
+def test_sparse_err_warn():
 
     # forgot sparsity
     with pytest.raises(ValueError):
@@ -41,6 +39,12 @@ def test_w_sparse_solver():
     # nthreads ignored if linsolver != 'sparse'
     with pytest.warns(UserWarning):
         _ = ida.IDA(resfn_narrow, nthreads=-1)
+
+
+@pytest.mark.skipif(not has_superlu, reason='SuperLU_MT not enabled')
+def test_sparse_solver():
+
+    tspan = 4*np.logspace(-6, 6, 50)
 
     # narrow bandwidth repeating Robertson problem, w/ array 'sparsity'
     y0 = np.tile([1, 0, 0], reps=N)

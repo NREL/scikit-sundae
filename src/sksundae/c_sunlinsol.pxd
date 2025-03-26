@@ -29,3 +29,13 @@ cdef extern from "sunlinsol/sunlinsol_sptfqmr.h":
 cdef extern from "./include/superlumt_wrapper.h":
     SUNLinearSolver SUNLinSol_SuperLUMT(N_Vector y, SUNMatrix A, int nthreads,
                                         SUNContext ctx)
+
+# sunlinsol_lapackdense.h - real or dummy, depending on availability
+cdef extern from "./include/lapackdense_wrapper.h":
+    SUNLinearSolver SUNLinSol_LapackDense(N_Vector y, SUNMatrix A,
+                                          SUNContext ctx)
+
+# sunlinsol_lapackband.h - real or dummy, depending on availability
+cdef extern from "./include/lapackband_wrapper.h":
+    SUNLinearSolver SUNLinSol_LapackBand(N_Vector y, SUNMatrix A,
+                                         SUNContext ctx)

@@ -127,12 +127,18 @@ def get_extensions():
         has_superlu = False
         superlu_threads = None
 
+    if 'SUNDIALS_BLAS_LAPACK_ENABLED' in config:
+        has_lapack = True
+    else:
+        has_lapack = False
+
     with open('src/sksundae/py_config.pxi', 'w') as f:  # Python config
         f.write(f"SUNDIALS_VERSION = \"{SUNDIALS_VERSION}\"\n")
         f.write(f"SUNDIALS_FLOAT_TYPE = \"{precision}\"\n")
         f.write(f"SUNDIALS_INT_TYPE = \"{indexsize}\"\n")
-        f.write(f"SUNDIALS_SUPERLUMT_ENABLED = {has_superlu}\n")
+        f.write(f"SUNDIALS_SUPERLUMT_ENABLED = \"{has_superlu}\"\n")
         f.write(f"SUNDIALS_SUPERLUMT_THREAD_TYPE = \"{superlu_threads}\"\n")
+        f.write(f"SUNDIALS_BLAS_LAPACK_ENABLED = \"{has_lapack}\"\n")
 
     with open('src/sksundae/c_config.pxi', 'w') as f:  # C config
         f.write("cimport numpy as np\n\n")
@@ -176,6 +182,16 @@ def get_extensions():
 
         MACROS.append(('__' + superlu_threads, None))
         MACROS.append(('SUNDIALS_HAS_SUPERLUMT', None))
+
+    # Optional solvers - LAPACK
+    if has_lapack:
+
+        LIBRARIES.extend([
+            'sundials_sunlinsollapackdense',
+            'sundials_sunlinsollapackband',
+        ])
+
+        MACROS.append(('SUNDIALS_HAS_LAPACK', None))
 
     # Define the extension modules
     extensions = [

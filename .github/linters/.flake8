@@ -1,4 +1,3 @@
-[flake8]
 # It is not a bug that we do not enforce the following formatting:
 # ----------------------------------------------------------------
 # E121: allow continuation line under-indented for hanging indent
@@ -13,6 +12,11 @@
 # E241: allow multiple spaces after ‘,’
 # E731: allow assigning a lambda expression
 
+[flake8]
 max-line-length = 80
 extend-ignore = E121,E122,E126,E127,E128,E131,E201,E202,E226,E241,E731
 exclude = build,docs,images,reports,C_programs
+
+[pycodestyle]
+max_line_length = 80
+ignore = E121,E122,E126,E127,E128,E131,E201,E202,E226,E241,E731

@@ -10,6 +10,10 @@ build:
   os: ubuntu-22.04
   tools:
     python: miniconda-latest
+  jobs:
+    post_create_environment:
+      - conda info
+      - conda list
 
 # Conda environment to install sundials
 conda:

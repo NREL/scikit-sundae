@@ -8,12 +8,6 @@ from ._cy_ida import IDA as _IDA, IDAResult as _IDAResult
 if TYPE_CHECKING:  # pragma: no cover
     from numpy import ndarray
 
-# Extra text for linsolver once LAPACK gets added:
-# ------------------------------------------------
-# 'lapackdense' and 'lapackband' can also be used as alternatives to
-# 'dense' and 'band'. They use OpenBLAS-linked LAPACK [4]_ routines,
-# but have noticeable overhead for small (<100) systems.
-
 
 class IDA:
     """SUNDIALS IDA solver."""
@@ -59,10 +53,13 @@ class IDA:
             while an array (matching 'y' length) sets specific tolerances for
             eqch variable. The default is 1e-6.
         linsolver : {'dense', 'band', 'sparse', ...}, optional
-            Choice of linear solver, default 'dense'. 'band' requires that both
+            Choice of linear solver, defaults to 'dense'. 'band' requires both
             'lband' and 'uband'. 'sparse' uses SuperLU_MT [3]_ and requires
             'sparsity'. When using an iterative method ('gmres', 'bicgstab',
             'tfqmr') the number of Krylov dimensions is set using 'krylov_dim'.
+            'lapackdense' and 'lapackband' can also be used as alternatives to
+            'dense' and 'band'. They use OpenBLAS-linked LAPACK [4]_ routines,
+            but can have noticeable overhead for small (<100) systems.
         lband : int or None, optional
             Lower Jacobian bandwidth. Given a DAE system ``0 = F(t, y, yp)``,
             the Jacobian is ``J = dF_i/dy_j + cj*dF_i/dyp_j``. Required when
@@ -170,6 +167,10 @@ class IDA:
         .. [3] J. W. Demmel, J. R. Gilbert, and X. S. Li, "An Asynchronous
            Parallel Supernodal Algorithm for Sparse Gaussian Elimination,"
            SIMAX, 1999, DOI: 10.1137/S0895479897317685
+        .. [4] E. Anderson, Z. Bai, C. Bischof, S. Blackford, J. Demmel, J.
+           Dongarra, J. Du Croz, A. Greenbaum, S. Hammarling, A. McKenney, D.
+           Sorensen, "LAPACK Users' Guide," Society for Industrial and Applied
+           Mathematics, 1999, Philidelphia, PA.
 
         Examples
         --------
