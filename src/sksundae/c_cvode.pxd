@@ -66,14 +66,24 @@ cdef extern from "cvode/cvode.h":
 cdef extern from "cvode/cvode_ls.h":
 
     # user-supplied functions
-    ctypedef int (*CVLsJacFn)(sunrealtype t, N_Vector yy, N_Vector fy, SUNMatrix JJ, void* data,
-                              N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) except? -1
+    ctypedef int (*CVLsJacFn)(
+        sunrealtype t, N_Vector yy, N_Vector fy, SUNMatrix JJ, void* data,
+        N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) except? -1
+
+    ctypedef int (*CVLsPrecSetupFn)(
+        sunrealtype t, N_Vector yy, N_Vector fy, sunbooleantype jok, sunbooleantype* jcurPtr,
+        sunrealtype gamma, void* data) except? -1
+
+    ctypedef int (*CVLsPrecSolveFn)(
+        sunrealtype t, N_Vector yy, N_Vector fy, N_Vector rv, N_Vector zv, sunrealtype gamma,
+        sunrealtype delta, int lr, void* data) except? -1
 
     # exported functions
     int CVodeSetLinearSolver(void* mem, SUNLinearSolver LS, SUNMatrix A)
 
     # optional inputs to LS interface
     int CVodeSetJacFn(void* mem, CVLsJacFn jacfn)
+    int CVodeSetPreconditioner(void* mem, CVLsPrecSetupFn psetup, CVLsPrecSolveFn psolve)
 
     # optional outputs from LS interface
     int CVodeGetNumJacEvals(void* mem, long int* njevals)

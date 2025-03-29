@@ -32,6 +32,7 @@ from ._cy_common import DTYPE, INT_TYPE, config  # Python precisions/config
 
 # Local python dependencies
 from .utils import RichResult
+from .precond import IDAPrecond
 
 
 # Messages shorted from documentation online:
@@ -145,6 +146,50 @@ cdef int _jacfn_wrapper(sunrealtype t, sunrealtype cj, N_Vector yy, N_Vector yp,
     return 0
 
 
+cdef int _psetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
+                         sunrealtype cj, void* data) except? -1:
+    """Wraps 'psetup' by converting between N_Vector and ndarray types."""
+    
+    aux = <AuxData> data
+    psetup = aux.precond.setupfn
+
+    svec2np(yy, aux.np_yy)
+    svec2np(yp, aux.np_yp)
+    svec2np(rr, aux.np_rr)
+
+    if aux.with_userdata:
+        _ = psetup(t, aux.np_yy, aux.np_yp, aux.np_rr, cj, aux.userdata)
+    else:
+        _ = psetup(t, aux.np_yy, aux.np_yp, aux.np_rr, cj)
+
+    return 0
+
+
+cdef int _psolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
+                         N_Vector rv, N_Vector zv, sunrealtype cj,
+                         sunrealtype delta, void* data) except? -1:
+    """Wraps 'psolve' by converting between N_Vector and ndarray types."""
+    
+    aux = <AuxData> data
+    psolve = aux.precond.solvefn
+
+    svec2np(yy, aux.np_yy)
+    svec2np(yp, aux.np_yp)
+    svec2np(rr, aux.np_rr)
+    svec2np(rv, aux.np_rv)
+
+    if aux.with_userdata:
+        _ = psolve(t, aux.np_yy, aux.np_yp, aux.np_rr, aux.np_rv, aux.np_zv,
+                   cj, delta, aux.userdata)
+    else:
+        _ = psolve(t, aux.np_yy, aux.np_yp, aux.np_rr, aux.np_rv, aux.np_zv,
+                   cj, delta)
+
+    np2svec(aux.np_zv, zv)
+
+    return 0
+
+
 cdef void _err_handler(int line, const char* func, const char* file,
                        const char* msg, int err_code, void* err_user_data,
                        SUNContext ctx) except *:
@@ -170,6 +215,8 @@ cdef class AuxData:
     cdef np.ndarray np_rr       # residuals array
     cdef np.ndarray np_ee       # events array
     cdef np.ndarray np_JJ       # Jacobian matrix
+    cdef np.ndarray np_rv       # precond rvec
+    cdef np.ndarray np_zv       # precond zvec
     cdef bint with_userdata
 
     cdef object resfn           # Callable
@@ -177,7 +224,8 @@ cdef class AuxData:
     cdef object eventsfn        # Callable
     cdef object jacfn           # Callable
     cdef object linsolver       # str
-    cdef object sparsity        # csc_matrix, shape(NEQ, NEQ)
+    cdef object sparsity        # csc_matrix
+    cdef object precond         # IDAPrecond
 
     def __cinit__(self, sunindextype NEQ, object options):
         self.np_yy = np.empty(NEQ, DTYPE)
@@ -199,6 +247,14 @@ cdef class AuxData:
 
         self.linsolver = options["linsolver"]
         self.sparsity = options["sparsity"]
+
+        self.precond = options["precond"]
+        if self.precond is not None:
+            self.np_rv = np.empty(NEQ, DTYPE)
+            self.np_zv = np.empty(NEQ, DTYPE)
+        else:
+            self.np_rv = np.empty(0, DTYPE)
+            self.np_zv = np.empty(0, DTYPE)
 
 
 cdef class _idaLSSparseDQJac:
@@ -303,7 +359,7 @@ cdef class _idaLSSparseDQJac:
         self.mem = mem
         self.aux.jacfn = self
 
-        if self.aux.linsolver == 'sparse':
+        if self.aux.linsolver == "sparse":
             nnz = self.sparsity.nnz
             self.aux.np_JJ = np.zeros(nnz, DTYPE)
         else:
@@ -361,6 +417,7 @@ cdef class IDA:
             "eventsfn": None,
             "num_events": 0,
             "jacfn": None,
+            "precond": None,
         }
 
         invalid_keys = set(options.keys()) - set(self._options.keys())
@@ -374,9 +431,19 @@ cdef class IDA:
         self._initialized = False
 
     cdef _create_linsolver(self):
+        iterative = {"gmres", "bicgstab", "tfqmr"}
         direct = {"dense", "lapackdense", "band", "lapackband", "sparse"}
 
         linsolver = self._options["linsolver"].lower()
+
+        if "band" in linsolver:
+            uband = <int> self._options["uband"]
+            lband = <int> self._options["lband"]
+        elif linsolver in iterative:
+            maxl = <int> self._options["krylov_dim"]
+
+            precond = self._options["precond"]
+            prec_type = SUN_PREC_NONE if precond is None else precond.side
         
         if linsolver == "dense":
             self.A = SUNDenseMatrix(self.NEQ, self.NEQ, self.ctx)
@@ -387,16 +454,10 @@ cdef class IDA:
             self.LS = SUNLinSol_LapackDense(self.yy, self.A, self.ctx)
 
         elif linsolver == "band":
-            uband = <int> self._options["uband"]
-            lband = <int> self._options["lband"]
-
             self.A = SUNBandMatrix(self.NEQ, uband, lband, self.ctx)
             self.LS = SUNLinSol_Band(self.yy, self.A, self.ctx)
 
         elif linsolver == "lapackband":
-            uband = <int> self._options["uband"]
-            lband = <int> self._options["lband"]
-
             self.A = SUNBandMatrix(self.NEQ, uband, lband, self.ctx)
             self.LS = SUNLinSol_LapackBand(self.yy, self.A, self.ctx)
 
@@ -408,16 +469,13 @@ cdef class IDA:
             self.LS = SUNLinSol_SuperLUMT(self.yy, self.A, nthreads, self.ctx)
 
         elif linsolver == "gmres":
-            maxl = <int> self._options["krylov_dim"]
-            self.LS = SUNLinSol_SPGMR(self.yy, SUN_PREC_NONE, maxl, self.ctx)
+            self.LS = SUNLinSol_SPGMR(self.yy, prec_type, maxl, self.ctx)
 
         elif linsolver == "bicgstab":
-            maxl = <int> self._options["krylov_dim"]
-            self.LS = SUNLinSol_SPBCGS(self.yy, SUN_PREC_NONE, maxl, self.ctx)
+            self.LS = SUNLinSol_SPBCGS(self.yy, prec_type, maxl, self.ctx)
 
         elif linsolver == "tfqmr":
-            maxl = <int> self._options["krylov_dim"]
-            self.LS = SUNLinSol_SPTFQMR(self.yy, SUN_PREC_NONE, maxl, self.ctx)
+            self.LS = SUNLinSol_SPTFQMR(self.yy, prec_type, maxl, self.ctx)
 
         if (linsolver in direct) and (self.A is NULL):
             raise MemoryError("SUNMatrix constructor returned NULL.")
@@ -499,6 +557,12 @@ cdef class IDA:
         if self.mem is NULL:
             raise MemoryError("IDACreate returned a NULL pointer for 'mem'.")
 
+        # Attach AuxData - usually done in step 15, but needs to occur here,
+        # before attaching preconditioner.
+        flag = IDASetUserData(self.mem, <void*> self.aux)
+        if flag < 0:
+            raise RuntimeError("IDASetUserData - " + IDAMESSAGES[flag])
+
         # 8) Initialize IDA solver
         flag = IDAInit(self.mem, _resfn_wrapper, t0, self.yy, self.yp)
         if flag < 0:
@@ -526,6 +590,19 @@ cdef class IDA:
             flag = IDASetJacFn(self.mem, _jacfn_wrapper)
             if flag < 0:
                 raise RuntimeError("IDASetJacFn - " + LSMESSAGES[flag])
+
+        precond = self._options["precond"]
+        if precond is None:
+            pass
+        elif precond.setupfn is None:
+            flag = IDASetPreconditioner(self.mem, NULL, _psolve_wrapper)
+            if flag < 0:
+                raise RuntimeError("IDASetPrecond - " + LSMESSAGES[flag])
+        else:
+            flag = IDASetPreconditioner(self.mem, _psetup_wrapper,
+                                        _psolve_wrapper)
+            if flag < 0:
+                raise RuntimeError("IDASetPrecond - " + LSMESSAGES[flag])
 
         # 12) Attach nonlinear solver module (skip, use default Newton solver)
 
@@ -557,10 +634,6 @@ cdef class IDA:
         # 15) Set optional inputs
         SUNContext_ClearErrHandlers(self.ctx)
         SUNContext_PushErrHandler(self.ctx, _err_handler, NULL)
-
-        flag = IDASetUserData(self.mem, <void*> self.aux)
-        if flag < 0:
-            raise RuntimeError("IDASetUserData - " + IDAMESSAGES[flag])
 
         np_algidx = np.ones(self.NEQ, DTYPE)
         if self._options["algebraic_idx"]:
@@ -1342,3 +1415,24 @@ def _check_options(options: dict) -> None:
     if (sparsity is not None) and (jacfn is not None):
         warn("Sparse Jacobian approximation will be ignored in favor of"
              " 'jacfn'.")
+
+    # precond
+    precond = options["precond"]
+    if precond is None:
+        pass
+    elif not isinstance(precond, IDAPrecond):
+        raise TypeError("'precond' must be type IDAPrecond.")
+    else:
+        side = {"left": SUN_PREC_LEFT}  # IDA only supports left precond
+        precond.side = side[precond.side]
+
+        if precond.setupfn:
+            expected = (5 + with_userdata,)
+            _ = _check_signature("precond.setupfn", precond.setupfn, expected)
+
+        expected = (8 + with_userdata,)
+        _ = _check_signature("precond.solvefn", precond.solvefn, expected)
+
+    if precond and linsolver in direct:
+        raise ValueError("'precond' is not compatitle with direct linear"
+                         f" solvers: {direct}.")

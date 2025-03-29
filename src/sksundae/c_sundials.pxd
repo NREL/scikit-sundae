@@ -14,8 +14,11 @@ include "c_config.pxi"
 cdef extern from "sundials/sundials_types.h":
     ctypedef struct _SUNContext:
         pass
-    ctypedef _SUNContext* SUNContext
+
     ctypedef int SUNComm
+    ctypedef int sunbooleantype
+    ctypedef _SUNContext* SUNContext
+
     ctypedef void (*SUNErrHandlerFn)(int line, const char* func, const char* file,
                                      const char* msg, int err_code, void* err_user_data,
                                      SUNContext ctx) except *

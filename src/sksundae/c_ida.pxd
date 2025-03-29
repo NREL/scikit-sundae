@@ -72,15 +72,24 @@ cdef extern from "ida/ida.h":
 cdef extern from "ida/ida_ls.h":
 
     # user-supplied functions
-    ctypedef int (*IDALsJacFn)(sunrealtype t, sunrealtype cj, N_Vector yy, N_Vector yp,
-                               N_Vector rr, SUNMatrix JJ, void* data, N_Vector tmp1,
-                               N_Vector tmp2, N_Vector tmp3) except? -1
+    ctypedef int (*IDALsJacFn)(
+        sunrealtype t, sunrealtype cj, N_Vector yy, N_Vector yp, N_Vector rr,
+        SUNMatrix JJ, void* data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) except? -1
+
+    ctypedef int (*IDALsPrecSetupFn)(
+        sunrealtype tt, N_Vector yy, N_Vector yp, N_Vector rr, sunrealtype cj,
+        void* data) except? -1
+
+    ctypedef int (*IDALsPrecSolveFn)(
+        sunrealtype tt, N_Vector yy, N_Vector yp, N_Vector rr, N_Vector rv,
+        N_Vector zv, sunrealtype cj, sunrealtype delta, void* data) except? -1
 
     # exported functions
     int IDASetLinearSolver(void* mem, SUNLinearSolver LS, SUNMatrix A)
 
     # optional inputs to LS interface
     int IDASetJacFn(void* mem, IDALsJacFn jacfn)
+    int IDASetPreconditioner(void* mem, IDALsPrecSetupFn psetup, IDALsPrecSolveFn psolve)
 
     # optional outputs from LS interface
     int IDAGetNumJacEvals(void* mem, long int* njevals)
