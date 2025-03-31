@@ -22,6 +22,34 @@ def dae_soln(t, y0):
     return y
 
 
+def resfn(t, y, yp, res, userdata):
+    res[0] = yp[0] + 0.04*y[0] - 1e4*y[1]*y[2]
+    res[1] = yp[1] - 0.04*y[0] + 1e4*y[1]*y[2] + 3e7*y[1]**2
+    res[2] = y[0] + y[1] + y[2] - 1
+
+
+def jacfn(t, y, yp, res, cj, JJ, userdata):
+    JJ[0, 0] = 0.04 + cj
+    JJ[0, 1] = -1e4*y[2]
+    JJ[0, 2] = -1e4*y[1]
+    JJ[1, 0] = -0.04
+    JJ[1, 1] = 1e4*y[2] + 6e7*y[1] + cj
+    JJ[1, 2] = 1e4*y[1]
+    JJ[2, 0] = 1
+    JJ[2, 1] = 1
+    JJ[2, 2] = 1
+
+
+def psetupfn(t, y, yp, res, cj, userdata):
+    Pmat = userdata['Pmat']
+    jacfn(t, y, yp, res, cj, Pmat, userdata)
+
+
+def psolvefn(t, y, yp, res, rvec, zvec, cj, delta, userdata):
+    Pmat = userdata['Pmat']
+    zvec[:] = np.linalg.solve(Pmat, rvec)
+
+
 @pytest.mark.parametrize('linsolver', ('gmres', 'bicgstab', 'tfqmr'))
 def test_iterative_no_precond(linsolver):
     y0 = np.array([1, 2])
@@ -52,34 +80,6 @@ def test_incompatible_options(linsolver):
 
     with pytest.raises(ValueError):
         _ = IDA(dae, linsolver=linsolver, jacfn=jacfn)
-
-
-def resfn(t, y, yp, res, userdata):
-    res[0] = yp[0] + 0.04*y[0] - 1e4*y[1]*y[2]
-    res[1] = yp[1] - 0.04*y[0] + 1e4*y[1]*y[2] + 3e7*y[1]**2
-    res[2] = y[0] + y[1] + y[2] - 1
-
-
-def jacfn(t, y, yp, res, cj, JJ, userdata):
-    JJ[0, 0] = 0.04 + cj
-    JJ[0, 1] = -1e4*y[2]
-    JJ[0, 2] = -1e4*y[1]
-    JJ[1, 0] = -0.04
-    JJ[1, 1] = 1e4*y[2] + 6e7*y[1] + cj
-    JJ[1, 2] = 1e4*y[1]
-    JJ[2, 0] = 1
-    JJ[2, 1] = 1
-    JJ[2, 2] = 1
-
-
-def psetupfn(t, y, yp, res, cj, userdata):
-    Pmat = userdata['Pmat']
-    jacfn(t, y, yp, res, cj, Pmat, userdata)
-
-
-def psolvefn(t, y, yp, res, rvec, zvec, cj, delta, userdata):
-    Pmat = userdata['Pmat']
-    zvec[:] = np.linalg.solve(Pmat, rvec)
 
 
 @pytest.mark.parametrize('linsolver', ('gmres', 'bicgstab', 'tfqmr'))

@@ -22,6 +22,32 @@ def ode_soln(t, y0):
     return y
 
 
+def rhsfn(t, y, yp, userdata):
+    yp[0] = y[1]
+    yp[1] = 1000*(1 - y[0]**2)*y[1] - y[0]
+
+
+def jacfn(t, y, yp, JJ, userdata):
+    JJ[0, 0] = 0
+    JJ[0, 1] = 1
+    JJ[1, 0] = -2000*y[0]*y[1] - 1
+    JJ[1, 1] = 1000*(1 - y[0]**2)
+
+
+def psetupfn(t, y, yp, jok, jnew, gamma, userdata):
+    if jok:
+        jnew[0] = 0
+    else:
+        jnew[0] = 1
+        Pmat = userdata['Pmat']
+        jacfn(t, y, yp, Pmat, userdata)
+
+
+def psolvefn(t, y, yp, rvec, zvec, gamma, delta, lr, userdata):
+    Pmat = 1. - gamma*userdata['Pmat']
+    zvec[:] = np.linalg.solve(Pmat, rvec)
+
+
 @pytest.mark.parametrize('linsolver', ('gmres', 'bicgstab', 'tfqmr'))
 def test_iterative_no_precond(linsolver):
     y0 = np.array([1, 2])
@@ -50,32 +76,6 @@ def test_incompatible_options(linsolver):
 
     with pytest.raises(ValueError):
         _ = CVODE(ode, linsolver=linsolver, jacfn=jacfn)
-
-
-def rhsfn(t, y, yp, userdata):
-    yp[0] = y[1]
-    yp[1] = 1000*(1 - y[0]**2)*y[1] - y[0]
-
-
-def jacfn(t, y, yp, JJ, userdata):
-    JJ[0, 0] = 0
-    JJ[0, 1] = 1
-    JJ[1, 0] = -2000*y[0]*y[1] - 1
-    JJ[1, 1] = 1000*(1 - y[0]**2)
-
-
-def psetupfn(t, y, yp, jok, jnew, gamma, userdata):
-    if jok:
-        jnew[0] = 0
-    else:
-        jnew[0] = 1
-        Pmat = userdata['Pmat']
-        jacfn(t, y, yp, Pmat, userdata)
-
-
-def psolvefn(t, y, yp, rvec, zvec, gamma, delta, lr, userdata):
-    Pmat = userdata['Pmat']
-    zvec[:] = np.linalg.solve(Pmat, rvec)
 
 
 @pytest.mark.parametrize(('linsolver', 'side'), (('gmres', 'left'),
