@@ -37,7 +37,7 @@ class CVODEPrecond:
             'solvefn' must be type Callable.
         ValueError
             'side' must be in {'left', 'right', 'both'}.
-            
+
         Notes
         -----
         The solve and setup functions require specific function signatures. For
@@ -50,7 +50,7 @@ class CVODEPrecond:
         whether left (1) or right (2) preconditioning is being used. In cases
         where 'both' is selected for the preconditioning type, 'solvefn' will
         be called twice and you can control the behavior according to this flag.
-        
+
         Defining a preconditioning matrix is non-trivial and left to the user.
         For CVODE, P should at least crudely approximate ``I - gamma*J`` where
         ``I`` is the identity and ``J = df_i/dy_j`` is the Jacobian defined by
@@ -58,7 +58,7 @@ class CVODEPrecond:
         values, they can be passed via the optional ``userdata`` argument. For
         convenience, you can also define the optional 'setupfn' to setup any
         values (e.g., P) before the solve step.
-        
+
         The 'setupfn' is an optional function that you can use to perform any
         operations needed before solving. The required signature for 'setupfn'
         is ``f(t, y, yp, jok, jnew, gamma[, userdata])``. Any return values are
@@ -70,9 +70,9 @@ class CVODEPrecond:
         The ``jnew`` input is a single-item list that the user must control to
         tell the solve whether or not the Jacobian data has been updated. An
         outlined example is given below.
-        
+
         .. code-block:: python
-        
+
             def psetupfn(t, y, yp, jok, jnew, gamma, userdata):
                 if jok:
                     jnew[0] = 0
@@ -85,13 +85,13 @@ class CVODEPrecond:
             def psolvefn(t, y, yp, rvec, zvec, gamma, delta, lr, userdata):
                 Pmat = np.eye(y.size) - gamma*userdata['JJ']
                 zvec[:] = ...
-        
+
         If you need additional information about CVODE preconditioners, please
         reference the original `SUNDIALS documentation`_.
-        
+
         .. _SUNDIALS documentation: https://sundials.readthedocs.io/en/v6.1.1/ \
             cvode/Usage/index.html#preconditioner-solve-iterative-linear-solvers
-        
+
         """
 
         if not isinstance(solvefn, Callable):
@@ -101,7 +101,7 @@ class CVODEPrecond:
             pass
         elif not isinstance(setupfn, Callable):
             raise TypeError("'setupfn' must be type Callable.")
-        
+
         if side not in {'left', 'right', 'both'}:
             raise ValueError("'side' must be in {'left', 'right', 'both'}.")
 

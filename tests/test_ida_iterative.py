@@ -80,24 +80,24 @@ def test_incompatible_options(linsolver):
 
     with pytest.raises(ValueError):
         _ = IDA(dae, linsolver=linsolver, jacfn=jacfn)
-        
-        
+
+
 def test_preconditioner():
-    
+
     # with psetupfn = None
     precond = IDAPrecond(psolvefn)
     assert precond.side == 'left'
-    
+
     with pytest.raises(TypeError):
         precond = IDAPrecond(psolvefn, 'psetupfn')
-    
+
     # with psetupfn defined
     precond = IDAPrecond(psolvefn, psetupfn)
     assert precond.side == 'left'
-    
+
     with pytest.raises(TypeError):
         precond = IDAPrecond('psolvefn', psetupfn)
-    
+
     # accidentally switching psolvefn and psetupfn
     precond = IDAPrecond(psetupfn, psolvefn)
     with pytest.raises(ValueError):

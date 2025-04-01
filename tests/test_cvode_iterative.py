@@ -76,32 +76,32 @@ def test_incompatible_options(linsolver):
 
     with pytest.raises(ValueError):
         _ = CVODE(ode, linsolver=linsolver, jacfn=jacfn)
-        
+
 
 def test_preconditioner():
-    
+
     # with psetupfn = None
     for side in ['left', 'right', 'both']:
         precond = CVODEPrecond(psolvefn, side=side)
         assert precond.side == side
-        
+
     with pytest.raises(TypeError):
         precond = CVODEPrecond(psolvefn, 'psetupfn')
-        
+
     with pytest.raises(ValueError):  # bad side
         precond = CVODEPrecond(psolvefn, side='fake')
-    
+
     # with psetupfn defined
     for side in ['left', 'right', 'both']:
         precond = CVODEPrecond(psolvefn, psetupfn, side)
         assert precond.side == side
-        
+
     with pytest.raises(TypeError):
         precond = CVODEPrecond('psolvefn', psetupfn)
-        
+
     with pytest.raises(ValueError):  # bad side
         precond = CVODEPrecond(psolvefn, psetupfn, 'fake')
-    
+
     # accidentally switching psolvefn and psetupfn
     precond = CVODEPrecond(psetupfn, psolvefn)
     with pytest.raises(ValueError):
