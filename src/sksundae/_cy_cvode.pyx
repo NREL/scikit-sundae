@@ -32,7 +32,7 @@ from ._cy_common import DTYPE, INT_TYPE, config  # Python precisions/config
 
 # Local python dependencies
 from .utils import RichResult
-from .precond import CVODEPrecond
+from .cvode._precond import CVODEPrecond
 
 
 # Messages shorted from documentation online:
@@ -436,7 +436,7 @@ cdef class CVODE:
             maxl = <int> self._options["krylov_dim"]
 
             precond = self._options["precond"]
-            prec_type = SUN_PREC_NONE if precond is None else precond.side
+            prectype = SUN_PREC_NONE if precond is None else precond._prectype
         
         if linsolver == "dense":
             self.A = SUNDenseMatrix(self.NEQ, self.NEQ, self.ctx)
@@ -462,13 +462,13 @@ cdef class CVODE:
             self.LS = SUNLinSol_SuperLUMT(self.yy, self.A, nthreads, self.ctx)
 
         elif linsolver == "gmres":
-            self.LS = SUNLinSol_SPGMR(self.yy, SUN_PREC_NONE, maxl, self.ctx)
+            self.LS = SUNLinSol_SPGMR(self.yy, prectype, maxl, self.ctx)
 
         elif linsolver == "bicgstab":
-            self.LS = SUNLinSol_SPBCGS(self.yy, SUN_PREC_NONE, maxl, self.ctx)
+            self.LS = SUNLinSol_SPBCGS(self.yy, prectype, maxl, self.ctx)
 
         elif linsolver == "tfqmr":
-            self.LS = SUNLinSol_SPTFQMR(self.yy, SUN_PREC_NONE, maxl, self.ctx)
+            self.LS = SUNLinSol_SPTFQMR(self.yy, prectype, maxl, self.ctx)
 
         if (linsolver in direct) and (self.A is NULL):
             raise MemoryError("SUNMatrix constructor returned NULL.")
@@ -1346,7 +1346,7 @@ def _check_options(options: dict) -> None:
             "right": SUN_PREC_RIGHT,
             "both": SUN_PREC_BOTH,
         }
-        precond.side = side[precond.side]
+        precond._prectype = side[precond.side]
 
         if precond.setupfn:
             expected = (6 + with_userdata,)

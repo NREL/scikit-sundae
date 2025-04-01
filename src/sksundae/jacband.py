@@ -1,4 +1,9 @@
-# jacband.py
+"""
+Routines for analyzing Jacobian patterns and structures for problems involving
+systems of differential-algebraic equations. For example, finding the sparsity
+pattern and/or bandwidth.
+
+"""
 
 from __future__ import annotations
 from typing import Callable, Any, TYPE_CHECKING

@@ -1,8 +1,7 @@
 import pytest
 import numpy as np
 
-from sksundae.ida import IDA
-from sksundae.precond import IDAPrecond
+from sksundae.ida import IDA, IDAPrecond
 
 
 def dae(t, y, yp, res):
@@ -75,20 +74,44 @@ def test_incompatible_options(linsolver):
     def jacfn(t, y, yp, res, cj, JJ):
         pass
 
+    # iterative solvers don't support jacfn from sparsity or explicit
     with pytest.raises(ValueError):
         _ = IDA(dae, linsolver=linsolver, sparisty=np.eye(2))
 
     with pytest.raises(ValueError):
         _ = IDA(dae, linsolver=linsolver, jacfn=jacfn)
+        
+        
+def test_preconditioner():
+    
+    # with psetupfn = None
+    precond = IDAPrecond(psolvefn)
+    assert precond.side == 'left'
+    
+    with pytest.raises(TypeError):
+        precond = IDAPrecond(psolvefn, 'psetupfn')
+    
+    # with psetupfn defined
+    precond = IDAPrecond(psolvefn, psetupfn)
+    assert precond.side == 'left'
+    
+    with pytest.raises(TypeError):
+        precond = IDAPrecond('psolvefn', psetupfn)
+    
+    # accidentally switching psolvefn and psetupfn
+    precond = IDAPrecond(psetupfn, psolvefn)
+    with pytest.raises(ValueError):
+        _ = IDA(resfn, linsolver='gmres', precond=precond,
+                userdata={})
 
 
 @pytest.mark.parametrize('linsolver', ('gmres', 'bicgstab', 'tfqmr'))
-def test_preconditioners(linsolver):
+def test_w_precond_solve(linsolver):
     tspan = np.logspace(-6, 6, 50)
     y0 = np.array([1, 0, 0])
     yp0 = np.zeros_like(y0)
 
-    precond = IDAPrecond(psetupfn, psolvefn)
+    precond = IDAPrecond(psolvefn, psetupfn)
     userdata = {'Pmat': np.zeros((y0.size, y0.size))}
 
     solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0',

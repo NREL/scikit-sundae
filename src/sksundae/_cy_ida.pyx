@@ -32,7 +32,7 @@ from ._cy_common import DTYPE, INT_TYPE, config  # Python precisions/config
 
 # Local python dependencies
 from .utils import RichResult
-from .precond import IDAPrecond
+from .ida._precond import IDAPrecond
 
 
 # Messages shorted from documentation online:
@@ -443,7 +443,7 @@ cdef class IDA:
             maxl = <int> self._options["krylov_dim"]
 
             precond = self._options["precond"]
-            prec_type = SUN_PREC_NONE if precond is None else precond.side
+            prectype = SUN_PREC_NONE if precond is None else precond._prectype
         
         if linsolver == "dense":
             self.A = SUNDenseMatrix(self.NEQ, self.NEQ, self.ctx)
@@ -469,13 +469,13 @@ cdef class IDA:
             self.LS = SUNLinSol_SuperLUMT(self.yy, self.A, nthreads, self.ctx)
 
         elif linsolver == "gmres":
-            self.LS = SUNLinSol_SPGMR(self.yy, prec_type, maxl, self.ctx)
+            self.LS = SUNLinSol_SPGMR(self.yy, prectype, maxl, self.ctx)
 
         elif linsolver == "bicgstab":
-            self.LS = SUNLinSol_SPBCGS(self.yy, prec_type, maxl, self.ctx)
+            self.LS = SUNLinSol_SPBCGS(self.yy, prectype, maxl, self.ctx)
 
         elif linsolver == "tfqmr":
-            self.LS = SUNLinSol_SPTFQMR(self.yy, prec_type, maxl, self.ctx)
+            self.LS = SUNLinSol_SPTFQMR(self.yy, prectype, maxl, self.ctx)
 
         if (linsolver in direct) and (self.A is NULL):
             raise MemoryError("SUNMatrix constructor returned NULL.")
@@ -1424,7 +1424,7 @@ def _check_options(options: dict) -> None:
         raise TypeError("'precond' must be type IDAPrecond.")
     else:
         side = {"left": SUN_PREC_LEFT}  # IDA only supports left precond
-        precond.side = side[precond.side]
+        precond._prectype = side[precond.side]
 
         if precond.setupfn:
             expected = (5 + with_userdata,)

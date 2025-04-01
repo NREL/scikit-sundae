@@ -1,8 +1,7 @@
 import pytest
 import numpy as np
 
-from sksundae.cvode import CVODE
-from sksundae.precond import CVODEPrecond
+from sksundae.cvode import CVODE, CVODEPrecond
 
 
 def ode(t, y, yp):
@@ -39,12 +38,12 @@ def psetupfn(t, y, yp, jok, jnew, gamma, userdata):
         jnew[0] = 0
     else:
         jnew[0] = 1
-        Pmat = userdata['Pmat']
-        jacfn(t, y, yp, Pmat, userdata)
+        JJ = userdata['JJ']
+        jacfn(t, y, yp, JJ, userdata)
 
 
 def psolvefn(t, y, yp, rvec, zvec, gamma, delta, lr, userdata):
-    Pmat = 1. - gamma*userdata['Pmat']
+    Pmat = np.eye(y.size) - gamma*userdata['JJ']
     zvec[:] = np.linalg.solve(Pmat, rvec)
 
 
@@ -71,21 +70,53 @@ def test_incompatible_options(linsolver):
     def jacfn(t, y, yp, JJ):
         pass
 
+    # iterative solvers don't support jacfn from sparsity or explicit
     with pytest.raises(ValueError):
         _ = CVODE(ode, linsolver=linsolver, sparisty=np.eye(2))
 
     with pytest.raises(ValueError):
         _ = CVODE(ode, linsolver=linsolver, jacfn=jacfn)
+        
+
+def test_preconditioner():
+    
+    # with psetupfn = None
+    for side in ['left', 'right', 'both']:
+        precond = CVODEPrecond(psolvefn, side=side)
+        assert precond.side == side
+        
+    with pytest.raises(TypeError):
+        precond = CVODEPrecond(psolvefn, 'psetupfn')
+        
+    with pytest.raises(ValueError):  # bad side
+        precond = CVODEPrecond(psolvefn, side='fake')
+    
+    # with psetupfn defined
+    for side in ['left', 'right', 'both']:
+        precond = CVODEPrecond(psolvefn, psetupfn, side)
+        assert precond.side == side
+        
+    with pytest.raises(TypeError):
+        precond = CVODEPrecond('psolvefn', psetupfn)
+        
+    with pytest.raises(ValueError):  # bad side
+        precond = CVODEPrecond(psolvefn, psetupfn, 'fake')
+    
+    # accidentally switching psolvefn and psetupfn
+    precond = CVODEPrecond(psetupfn, psolvefn)
+    with pytest.raises(ValueError):
+        _ = CVODE(rhsfn, linsolver='gmres', precond=precond,
+                  userdata={})
 
 
 @pytest.mark.parametrize(('linsolver', 'side'), (('gmres', 'left'),
                          ('bicgstab', 'right'), ('tfqmr', 'both')))
-def test_preconditioners(linsolver, side):
+def test_w_precond_solve(linsolver, side):
     tspan = np.array([0, 3000])
     y0 = np.array([2, 0])
 
-    precond = CVODEPrecond(psetupfn, psolvefn, side)
-    userdata = {'Pmat': np.zeros((y0.size, y0.size))}
+    precond = CVODEPrecond(psolvefn, psetupfn, side)
+    userdata = {'JJ': np.zeros((y0.size, y0.size))}
 
     solver = CVODE(rhsfn, linsolver=linsolver, precond=precond,
                    userdata=userdata)
