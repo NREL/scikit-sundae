@@ -92,9 +92,68 @@ In the limiting case where the Jacobian is only non-zero along the main diagonal
 
 Iterative Solvers
 -----------------
-Iterative solvers approximate a linear system's solution by iteratively refining an initial guess. They are particularly well-suited for large, sparse systems where direct solvers would be too computationally expensive. These solvers are often more memory-efficient and faster for large problems, though they may require preconditioners or appropriate convergence criteria to ensure robustness and efficiency. However, at the moment preconditioning options are not implemented into scikit-SUNDAE. Consequently, if you use a linear solver for a poorly conditioned system you will likely run into stability issues and the solver will fail. Preconditioning interfaces will likely be added in a future release, but implementing a preconditioner is a non-trivial exercise and is generally problem specific. It will be left to the user to define their own preconditioners when available as SUNDIALS has limited general preconditioning modules available, and some require parallel vector interfaces which are not planned to ever be included in scikit-SUNDAE.
+Iterative solvers approximate a linear system's solution by iteratively refining an initial guess. They are particularly well-suited for large, sparse systems where direct solvers would be too computationally expensive. These solvers are often more memory-efficient and faster for large problems, though their stability may require appropriate preconditioning. Implementing a preconditioner is a non-trivial exercise and is generally problem specific. If needed, it is left to the user to define their own preconditioners via ``CVODEPrecond`` and ``IDAPrecond``.
 
-To activate an iterative solver use the ``linsolver`` option with one of the following strings: ``gmres``, ``bicgstab``, or ``tfqmr``. There solvers are for the general minimal residual, bicongugate gradient stabilized, and transpose-free quasi-minimum residual algorithms. Note that each of these iterative methods are considered "matrix free" and do not interface with any Jacobian options. Therefore, you will get an error if you attempt to use a Jacobian routine either by passing ``sparsity`` or ``jacfn``.
+To activate an iterative solver use the ``linsolver`` option with one of the following strings: ``gmres``, ``bicgstab``, or ``tfqmr``. These solvers enable the general minimal residual, bicongugate gradient stabilized, and transpose-free quasi-minimum residual algorithms, respectively. Note that the iterative methods are considered "matrix free" and do not interface with any Jacobian options. Therefore, you will get an error if you attempt to use a Jacobian routine either by passing ``sparsity`` or ``jacfn``.
+
+Configuration in scikit-SUNDAE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+When enabling an iterative solver there are two options that become available: ``krylov_dim`` and ``precond``. The first sets the number of Krylov basis vectors to use in the iterative solver, and the second can be used to define optional preconditioning functions. When not given, ``krylov_dim`` is automatically set to 5 when an iterative solver is specified. The example below gives a skeleton program for using an iterative solver. Note that the preconditioner is completely optional. There are many problems that can be solved using the iterative methods and no preconditioning; however, if your problem is ill-conditioned then the solver will likely run into instabilities without appropriate preconditioning.
+
+.. code-block:: python 
+
+    import numpy as np
+
+    from sksundae.ida import IDA, IDAPrecond
+    from sksundae.cvode import CVODE, CVODEPrecond
+
+    # IDA with a dummy residuals function and preconditioner
+    def resfn(t, y, yp, res, userdata):
+        pass
+
+    def psetupfn(t, y, yp, res, cj, userdata):
+        userdata['Pmat'] = ...  # update preconditioner matrix
+
+    def psolvefn(t, y, yp, res, rvec, zvec, cj, delta, userdata):
+        Pmat = userdata['Pmat']
+        zvec[:] = ...  # fill zvec with solution to Pmat*zvec = rvec
+
+    linsolver = 'gmres'  # or one of {'bicgstab', 'tfqmr'}
+    userdata = {'Pmat': np.zeros((..., ...))}
+    precond = IDAPrecond(psolvefn, psetupfn)
+    solver = IDA(resfn, linsolver=linsolver, precond=precond,
+                 userdata=userdata)
+
+    # COVDE with a dummy right-hand-side function and preconditioner
+    def rhsfn(t, y, yp, userdata):
+        pass
+
+    def psetupfn(t, y, yp, jok, jnew, gamma, userdata):
+        if jok:
+            jnew[0] = 0
+        else:
+            jnew[0] = 1
+            userdata['JJ'] = ...  # update Jacobian data
+
+    def psolvefn(t, y, yp, rvec, zvec, gamma, delta, lr, userdata):
+        Pmat = np.eye(y.size) - gamma*userdata['JJ']
+
+        if lr == 1:  # left preconditioning steps
+            zvec[:] = ... 
+        elif lr == 2:  # right preconditioning steps
+            zvec[:] = ... 
+
+    linsolver = 'gmres'  # or one of {'bicgstab', 'tfqmr'}
+    userdata = {'JJ': np.zeros((..., ...))}
+    precond = CVODEPrecond(psolvefn, psetupfn, 'both')
+    solver = CVODE(rhsfn, linsolver=linsolver, precond=precond,
+                   userdata=userdata)
+
+The preconditioning matrices ``Pmat`` for IDA vs. CVODE have differences in their definitions due to the differences in how the solvers define and interact with the user-defined problems. For IDA, ``Pmat`` should approximate the Jacobian ``dF_i/dy_j + cj*dF_i/dyp_j``, at least crudely. Here, ``res = F(t, y, yp)`` are the residuals that define the system of differential-algebraic equations. In contrast, ``Pmat`` for CVODE should approximate ``I - gamma*J`` where ``I`` is the identity matrix and ``J = df_i/dy_j`` is the Jacobian from the system of ODEs defined by ``yp = f(t, y)``. Again, the preconditioner only needs to crudely approximate this definition. While the definitions for the preconditioner vary between IDA and CVODE, the solve steps still perform the same operation, i.e., solving the preconditioned problem ``Pmat*zvec = rvec``. The solvers pre-allocate memory for all arrays, so the functions do not require outputs. Instead, the solve steps fill ``zvec[:]`` with the solution values.
+
+Note that in the outlines above that the preconditioners use ``userdata`` to pass data between the setup step and solve steps. This can also be done in other ways, for example, using global variables. Given that ``userdata`` is not required to be a dictionary, users can determine the best structure for their problem to pass data between functions. When ``userdata`` is provided to a solver, however, all user-defined functions must include it in their signatures. Preconditioning in CVODE is more flexible than in IDA. For example, IDA only supports left preconditioning while CVODE supports left, right, or symmetric (both). Consequently, ``CVODEPrecond`` takes in an extra argument for ``side`` compared to ``IDAPrecond``. The user can set different solve steps according to the side by using the ``lr`` flag which specifies the preconditioner type (1 for left, 2 for right), as shown above.
+
+The setup function for the CVODE preconditioner also has two inputs ``jok`` and ``jnew`` that are not present in the function signature for the IDA preconditioner. It is important to understand these inputs. The argument ``jok`` is a flag that tells the user whether or not the Jacobian data can be reused from a previous step (``jok = 1``) or if it needs to be updated (``jok = 0``). Similarly, the ``jnew`` argument allows the user to tell the solver that the Jacobian data has been updated or not. ``jnew`` is given to the user as a one-element list. You must specifically write to the first index of this list to tell the solver that you have updated the Jacobian data (``jnew[0] = 1``) or not (``jnew[0] = 0``). 
 
 Performance Considerations
 --------------------------
@@ -104,7 +163,7 @@ In any case, the default algorithm will numerically approximate the Jacobian for
 
 Iterative solvers offer significant performance advantages for large, sparse systems by avoiding direct factorization of the Jacobian. Instead, they iteratively refine the solution, reducing both memory usage and computational cost compared to direct solvers. However, their efficiency and stability depends on factors such as the conditioning of the system, the choice of preconditioners, and the convergence tolerance.
 
-Unlike direct solvers, iterative methods may require careful tuning to achieve optimal performance. While they can be highly effective for large-scale problems, poor preconditioning or ill-conditioned systems can lead to slow convergence or even divergence. Providing a well-constructed preconditioner can drastically improve both speed and stability; however, an interface to user-defined preconditioners is not yet available in scikit-SUNDAE.
+Unlike direct solvers, iterative methods may require careful tuning to achieve optimal performance. While they can be highly effective for large-scale problems, poor preconditioning or ill-conditioned systems can lead to slow convergence or even divergence. Providing a well-constructed preconditioner can drastically improve both speed and stability; however, identifying a suitable preconditioner is non-trivial.
 
 Further Reading
 ---------------

@@ -1,4 +1,7 @@
-# common.py
+"""
+General-purpose module for shared utilities across the package.
+
+"""
 
 import numpy as np
 

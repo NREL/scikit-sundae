@@ -1,43 +1,36 @@
-# ida.py
+# cvode._solver.py
 
 from __future__ import annotations
 from typing import Callable, TYPE_CHECKING
 
-from ._cy_ida import IDA as _IDA, IDAResult as _IDAResult
+from sksundae._cy_cvode import CVODE as _CVODE, CVODEResult as _CVODEResult
 
 if TYPE_CHECKING:  # pragma: no cover
     from numpy import ndarray
 
 
-class IDA:
-    """SUNDIALS IDA solver."""
+class CVODE:
+    """SUNDIALS CVODE solver."""
 
-    def __init__(self, resfn: Callable, **options) -> None:
+    def __init__(self, rhsfn: Callable, **options) -> None:
         """
-        This class wraps the implicit differential algebraic (IDA) solver from
-        SUNDIALS [1]_ [2]_. IDA solves both ordinary differential equations
-        (ODEs) and differiential agebraic equatinos (DAEs).
+        This class wraps the C-based variable-coefficient ordinary differential
+        equations (CVODE) solver from SUNDIALS [1]_ [2]_.
 
         Parameters
         ----------
-        resfn : Callable
-            Residual function with signature ``f(t, y, yp, res[, userdata])``.
+        rhsfn : Callable
+            Right-hand-side function with signature ``f(t, y, yp[, userdata])``.
             See the notes for more information.
         **options : dict, optional
             Keyword arguments to describe the solver options. A full list of
             names, types, descriptions, and defaults is given below.
         userdata : object or None, optional
             Additional data object to supply to all user-defined callables.
-            Cannot be None (default) if 'resfn' takes in 5 arguments.
-        calc_initcond : {'y0', 'yp0', None}, optional
-            Determines whether or not 'y0' or 'yp0' are corrected before the
-            first step. Requires 'calc_init_dt' if not None (default).
-        calc_init_dt : float, optional
-            Step size for initial condition correction. Positive for forward,
-            negative for backward integration. Default is 0.01.
-        algebraic_idx : array_like[int] or None, optional
-            Indices 'i' for 'y[i]' that are for purely algebraic variables. If
-            None (default) the problem is assumed to be a pure ODE.
+            Cannot be None (default) if 'rhsfn' takes in 4 arguments.
+        method : {'Adams', 'BDF'}, optional
+            Specifies the linear multistep method. It is suggested to use 'BDF'
+            (default) for stiff problems and 'Adams' for nonstiff problems.
         first_step : float, optional
             The initial step size. The default is 0, which uses an estimated
             value internally determined by SUNDIALS.
@@ -61,10 +54,10 @@ class IDA:
             'dense' and 'band'. They use OpenBLAS-linked LAPACK [4]_ routines,
             but can have noticeable overhead for small (<100) systems.
         lband : int or None, optional
-            Lower Jacobian bandwidth. Given a DAE system ``0 = F(t, y, yp)``,
-            the Jacobian is ``J = dF_i/dy_j + cj*dF_i/dyp_j``. Required when
-            'linsolver' is 'band'. Use zero if no values are below the main
-            diagonal. Defaults to None.
+            Lower Jacobian bandwidth. Given an ODE system ``yp = f(t, y)``,
+            the Jacobian is ``J = df_i/dy_j``. Required when 'linsolver' is
+            'band'. Use zero if no values are below the main diagonal. Defaults
+            to None.
         uband : int or None, optional
             Upper Jacobian bandwidth. Required when 'linsolver' is 'band'. Use
             zero if no elements are above the main diagonal. Defaults to None.
@@ -84,14 +77,15 @@ class IDA:
             convergence but increase memory usage. Only applies to the 'gmres',
             'bicgstab', and 'tfqmr' linear solvers.
         max_order : int, optional
-            Specifies the maximum order for the linear multistep BDF method.
-            The value must be in the range [1, 5]. The default is 5.
+            Specifies the maximum order for the linear multistep method. BDF
+            and Adams allow values in ranges [1, 5] and [1, 12], respectively.
+            The default is the method's max, i.e., 5 for BDF and 12 for Adams.
         max_num_steps : int, optional
             The maximum number of steps taken by the solver in each attempt to
             reach the next output time. The default is 500.
         max_nonlin_iters : int, optional
             Specifies the maximum number of nonlinear solver iterations in one
-            step. The default is 4.
+            step. The default is 3.
         max_conv_fails : int, optional
             Specifies the max number of nonlinear solver convergence failures
             in one step. The default is 10.
@@ -106,7 +100,7 @@ class IDA:
             ``y[i] <= 0``, ``y[i] >=0,`` and ``y[i] > 0``, respectively. The
             default is None.
         eventsfn : Callable or None, optional
-            Events function with signature ``g(t, y, yp, events[, userdata])``.
+            Events function with signature ``g(t, y, events[, userdata])``.
             If None (default), no events are tracked. See the notes for more
             information. Requires 'num_events' be set when not None.
 
@@ -127,25 +121,24 @@ class IDA:
         num_events : int, optional
             Number of events to track. The default is 0.
         jacfn : Callable or None, optional
-            Jacobian function like ``J(t, y, yp, res, cj, JJ[, userdata])``.
-            The function should fill the pre-allocated 2D matrix 'JJ' with the
-            values defined by ``JJ[i,j] = dres_i/dy_j + cj*dres_i/dyp_j``. An
-            internal finite difference method is applied when None (default).
+            Jacobian function like ``J(t, y, yp, JJ[, userdata])``. Fills the
+            pre-allocated 2D matrix 'JJ' with values defined by the Jacobian
+            ``JJ[i,j] = dyp_i/dy_j``. An internal finite difference method is
+            applied when None (default).
 
         Notes
         -----
-        Return values from 'resfn', 'eventsfn', and 'jacfn' are ignored by the
+        Return values from 'rhsfn', 'eventsfn', and 'jacfn' are ignored by the
         solver. Instead the solver directly reads from pre-allocated memory.
-        The 'res', 'events', and 'JJ' arrays from each user-defined callable
+        The 'yp', 'events', and 'JJ' arrays from each user-defined callable
         should be filled within each respective function. When setting values
         across the entire array/matrix at once, don't forget to use ``[:]`` to
         fill the existing array rather than overwriting it. For example, using
-        ``res[:] = F(t, y, yp)`` is correct whereas ``res = F(t, y, yp)`` is
-        not.
+        ``yp[:] = f(t, y)`` is correct whereas ``yp = f(t, y)`` is not.
 
-        When 'resfn' (or 'eventsfn', or 'jacfn') require data outside of their
+        When 'rhsfn' (or 'eventsfn', or 'jacfn') require data outside of their
         normal arguments, you can supply 'userdata' as an option. When given,
-        'userdata' must appear in the function signatures for ALL of 'resfn',
+        'userdata' must appear in the function signatures for ALL of 'rhsfn',
         'eventsfn' (when not None), and 'jacfn' (when not None), even if it is
         not used in all of these functions. Note that 'userdata' only takes up
         one argument position; however, 'userdata' can be any Python object.
@@ -174,19 +167,12 @@ class IDA:
 
         Examples
         --------
-        The following example solves the Robertson problem, which is a classic
-        test problem for programs that solve stiff ODEs. A full description of
-        the problem is provided by `MATLAB <Rob-Ex_>`_. While initializing the
-        solver, ``algebraic_idx=[2]`` specifies ``y[2]`` is purely algebraic,
-        and ``calc_initcond='yp0'`` tells the solver to determine the values
-        for 'yp0' at 'tspan[0]' before starting to integrate. That is why 'yp0'
-        can be initialized as an array of zeros even though plugging in 'y0'
-        to the residuals expressions actually gives ``yp0 = [-0.04, 0.04, 0]``.
-        The initialization is checked against the correct answer after solving.
+        The following example solves the stiff Van der Pol equation, a classic
+        ODE test problem. The same example is provided by `MATLAB <VDP-Ex_>`_
+        for comparison.
 
-        .. _Rob-Ex:
-            https://mathworks.com/help/matlab/math/
-            solve-differential-algebraic-equations-daes.html
+        .. _VDP-Ex:
+            https://www.mathworks.com/help/matlab/math/solve-stiff-odes.html
 
         .. code-block:: python
 
@@ -194,28 +180,24 @@ class IDA:
             import sksundae as sun
             import matplotlib.pyplot as plt
 
-            def resfn(t, y, yp, res):
-                res[0] = yp[0] + 0.04*y[0] - 1e4*y[1]*y[2]
-                res[1] = yp[1] - 0.04*y[0] + 1e4*y[1]*y[2] + 3e7*y[1]**2
-                res[2] = y[0] + y[1] + y[2] - 1.0
+            def rhsfn(t, y, yp):
+                yp[0] =  y[1]
+                yp[1] = 1000.*(1. - y[0]**2)*y[1] - y[0]
 
-            solver = sun.ida.IDA(resfn, algebraic_idx=[2], calc_initcond='yp0')
+            solver = sun.cvode.CVODE(rhsfn)
 
-            tspan = np.hstack([0, 4*np.logspace(-6, 6)])
-            y0 = np.array([1, 0, 0])
-            yp0 = np.zeros_like(y0)
+            tspan = np.array([0, 3000])
+            y0 = np.array([2, 0])
 
-            soln = solver.solve(tspan, y0, yp0)
-            assert np.allclose(soln.yp[0], [-0.04, 0.04, 0], rtol=1e-3)
+            soln = solver.solve(tspan, y0)
 
-            soln.y[:, 1] *= 1e4  # scale y[1] so it is visible in the figure
-            plt.semilogx(soln.t, soln.y)
+            plt.plot(soln.t, soln.y[:,0])
             plt.show()
 
         """
-        self._IDA = _IDA(resfn, **options)
+        self._CVODE = _CVODE(rhsfn, **options)
 
-    def init_step(self, t0: float, y0: ndarray, yp0: ndarray) -> IDAResult:
+    def init_step(self, t0: float, y0: ndarray) -> CVODEResult:
         """
         Initialize the solver.
 
@@ -228,32 +210,27 @@ class IDA:
         t0 : float
             Initial value of time.
         y0 : array_like[float], shape(m,)
-            State variable values at 't0'. The length must match that of 'yp0'
-            and the number of residual equations in 'resfn'.
-        yp0 : array_like[float], shape(m,)
-            Time derivatives for the 'y0' array, evaluated at 't0'. The length
-            and indexing should be consistent with 'y0'.
+            State variable values at 't0'. The length should match the number
+            of equations in 'rhsfn'.
 
         Returns
         -------
-        :class:`~sksundae.ida.IDAResult`
-            Custom output class for IDA solutions. Includes pretty-printing
+        :class:`~sksundae.cvode.CVODEResult`
+            Custom output class for CVODE solutions. Includes pretty-printing
             consistent with scipy outputs. See the class definition for more
             information.
 
         Raises
         ------
         MemoryError
-            Failed to allocate memory for the IDA solver.
+            Failed to allocate memory for the CVODE solver.
         RuntimeError
             A SUNDIALS function returned NULL or was unsuccessful.
-        ValueError
-            'y0' and 'yp0' must be the same length.
 
         """
-        return self._IDA.init_step(t0, y0, yp0)
+        return self._CVODE.init_step(t0, y0)
 
-    def step(self, t: float, method='normal', tstop=None) -> IDAResult:
+    def step(self, t: float, method='normal', tstop=None) -> CVODEResult:
         """
         Return the solution at time 't'.
 
@@ -275,8 +252,8 @@ class IDA:
 
         Returns
         -------
-        :class:`~sksundae.ida.IDAResult`
-            Custom output class for IDA solutions. Includes pretty-printing
+        :class:`~sksundae.cvode.CVODEResult`
+            Custom output class for CVODE solutions. Includes pretty-printing
             consistent with scipy outputs. See the class definition for more
             information.
 
@@ -304,9 +281,9 @@ class IDA:
         .. _here: https://computing.llnl.gov/projects/sundials/usage-notes
 
         """
-        return self._IDA.step(t, method, tstop)
+        return self._CVODE.step(t, method, tstop)
 
-    def solve(self, tspan: ndarray, y0: ndarray, yp0: ndarray) -> IDAResult:
+    def solve(self, tspan: ndarray, y0: ndarray) -> CVODEResult:
         """
         Return the solution across 'tspan'.
 
@@ -317,16 +294,13 @@ class IDA:
             saved at internally chosen steps. When ``len(tspan) > 2``, the
             solution saves the output at each specified time.
         y0 : array_like[float], shape(m,)
-            State variable values at 'tspan[0]'. The length must match that of
-            'yp0' and the number of residual equations in 'resfn'.
-        yp0 : array_like[float], shape(m,)
-            Time derivatives for the 'y0' array, evaluated at 'tspan[0]'. The
-            length and indexing should be consistent with 'y0'.
+            State variable values at 'tspan[0]'. The length should match the
+            number of equations in 'rhsfn'.
 
         Returns
         -------
-        :class:`~sksundae.ida.IDAResult`
-            Custom output class for IDA solutions. Includes pretty-printing
+        :class:`~sksundae.cvode.CVODEResult`
+            Custom output class for CVODE solutions. Includes pretty-printing
             consistent with scipy outputs. See the class definition for more
             information.
 
@@ -338,16 +312,16 @@ class IDA:
             'tspan' length must be >= 2.
 
         """
-        return self._IDA.solve(tspan, y0, yp0)
+        return self._CVODE.solve(tspan, y0)
 
 
-class IDAResult(_IDAResult):
-    """Results class for IDA solver."""
+class CVODEResult(_CVODEResult):
+    """Results class for CVODE solver."""
 
     def __init__(self, **kwargs) -> None:
         """
         Inherits from :class:`~sksundae.common.RichResult`. The solution class
-        groups output from :class:`IDA` into an object with the fields:
+        groups output from :class:`CVODE` into an object with the fields:
 
         Parameters
         ----------
@@ -365,9 +339,6 @@ class IDAResult(_IDAResult):
         y : ndarray, shape(n, m)
             State variable values at each solution time. Rows correspond to
             indices in 't' and columns match indexing from 'y0'.
-        yp : ndarray, shape(n, m)
-            State variable time derivate values at each solution time. Row
-            and column indexing matches 'y'.
         i_events : ndarray, shape(k, num_events) or None
             Provides an array for each detected event 'k' specifying indices
             for which event(s) occurred. ``i_events[k,i] != 0`` if 'events[i]'
@@ -385,20 +356,17 @@ class IDAResult(_IDAResult):
         y_events : ndarray, shape(k, m) or None
             State variable values at each 't_events' value or None. Rows and
             columns correspond to 't_events' and 'y0' indexing, respectively.
-        yp_events : ndarray, shape(k, m) or None
-            State variable time derivative values at each 't_events' value or
-            None. Row and column indexing matches 'y_events'.
         nfev : int
-            Number of times that 'resfn' was evaluated.
+            Number of times that 'rhsfn' was evaluated.
         njev : int
             Number of times the Jacobian was evaluated, 'jacfn' or internal
             finite difference method.
 
         Notes
         -----
-        Terminal events are appended to the end of 't', 'y', and 'yp'. However,
-        if an event was not terminal then it will only appear in '\\*_events'
-        outputs and not within the main output arrays.
+        Terminal events are appended to the end of 't' and 'y'. However, if an
+        event was not terminal then it will only appear in '\\*_events' outputs
+        and not within the main output arrays.
 
         'nfev' and 'njev' are cumulative for stepwise solution approaches. The
         values are reset each time 'init_step' is called.

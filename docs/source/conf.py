@@ -120,10 +120,9 @@ autodoc_typehints = 'none'
 autoapi_python_class_content = 'both'
 autoapi_options = [
     'members',
-    'inherited-members',
-    'undoc-members',
-    'show-module-summary',
     'imported-members',
+    'inherited-members',
+    'show-module-summary',
 ]
 
 

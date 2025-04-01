@@ -20,9 +20,10 @@ Bindings limitations
 ====================
 While scikit-SUNDAE brings the powerful functionality of CVODE and IDA into the Python ecosystem, it does not wrap every feature available in the SUNDIALS library. In particular:
 
-* Iterative linear solvers have limited options: no preconditioning or Jacobian-vector products. If you need access to these, we recommend using `scikits-odes <https://scikits-odes.readthedocs.io/>`_ instead.
 * The package focuses on providing access to the SUNDIALS serial vector interface and default linear/nonlinear solvers. Where appropriate, optional solvers licensed under BSD-3 may also be incorporated (e.g., SuperLU_MT, OpenBLAS, and LAPACK).
-* There are no plans to wrap advanced parallel vector interfaces (e.g., MPI, PThreads, CUDA, etc.) nor optional solvers (e.g., KLU) that may have licensing conflicts with our BSD-3.
+* There are no plans to wrap advanced parallel vector interfaces (e.g., MPI, PThreads, CUDA, etc.) nor optional solvers that have licensing conflicts with BSD-3 (e.g., KLU).
+* We prioritize generalized features. For example, since IDA only supports left preconditioning we do not have plans to implement the SPFGMR linear solver, which only supports right preconditioning.
+* There are no plans to add an interface for adjoint sensitivity analysis. Solving the adjoint problem requires twice as many options and user-defined functions (building the forward and backward problems), which would double the size of this package.
 
 While scikit-SUNDAE offers a convenient interface to key solvers in the SUNDIALS suite, there is no intention to wrap the entire SUNDIALS library. Given the large number of optional solvers and interfaces available (shown in the figure below), wrapping everything would be a significant challenge. Instead, scikit-SUNDAE focuses on providing efficient and streamlined access to the essential features of the CVODE and IDA integrators, ensuring the package remains lightweight and user-friendly.
 
@@ -38,8 +39,8 @@ We also acknowledge the `scikits-odes <https://scikits-odes.readthedocs.io/>`_ p
 
 If you are comparing scikits-odes to scikit-SUNDAE, you should consider the following differences:
 
-* **scikits-odes:** includes preconditioner and Jacobian-vector product interfaces for the iterative linear solvers. The package only provides source distributions, so users must configure and compile SUNDAILS on their own. By not providing binary distributions scikits-odes does not have to worry about licensing conflicts.
-* **scikit-SUNDAE:** includes sparse solvers, more flexible events function capabilities (e.g., direction detection and terminal flags), scipy-like output, and provides both binary and source distributions. Iterative solver options are more limited: no preconditioning, no user-defined Jacobian-vector products.
+* **scikits-odes:** includes solvers from daepack, scipy, and SUNDIALS. The package only provides source distributions, so users must configure and compile SUNDAILS on their own; however, this gives users maximum flexibility to compile against SUNDIALS builds with their choice of precision, optional solvers, etc.
+* **scikit-SUNDAE:** only includes SUNDIALS solvers. Provides sparse solvers, more flexible events function capabilities (e.g., direction detection and terminal flags), and scipy-like output not available in scikits-odes. Both binary and source distributions are available; however, we prioritize compatibility with SUNDIALS releases on conda-forge over general user-compiled builds.
 
 Our binary distributions include pre-compiled dynamic SUNDIALS libraries that also reference libraries like SuperLU_MT, OpenBLAS, and LAPACK. These are self-contained and will not affect other, existing installations you may already have. To be in compliance with each library's distribution requirements, all scikit-SUNDAE distributions include a summary of all licenses (see the `LICENSES_bundled`_ file). Note that we only link against and distribute packages with BSD-3 license. Some solvers and options, like KLU, have LGPL licenses and therefore will not be compatible to implement/distribute.
 

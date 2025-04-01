@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/NREL/scikit-sundae/)
 
 ### New Features
+- Allow preconditioning for iterative solvers ([#12](https://github.com/NREL/scikit-sundae/pull/12))
 - Enable OpenBLAS-linked LAPACK linear solvers ([#11](https://github.com/NREL/scikit-sundae/pull/11))
 - Add iterative linear solvers to IDA and CVODE ([#10](https://github.com/NREL/scikit-sundae/pull/10))
 - Allow `numpy` types in options checks for both `CVODE` and `IDA` ([#8](https://github.com/NREL/scikit-sundae/pull/8))

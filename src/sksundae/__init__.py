@@ -43,7 +43,7 @@ a separate, independent package. During development we prioritized:
 Since scikit-SUNDAE installations may include pre-built SUNDIALS libraries, a
 `bundled license file`_ is included with all distributions. The bundled license
 acknowledges not only SUNDIALS, but any optional solvers that are linked and
-distributed as well (e.g., SuperLU_MT and OpenBLAS).
+distributed as well (e.g., SuperLU_MT, OpenBLAS, and LAPACK).
 
 .. _scikits-odes: https://scikits-odes.readthedocs.io
 .. _conda-forge: https://anaconda.org/conda-forge/sundials
