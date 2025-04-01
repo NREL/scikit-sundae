@@ -118,6 +118,7 @@ When enabling an iterative solver there are two options that become available: `
         Pmat = userdata['Pmat']
         zvec[:] = ...  # fill zvec with solution to Pmat*zvec = rvec
 
+    linsolver = 'gmres'  # or one of {'bicgstab', 'tfqmr'}
     userdata = {'Pmat': np.zeros((..., ...))}
     precond = IDAPrecond(psolvefn, psetupfn)
     solver = IDA(resfn, linsolver=linsolver, precond=precond,
@@ -142,6 +143,7 @@ When enabling an iterative solver there are two options that become available: `
         elif lr == 2:  # right preconditioning steps
             zvec[:] = ... 
 
+    linsolver = 'gmres'  # or one of {'bicgstab', 'tfqmr'}
     userdata = {'JJ': np.zeros((..., ...))}
     precond = CVODEPrecond(psolvefn, psetupfn, 'both')
     solver = CVODE(rhsfn, linsolver=linsolver, precond=precond,
