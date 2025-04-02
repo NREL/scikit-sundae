@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from sksundae.ida import IDA, IDAPrecond
+from sksundae.ida import IDA, IDAPrecond, IDAJacTimes
 
 
 def dae(t, y, yp, res):
@@ -49,6 +49,21 @@ def psolvefn(t, y, yp, res, rvec, zvec, cj, delta, userdata):
     zvec[:] = np.linalg.solve(Pmat, rvec)
 
 
+def jvdae(t, y, yp, res, userdata):
+    res[0] = yp[0] - 0.1
+    res[1] = 2*y[0] - y[1]
+
+
+def jvsetupfn(t, y, yp, res, cj, userdata):
+    JJ = userdata['JJ']
+    JJ[:, :] = np.array([[cj, 0], [2, -1]])
+
+
+def jvsolvefn(t, y, yp, res, v, Jv, cj, userdata):
+    JJ = userdata['JJ']
+    Jv[:] = JJ.dot(v)
+
+
 @pytest.mark.parametrize('linsolver', ('gmres', 'bicgstab', 'tfqmr'))
 def test_iterative_no_precond(linsolver):
     y0 = np.array([1, 2])
@@ -85,21 +100,25 @@ def test_incompatible_options(linsolver):
 def test_preconditioner():
 
     # with psetupfn = None
-    precond = IDAPrecond(psolvefn)
+    precond = IDAPrecond(None, psolvefn)
+    assert precond.setupfn is None
+    assert callable(precond.solvefn)
     assert precond.side == 'left'
 
     with pytest.raises(TypeError):
-        precond = IDAPrecond(psolvefn, 'psetupfn')
+        _ = IDAPrecond('psetupfn', psolvefn)
 
     # with psetupfn defined
-    precond = IDAPrecond(psolvefn, psetupfn)
+    precond = IDAPrecond(psetupfn, psolvefn)
+    assert callable(precond.setupfn)
+    assert callable(precond.solvefn)
     assert precond.side == 'left'
 
     with pytest.raises(TypeError):
-        precond = IDAPrecond('psolvefn', psetupfn)
+        _ = IDAPrecond(psetupfn, 'psolvefn')
 
     # accidentally switching psolvefn and psetupfn
-    precond = IDAPrecond(psetupfn, psolvefn)
+    precond = IDAPrecond(psolvefn, psetupfn)
     with pytest.raises(ValueError):
         _ = IDA(resfn, linsolver='gmres', precond=precond,
                 userdata={})
@@ -111,12 +130,53 @@ def test_w_precond_solve(linsolver):
     y0 = np.array([1, 0, 0])
     yp0 = np.zeros_like(y0)
 
-    precond = IDAPrecond(psolvefn, psetupfn)
+    precond = IDAPrecond(psetupfn, psolvefn)
     userdata = {'Pmat': np.zeros((y0.size, y0.size))}
 
     solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0',
                  atol=1e-12, linsolver=linsolver, precond=precond,
                  userdata=userdata)
+
+    soln = solver.solve(tspan, y0, yp0)
+    assert soln.success
+
+
+def test_jactimes():
+
+    # with jvsetupfn = None
+    jactimes = IDAJacTimes(None, jvsolvefn)
+    assert jactimes.setupfn is None
+    assert callable(jactimes.solvefn)
+
+    with pytest.raises(TypeError):
+        _ = IDAJacTimes('jvsetupfn', jvsolvefn)
+
+    # with jvsetupfn defined
+    jactimes = IDAJacTimes(jvsetupfn, jvsolvefn)
+    assert callable(jactimes.setupfn)
+    assert callable(jactimes.solvefn)
+
+    with pytest.raises(TypeError):
+        _ = IDAJacTimes(jvsetupfn, 'jvsolvefn')
+
+    # accidentally switching jvsolvefn and jvsetupfn
+    jactimes = IDAJacTimes(jvsolvefn, jvsetupfn)
+    with pytest.raises(ValueError):
+        _ = IDA(resfn, linsolver='gmres', jactimes=jactimes,
+                userdata={})
+
+
+@pytest.mark.parametrize('linsolver', ('gmres', 'bicgstab', 'tfqmr'))
+def test_w_jactimes_solve(linsolver):
+    tspan = np.array([0, 10])
+    y0 = np.array([1, 2])
+    yp0 = np.array([0.1, 0.2])
+
+    jactimes = IDAJacTimes(jvsetupfn, jvsolvefn)
+    userdata = {'JJ': np.zeros((y0.size, y0.size))}
+
+    solver = IDA(jvdae, algebraic_idx=[1], linsolver=linsolver,
+                 jactimes=jactimes, userdata=userdata)
 
     soln = solver.solve(tspan, y0, yp0)
     assert soln.success

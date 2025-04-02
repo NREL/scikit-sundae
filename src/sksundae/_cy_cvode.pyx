@@ -33,6 +33,7 @@ from ._cy_common import DTYPE, INT_TYPE, config  # Python precisions/config
 # Local python dependencies
 from .utils import RichResult
 from .cvode._precond import CVODEPrecond
+from .cvode._jactimes import CVODEJacTimes
 
 
 # Messages shorted from documentation online:
@@ -124,7 +125,7 @@ cdef int _eventsfn_wrapper(sunrealtype t, N_Vector yy, sunrealtype* ee,
     return 0
 
 
-cdef int _jacfn_wrapper(sunrealtype t, N_Vector yy, N_Vector fy, SUNMatrix JJ,
+cdef int _jacfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, SUNMatrix JJ,
                         void* data, N_Vector tmp1, N_Vector tmp2,
                         N_Vector tmp3) except? -1:
     """Wraps 'jacfn' by converting between N_Vector and ndarray types."""
@@ -132,19 +133,19 @@ cdef int _jacfn_wrapper(sunrealtype t, N_Vector yy, N_Vector fy, SUNMatrix JJ,
     aux = <AuxData> data
 
     svec2np(yy, aux.np_yy)
-    svec2np(fy, aux.np_fy)
+    svec2np(yp, aux.np_yp)
 
     if aux.with_userdata:
-        _ = aux.jacfn(t, aux.np_yy, aux.np_fy, aux.np_JJ, aux.userdata)
+        _ = aux.jacfn(t, aux.np_yy, aux.np_yp, aux.np_JJ, aux.userdata)
     else:
-        _ = aux.jacfn(t, aux.np_yy, aux.np_fy, aux.np_JJ)
+        _ = aux.jacfn(t, aux.np_yy, aux.np_yp, aux.np_JJ)
 
     np2smat(aux.np_JJ, JJ, aux.sparsity)
 
     return 0
 
 
-cdef int _psetup_wrapper(sunrealtype t, N_Vector yy, N_Vector fy,
+cdef int _psetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
                          sunbooleantype jok, sunbooleantype* jcurPtr,
                          sunrealtype gamma, void* data) except? -1:
     """Wraps 'psetup' by converting between N_Vector and ndarray types."""
@@ -153,21 +154,21 @@ cdef int _psetup_wrapper(sunrealtype t, N_Vector yy, N_Vector fy,
     psetup = aux.precond.setupfn
 
     svec2np(yy, aux.np_yy)
-    svec2np(fy, aux.np_fy)
+    svec2np(yp, aux.np_yp)
 
     jnew = list((jcurPtr[0],))
 
     if aux.with_userdata:
-        _ = psetup(t, aux.np_yy, aux.np_fy, jok, jnew, gamma, aux.userdata)
+        _ = psetup(t, aux.np_yy, aux.np_yp, jok, jnew, gamma, aux.userdata)
     else:
-        _ = psetup(t, aux.np_yy, aux.np_fy, jok, jnew, gamma)
+        _ = psetup(t, aux.np_yy, aux.np_yp, jok, jnew, gamma)
 
     jcurPtr[0] = 1 if jnew[0] else 0
 
     return 0
 
 
-cdef int _psolve_wrapper(sunrealtype t, N_Vector yy, N_Vector fy, N_Vector rv,
+cdef int _psolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rv,
                          N_Vector zv, sunrealtype gamma, sunrealtype delta,
                          int lr, void* data) except? -1:
     """Wraps 'psolve' by converting between N_Vector and ndarray types."""
@@ -176,17 +177,56 @@ cdef int _psolve_wrapper(sunrealtype t, N_Vector yy, N_Vector fy, N_Vector rv,
     psolve = aux.precond.solvefn
 
     svec2np(yy, aux.np_yy)
-    svec2np(fy, aux.np_fy)
+    svec2np(yp, aux.np_yp)
     svec2np(rv, aux.np_rv)
 
     if aux.with_userdata:
-        _ = psolve(t, aux.np_yy, aux.np_fy, aux.np_rv, aux.np_zv, gamma,
+        _ = psolve(t, aux.np_yy, aux.np_yp, aux.np_rv, aux.np_zv, gamma,
                    delta, lr, aux.userdata)
     else:
-        _ = psolve(t, aux.np_yy, aux.np_fy, aux.np_rv, aux.np_zv, gamma,
+        _ = psolve(t, aux.np_yy, aux.np_yp, aux.np_rv, aux.np_zv, gamma,
                    delta, lr)
 
     np2svec(aux.np_zv, zv)
+
+    return 0
+
+
+cdef int _jvsetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
+                          void* data) except? -1:
+    """Wraps 'jvsetup' by converting between N_Vector and ndarray types."""
+    
+    aux = <AuxData> data
+    jvsetup = aux.jactimes.setupfn
+
+    svec2np(yy, aux.np_yy)
+    svec2np(yp, aux.np_yp)
+
+    if aux.with_userdata:
+        _ = jvsetup(t, aux.np_yy, aux.np_yp, aux.userdata)
+    else:
+        _ = jvsetup(t, aux.np_yy, aux.np_yp)
+
+    return 0
+
+
+cdef int _jvsolve_wrapper(N_Vector vv, N_Vector Jv, sunrealtype t, N_Vector yy,
+                          N_Vector yp, void* data, N_Vector tmp) except? -1:
+    """Wraps 'jvsolve' by converting between N_Vector and ndarray types."""
+    
+    aux = <AuxData> data
+    jvsolve = aux.jactimes.solvefn
+
+    svec2np(yy, aux.np_yy)
+    svec2np(yp, aux.np_yp)
+    svec2np(vv, aux.np_vv)
+
+    if aux.with_userdata:
+        _ = jvsolve(t, aux.np_yy, aux.np_yp, aux.np_vv, aux.np_Jv, aux.userdata)
+    else:
+        _ = jvsolve(t, aux.np_yy, aux.np_yp, aux.np_vv, aux.np_Jv)
+
+    np2svec(aux.np_Jv, Jv)
 
     return 0
 
@@ -212,12 +252,13 @@ cdef class AuxData:
 
     """
     cdef np.ndarray np_yy       # state variables
-    cdef np.ndarray np_yp       # yy time derivatives
-    cdef np.ndarray np_fy       # right-hand-side array
+    cdef np.ndarray np_yp       # yy time derivatives (aka rhs values fy)
     cdef np.ndarray np_ee       # events array
     cdef np.ndarray np_JJ       # Jacobian matrix
     cdef np.ndarray np_rv       # precond rvec
     cdef np.ndarray np_zv       # precond zvec
+    cdef np.ndarray np_vv       # jactimes vv
+    cdef np.ndarray np_Jv       # jactimes Jv
     cdef bint with_userdata
 
     cdef object rhsfn           # Callable
@@ -227,11 +268,11 @@ cdef class AuxData:
     cdef object linsolver       # str
     cdef object sparsity        # csc_matrix
     cdef object precond         # CVODEPrecond
+    cdef object jactimes        # CVODEJacTimes
 
     def __cinit__(self, sunindextype NEQ, object options):
         self.np_yy = np.empty(NEQ, DTYPE)
         self.np_yp = np.empty(NEQ, DTYPE)
-        self.np_fy = np.empty(NEQ, DTYPE)
         
         self.rhsfn = options["rhsfn"]
         self.userdata = options["userdata"]
@@ -256,6 +297,14 @@ cdef class AuxData:
         else:
             self.np_rv = np.empty(0, DTYPE)
             self.np_zv = np.empty(0, DTYPE)
+
+        self.jactimes = options["jactimes"]
+        if self.jactimes is not None:
+            self.np_vv = np.empty(NEQ, DTYPE)
+            self.np_Jv = np.empty(NEQ, DTYPE)
+        else:
+            self.np_vv = np.empty(0, DTYPE)
+            self.np_Jv = np.empty(0, DTYPE)
 
 
 cdef class _cvLSSparseDQJac:
@@ -407,6 +456,7 @@ cdef class CVODE:
             "num_events": 0,
             "jacfn": None,
             "precond": None,
+            "jactimes": None,
         }
 
         invalid_keys = set(options.keys()) - set(self._options.keys())
@@ -589,6 +639,19 @@ cdef class CVODE:
                                           _psolve_wrapper)
             if flag < 0:
                 raise RuntimeError("CVodeSetPrecond - " + LSMESSAGES[flag])
+
+        jactimes = self._options["jactimes"]
+        if jactimes is None:
+            pass
+        elif jactimes.setupfn is None:
+            flag = CVodeSetJacTimes(self.mem, NULL, _jvsolve_wrapper)
+            if flag < 0:
+                raise RuntimeError("CVodeSetJacTimes - " + LSMESSAGES[flag])
+        else:
+            flag = CVodeSetJacTimes(self.mem, _jvsetup_wrapper,
+                                    _jvsolve_wrapper)
+            if flag < 0:
+                raise RuntimeError("CVodeSetJacTimes - " + LSMESSAGES[flag])
 
         # 12) Create nonlinear solver object (skip, use default Newton solver)
 
@@ -1357,4 +1420,23 @@ def _check_options(options: dict) -> None:
 
     if precond and linsolver in direct:
         raise ValueError("'precond' is not compatitle with direct linear"
+                         f" solvers: {direct}.")
+
+    # jactimes
+    jactimes = options["jactimes"]
+    if jactimes is None:
+        pass
+    elif not isinstance(jactimes, CVODEJacTimes):
+        raise TypeError("'jactimes' must be type CVODEJacTimes.")
+    else:
+
+        if jactimes.setupfn:
+            expected = (3 + with_userdata,)
+            _ = _check_signature("jactimes.setupfn", jactimes.setupfn, expected)
+
+        expected = (5 + with_userdata,)
+        _ = _check_signature("jactimes.solvefn", jactimes.solvefn, expected)
+
+    if jactimes and linsolver in direct:
+        raise ValueError("'jactimes' is not compatitle with direct linear"
                          f" solvers: {direct}.")

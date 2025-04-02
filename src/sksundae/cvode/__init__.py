@@ -7,9 +7,11 @@ with support for direct and iterative linear solvers, root finding, and more.
 
 from ._solver import CVODE, CVODEResult
 from ._precond import CVODEPrecond
+from ._jactimes import CVODEJacTimes
 
 __all__ = [
     'CVODE',
     'CVODEResult',
     'CVODEPrecond',
+    'CVODEJacTimes',
 ]

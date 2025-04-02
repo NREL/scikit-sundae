@@ -5,26 +5,25 @@ from typing import Callable
 
 
 class CVODEPrecond:
-    """CVODE preconditioner."""
+    """Preconditioner wrapper."""
 
     __slots__ = ('setupfn', 'solvefn', 'side', '_prectype')
 
-    def __init__(self, solvefn: Callable, setupfn: Callable = None,
+    def __init__(self, setupfn: Callable | None, solvefn: Callable,
                  side: str = 'left') -> None:
         """
-        Wrapper for passing preconditioner data to CVODE. Preconditioning is
-        only supported by iterative solvers (gmres, bicgstab, tfqmr).
+        Wrapper for passing preconditioner functions to CVODE. Preconditioning
+        is only supported by iterative solvers (gmres, bicgstab, tfqmr).
 
         Parameters
         ----------
+        setupfn : Callable or None
+            A function to setup data before solving the preconditioned problem.
+            Use None if not needed. The required signature is in the notes.
         solvefn : Callable
             A function that solves the preconditioned problem ``P*zvec = rvec``.
             P is a preconditioner matrix approximating ``I - gamma*J``, at least
-            crudely. The required signature is given in the notes below.
-        setupfn : Callable or None, optional
-            An optional function to setup data before solving the preconditioned
-            problem. Defaults to None. The required signature is given in the
-            notes below.
+            crudely. The required signature is in the notes.
         side : {'left', 'right', 'both'}, optional
             The preconditioning type to use. Can be 'left', 'right', or 'both'.
             The default is 'left'.
@@ -66,10 +65,10 @@ class CVODEPrecond:
         add them to ``userdata`` so they can be passed to 'solvefn'. The inputs
         ``jok`` and ``jnew`` are designed to help optimize performance. The
         ``jok`` flag indicates whether Jacobian data from previous calls can be
-        reused (``jok = 1``) or if it must be recomputed from (``jok = 0``).
-        The ``jnew`` input is a single-item list that the user must control to
-        tell the solve whether or not the Jacobian data has been updated. An
-        outlined example is given below.
+        reused (``jok = 1``) or if it must be recomputed (``jok = 0``). The
+        ``jnew`` input is a single-item list that the user must control to tell
+        the solve whether the Jacobian data has been updated (``jnew[0] = 1``)
+        or not (``jnew[0] = 0``). An outlined example is given below.
 
         .. code-block:: python
 
@@ -94,13 +93,13 @@ class CVODEPrecond:
 
         """
 
-        if not isinstance(solvefn, Callable):
-            raise TypeError("'solvefn' must be type Callable.")
-
         if setupfn is None:
             pass
         elif not isinstance(setupfn, Callable):
             raise TypeError("'setupfn' must be type Callable.")
+
+        if not isinstance(solvefn, Callable):
+            raise TypeError("'solvefn' must be type Callable.")
 
         if side not in {'left', 'right', 'both'}:
             raise ValueError("'side' must be in {'left', 'right', 'both'}.")
