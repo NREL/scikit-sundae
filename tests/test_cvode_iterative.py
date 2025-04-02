@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from sksundae.cvode import CVODE, CVODEPrecond
+from sksundae.cvode import CVODE, CVODEPrecond, CVODEJacTimes
 
 
 def ode(t, y, yp):
@@ -47,6 +47,21 @@ def psolvefn(t, y, yp, rvec, zvec, gamma, delta, lr, userdata):
     zvec[:] = np.linalg.solve(Pmat, rvec)
 
 
+def jvode(t, y, yp, userdata):
+    yp[0] = 0.1
+    yp[1] = y[1]
+
+
+def jvsetupfn(t, y, yp, userdata):
+    JJ = userdata['JJ']
+    JJ[:, :] = np.array([[0, 0], [0, 1]])
+
+
+def jvsolvefn(t, y, yp, v, Jv, userdata):
+    JJ = userdata['JJ']
+    Jv[:] = JJ.dot(v)
+
+
 @pytest.mark.parametrize('linsolver', ('gmres', 'bicgstab', 'tfqmr'))
 def test_iterative_no_precond(linsolver):
     y0 = np.array([1, 2])
@@ -82,28 +97,32 @@ def test_preconditioner():
 
     # with psetupfn = None
     for side in ['left', 'right', 'both']:
-        precond = CVODEPrecond(psolvefn, side=side)
+        precond = CVODEPrecond(None, psolvefn, side=side)
+        assert precond.setupfn is None
+        assert callable(precond.solvefn)
         assert precond.side == side
 
     with pytest.raises(TypeError):
-        precond = CVODEPrecond(psolvefn, 'psetupfn')
+        _ = CVODEPrecond('psetupfn', psolvefn)
 
     with pytest.raises(ValueError):  # bad side
-        precond = CVODEPrecond(psolvefn, side='fake')
+        _ = CVODEPrecond(None, psolvefn, side='fake')
 
     # with psetupfn defined
     for side in ['left', 'right', 'both']:
-        precond = CVODEPrecond(psolvefn, psetupfn, side)
+        precond = CVODEPrecond(psetupfn, psolvefn, side)
+        assert callable(precond.setupfn)
+        assert callable(precond.solvefn)
         assert precond.side == side
 
     with pytest.raises(TypeError):
-        precond = CVODEPrecond('psolvefn', psetupfn)
+        _ = CVODEPrecond(psetupfn, 'psolvefn')
 
     with pytest.raises(ValueError):  # bad side
-        precond = CVODEPrecond(psolvefn, psetupfn, 'fake')
+        _ = CVODEPrecond(psetupfn, psolvefn, 'fake')
 
     # accidentally switching psolvefn and psetupfn
-    precond = CVODEPrecond(psetupfn, psolvefn)
+    precond = CVODEPrecond(psolvefn, psetupfn)
     with pytest.raises(ValueError):
         _ = CVODE(rhsfn, linsolver='gmres', precond=precond,
                   userdata={})
@@ -115,10 +134,50 @@ def test_w_precond_solve(linsolver, side):
     tspan = np.array([0, 3000])
     y0 = np.array([2, 0])
 
-    precond = CVODEPrecond(psolvefn, psetupfn, side)
+    precond = CVODEPrecond(psetupfn, psolvefn, side)
     userdata = {'JJ': np.zeros((y0.size, y0.size))}
 
     solver = CVODE(rhsfn, linsolver=linsolver, precond=precond,
+                   userdata=userdata)
+
+    soln = solver.solve(tspan, y0)
+    assert soln.success
+
+
+def test_jactimes():
+
+    # with jvsetupfn = None
+    jactimes = CVODEJacTimes(None, jvsolvefn)
+    assert jactimes.setupfn is None
+    assert callable(jactimes.solvefn)
+
+    with pytest.raises(TypeError):
+        _ = CVODEJacTimes('jvsetupfn', jvsolvefn)
+
+    # with jvsetupfn defined
+    jactimes = CVODEJacTimes(jvsetupfn, jvsolvefn)
+    assert callable(jactimes.setupfn)
+    assert callable(jactimes.solvefn)
+
+    with pytest.raises(TypeError):
+        _ = CVODEJacTimes(jvsetupfn, 'jvsolvefn')
+
+    # accidentally switching jvsolvefn and jvsetupfn
+    jactimes = CVODEJacTimes(jvsolvefn, jvsetupfn)
+    with pytest.raises(ValueError):
+        _ = CVODE(rhsfn, linsolver='gmres', jactimes=jactimes,
+                  userdata={})
+
+
+@pytest.mark.parametrize('linsolver', ('gmres', 'bicgstab', 'tfqmr'))
+def test_w_jactimes_solve(linsolver):
+    tspan = np.array([0, 10])
+    y0 = np.array([1, 2])
+
+    jactimes = CVODEJacTimes(jvsetupfn, jvsolvefn)
+    userdata = {'JJ': np.zeros((y0.size, y0.size))}
+
+    solver = CVODE(jvode, linsolver=linsolver, jactimes=jactimes,
                    userdata=userdata)
 
     soln = solver.solve(tspan, y0)

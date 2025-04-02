@@ -5,27 +5,26 @@ from typing import Callable
 
 
 class IDAPrecond:
-    """IDA preconditioner."""
+    """Preconditioner wrapper."""
 
     __slots__ = ('setupfn', 'solvefn', 'side', '_prectype')
 
-    def __init__(self, solvefn: Callable, setupfn: Callable = None) -> None:
+    def __init__(self, setupfn: Callable | None, solvefn: Callable) -> None:
         """
-        Wrapper for passing preconditioner data to IDA. Preconditioning is
+        Wrapper for passing preconditioner functions to IDA. Preconditioning is
         only supported by iterative solvers (gmres, bicgstab, tfqmr). IDA only
         supports left preconditioning. Keep this in mind when defining your
         setup and solve functions.
 
         Parameters
         ----------
+        setupfn : Callable or None, optional
+            A function to setup data before solving the preconditioned problem.
+            Use None if not needed. The required signature is in the notes.
         solvefn : Callable
             A function that solves the preconditioned problem ``P*zvec = rvec``.
             P is a preconditioner matrix approximating the Jacobian, at least
-            crudely. The required signature is given in the notes below.
-        setupfn : Callable or None, optional
-            An optional function to setup data before solving the preconditioned
-            problem. Defaults to None. The required signature is given in the
-            notes below.
+            crudely. The required signature is in the notes.
 
         Raises
         ------
@@ -65,13 +64,13 @@ class IDAPrecond:
 
         """
 
-        if not isinstance(solvefn, Callable):
-            raise TypeError("'solvefn' must be type Callable.")
-
         if setupfn is None:
             pass
         elif not isinstance(setupfn, Callable):
             raise TypeError("'setupfn' must be type Callable.")
+
+        if not isinstance(solvefn, Callable):
+            raise TypeError("'solvefn' must be type Callable.")
 
         self.setupfn = setupfn
         self.solvefn = solvefn

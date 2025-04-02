@@ -131,28 +131,36 @@ class IDA:
             The function should fill the pre-allocated 2D matrix 'JJ' with the
             values defined by ``JJ[i,j] = dres_i/dy_j + cj*dres_i/dyp_j``. An
             internal finite difference method is applied when None (default).
+        precond : IDAPrecond or None, optional
+            Preconditioner functions. Only compatible with iterative linear
+            solvers. Must be an instance of IDAPrecond if not None (default).
+        jactimes : IDAJacTimes or None, optional
+            Jacobian-vector product functions. Only compatible with iterative
+            linear solvers. Must be an instance of IDAJacTimes when provided.
+            Difference quotient approximations are used with iterative solvers
+            if None (default).
 
         Notes
         -----
-        Return values from 'resfn', 'eventsfn', and 'jacfn' are ignored by the
-        solver. Instead the solver directly reads from pre-allocated memory.
-        The 'res', 'events', and 'JJ' arrays from each user-defined callable
-        should be filled within each respective function. When setting values
-        across the entire array/matrix at once, don't forget to use ``[:]`` to
-        fill the existing array rather than overwriting it. For example, using
-        ``res[:] = F(t, y, yp)`` is correct whereas ``res = F(t, y, yp)`` is
-        not.
+        Return values from all user-defined function (e.g., 'resfn', 'eventsfn',
+        and 'jacfn') are ignored by the solver. Instead the solver directly
+        reads from pre-allocated memory. Output arrays (e.g., 'res', 'events',
+        and 'JJ') from each user-defined callable should be filled within each
+        respective function. When setting values across the entire array/matrix
+        at once, don't forget to use ``[:]`` to fill the existing array rather
+        than overwriting it. For example, using ``res[:] = F(t, y, yp)`` is
+        correct whereas ``res = F(t, y, yp)`` is not.
 
-        When 'resfn' (or 'eventsfn', or 'jacfn') require data outside of their
-        normal arguments, you can supply 'userdata' as an option. When given,
-        'userdata' must appear in the function signatures for ALL of 'resfn',
-        'eventsfn' (when not None), and 'jacfn' (when not None), even if it is
-        not used in all of these functions. Note that 'userdata' only takes up
-        one argument position; however, 'userdata' can be any Python object.
-        Therefore, to pass more than one extra argument you should pack all of
-        the data into a single tuple, dict, dataclass, etc. and pass them all
-        together as 'userdata'. The data can be unpacked as needed within a
-        function.
+        When any user-defined function require data outside of their normal
+        arguments, you can supply optional 'userdata'. When given, 'userdata'
+        must appear in ALL function signatures ('rhsfn', 'eventsfn', 'jacfn',
+        'precond', and 'jactimes') even if it is not used in all functions. Of
+        course this does not apply to functions that are provided as ``None``.
+        Note that 'userdata' only takes up one argument position; however,
+        'userdata' can be any Python object. Therefore, to pass more than one
+        extra argument you should pack all data into a single tuple, dict,
+        dataclass, etc. and pass them all together as 'userdata'. The data can
+        be unpacked as needed within the functions.
 
         References
         ----------
@@ -342,7 +350,7 @@ class IDA:
 
 
 class IDAResult(_IDAResult):
-    """Results class for IDA solver."""
+    """Results container."""
 
     def __init__(self, **kwargs) -> None:
         """

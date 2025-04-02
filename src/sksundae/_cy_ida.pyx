@@ -33,6 +33,7 @@ from ._cy_common import DTYPE, INT_TYPE, config  # Python precisions/config
 # Local python dependencies
 from .utils import RichResult
 from .ida._precond import IDAPrecond
+from .ida._jactimes import IDAJacTimes
 
 
 # Messages shorted from documentation online:
@@ -190,6 +191,50 @@ cdef int _psolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
     return 0
 
 
+cdef int _jvsetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
+                          sunrealtype cj, void* data) except? -1:
+    """Wraps 'jvsolve' by converting between N_Vector and ndarray types."""
+    
+    aux = <AuxData> data
+    jvsetup = aux.jactimes.setupfn
+
+    svec2np(yy, aux.np_yy)
+    svec2np(yp, aux.np_yp)
+    svec2np(rr, aux.np_rr)
+
+    if aux.with_userdata:
+        _ = jvsetup(t, aux.np_yy, aux.np_yp, aux.np_rr, cj, aux.userdata)
+    else:
+        _ = jvsetup(t, aux.np_yy, aux.np_yp, aux.np_rr, cj)
+
+    return 0
+
+
+cdef int _jvsolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
+                          N_Vector vv, N_Vector Jv, sunrealtype cj, void* data,
+                          N_Vector tmp1, N_Vector tmp2) except? -1:
+    """Wraps 'jvsolve' by converting between N_Vector and ndarray types."""
+    
+    aux = <AuxData> data
+    jvsolve = aux.jactimes.solvefn
+
+    svec2np(yy, aux.np_yy)
+    svec2np(yp, aux.np_yp)
+    svec2np(rr, aux.np_rr)
+    svec2np(vv, aux.np_vv)
+
+    if aux.with_userdata:
+        _ = jvsolve(t, aux.np_yy, aux.np_yp, aux.np_rr, aux.np_vv,
+                    aux.np_Jv, cj, aux.userdata)
+    else:
+        _ = jvsolve(t, aux.np_yy, aux.np_yp, aux.np_rr, aux.np_vv,
+                    aux.np_Jv, cj)
+
+    np2svec(aux.np_Jv, Jv)
+
+    return 0
+
+
 cdef void _err_handler(int line, const char* func, const char* file,
                        const char* msg, int err_code, void* err_user_data,
                        SUNContext ctx) except *:
@@ -217,6 +262,8 @@ cdef class AuxData:
     cdef np.ndarray np_JJ       # Jacobian matrix
     cdef np.ndarray np_rv       # precond rvec
     cdef np.ndarray np_zv       # precond zvec
+    cdef np.ndarray np_vv       # jactimes vv
+    cdef np.ndarray np_Jv       # jactimes Jv
     cdef bint with_userdata
 
     cdef object resfn           # Callable
@@ -226,6 +273,7 @@ cdef class AuxData:
     cdef object linsolver       # str
     cdef object sparsity        # csc_matrix
     cdef object precond         # IDAPrecond
+    cdef object jactimes        # IDAJacTimes
 
     def __cinit__(self, sunindextype NEQ, object options):
         self.np_yy = np.empty(NEQ, DTYPE)
@@ -255,6 +303,14 @@ cdef class AuxData:
         else:
             self.np_rv = np.empty(0, DTYPE)
             self.np_zv = np.empty(0, DTYPE)
+
+        self.jactimes = options["jactimes"]
+        if self.jactimes is not None:
+            self.np_vv = np.empty(NEQ, DTYPE)
+            self.np_Jv = np.empty(NEQ, DTYPE)
+        else:
+            self.np_vv = np.empty(0, DTYPE)
+            self.np_Jv = np.empty(0, DTYPE)
 
 
 cdef class _idaLSSparseDQJac:
@@ -418,6 +474,7 @@ cdef class IDA:
             "num_events": 0,
             "jacfn": None,
             "precond": None,
+            "jactimes": None,
         }
 
         invalid_keys = set(options.keys()) - set(self._options.keys())
@@ -603,6 +660,18 @@ cdef class IDA:
                                         _psolve_wrapper)
             if flag < 0:
                 raise RuntimeError("IDASetPrecond - " + LSMESSAGES[flag])
+
+        jactimes = self._options["jactimes"]
+        if jactimes is None:
+            pass
+        elif jactimes.setupfn is None:
+            flag = IDASetJacTimes(self.mem, NULL, _jvsolve_wrapper)
+            if flag < 0:
+                raise RuntimeError("IDASetJacTimes - " + LSMESSAGES[flag])
+        else:
+            flag = IDASetJacTimes(self.mem, _jvsetup_wrapper, _jvsolve_wrapper)
+            if flag < 0:
+                raise RuntimeError("IDASetJacTimes - " + LSMESSAGES[flag])
 
         # 12) Attach nonlinear solver module (skip, use default Newton solver)
 
@@ -1435,4 +1504,23 @@ def _check_options(options: dict) -> None:
 
     if precond and linsolver in direct:
         raise ValueError("'precond' is not compatitle with direct linear"
+                         f" solvers: {direct}.")
+
+    # jactimes
+    jactimes = options["jactimes"]
+    if jactimes is None:
+        pass
+    elif not isinstance(jactimes, IDAJacTimes):
+        raise TypeError("'jactimes' must be type IDAJacTimes.")
+    else:
+
+        if jactimes.setupfn:
+            expected = (5 + with_userdata,)
+            _ = _check_signature("jactimes.setupfn", jactimes.setupfn, expected)
+
+        expected = (7 + with_userdata,)
+        _ = _check_signature("jactimes.solvefn", jactimes.solvefn, expected)
+
+    if jactimes and linsolver in direct:
+        raise ValueError("'jactimes' is not compatitle with direct linear"
                          f" solvers: {direct}.")
