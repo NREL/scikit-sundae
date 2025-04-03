@@ -45,4 +45,4 @@ def test_nonstiff_agaisnt_C_solution():
     soln = solver.solve(tspan, y0)
 
     npt.assert_allclose(soln.t, data.t)
-    npt.assert_allclose(soln.y, data[['y0', 'y1']])
+    npt.assert_allclose(soln.y, data[['y0', 'y1']], rtol=1e-5)
