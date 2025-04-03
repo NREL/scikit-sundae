@@ -1,8 +1,10 @@
 import os
 
-import numpy as np
 import pandas as pd
 from sksundae import cvode
+
+import numpy as np
+import numpy.testing as npt
 
 
 def rhsfn_nonstiff(t, y, yp):
@@ -42,5 +44,5 @@ def test_nonstiff_agaisnt_C_solution():
     solver = cvode.CVODE(rhsfn_nonstiff, rtol=1e-6, atol=1e-8)
     soln = solver.solve(tspan, y0)
 
-    assert np.allclose(soln.t, data.t)
-    assert np.allclose(soln.y, data[['y0', 'y1']], rtol=1e-4, atol=1e-6)
+    npt.assert_allclose(soln.t, data.t)
+    npt.assert_allclose(soln.y, data[['y0', 'y1']])

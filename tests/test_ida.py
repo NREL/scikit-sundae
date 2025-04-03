@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import numpy.testing as npt
 
 from sksundae.ida import IDA, IDAResult
 
@@ -47,12 +48,12 @@ def test_ida_ode_solve():
     tspan = np.linspace(0, 10, 11)  # normal solve - user picks times
     soln = solver.solve(tspan, y0, yp0)
     assert len(tspan) > 2 and len(tspan) == len(soln.t)
-    assert np.allclose(soln.y, ode_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, ode_soln(soln.t, y0))
 
     tspan = np.array([0, 10])  # onestep solve - integrator picks times
     soln = solver.solve(tspan, y0, yp0)
     assert len(tspan) == 2 and len(soln.t) > 2
-    assert np.allclose(soln.y, ode_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, ode_soln(soln.t, y0))
 
 
 def test_ida_ode_step():
@@ -65,14 +66,14 @@ def test_ida_ode_step():
         _ = solver.step(10)
 
     soln_0 = solver.init_step(0, y0, yp0)
-    assert np.allclose(soln_0.y, ode_soln(soln_0.t, y0))
+    npt.assert_allclose(soln_0.y, ode_soln(soln_0.t, y0))
 
     soln_10 = solver.step(10)
-    assert np.allclose(soln_10.y, ode_soln(soln_10.t, y0))
+    npt.assert_allclose(soln_10.y, ode_soln(soln_10.t, y0))
 
     soln_1000 = solver.step(1000, method='onestep', tstop=1000)
     assert soln_1000.t > 10 and soln_1000.t < 1000
-    assert np.allclose(soln_1000.y, ode_soln(soln_1000.t, y0))
+    npt.assert_allclose(soln_1000.y, ode_soln(soln_1000.t, y0))
 
 
 def test_ida_dae_solve():
@@ -84,12 +85,12 @@ def test_ida_dae_solve():
     tspan = np.linspace(0, 10, 11)  # normal solve - user picks times
     soln = solver.solve(tspan, y0, yp0)
     assert len(tspan) > 2 and len(tspan) == len(soln.t)
-    assert np.allclose(soln.y, dae_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, dae_soln(soln.t, y0))
 
     tspan = np.array([0, 10])  # onestep solve - integrator picks times
     soln = solver.solve(tspan, y0, yp0)
     assert len(tspan) == 2 and len(soln.t) > 2
-    assert np.allclose(soln.y, dae_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, dae_soln(soln.t, y0))
 
 
 def test_ida_dae_step():
@@ -102,14 +103,14 @@ def test_ida_dae_step():
         _ = solver.step(10)
 
     soln_0 = solver.init_step(0, y0, yp0)
-    assert np.allclose(soln_0.y, dae_soln(soln_0.t, y0))
+    npt.assert_allclose(soln_0.y, dae_soln(soln_0.t, y0))
 
     soln_10 = solver.step(10)
-    assert np.allclose(soln_10.y, dae_soln(soln_10.t, y0))
+    npt.assert_allclose(soln_10.y, dae_soln(soln_10.t, y0))
 
     soln_1000 = solver.step(1000, method='onestep', tstop=1000)
     assert soln_1000.t > 10 and soln_1000.t < 1000
-    assert np.allclose(soln_1000.y, dae_soln(soln_1000.t, y0))
+    npt.assert_allclose(soln_1000.y, dae_soln(soln_1000.t, y0))
 
 
 def test_ida_userdata():
@@ -128,7 +129,7 @@ def test_ida_userdata():
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
-    assert np.allclose(soln.y, dae_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, dae_soln(soln.t, y0))
 
 
 def test_ida_initcond():
@@ -139,11 +140,11 @@ def test_ida_initcond():
                  calc_initcond='yp0')
 
     soln = solver.init_step(0, y0, [0, 0])
-    assert np.allclose(soln.yp, yp0)
+    npt.assert_allclose(soln.yp, yp0)
 
     tspan = np.array([0, 10])
     soln = solver.solve(tspan, y0, [0, 0])
-    assert np.allclose(soln.yp[0], yp0)
+    npt.assert_allclose(soln.yp[0], yp0)
 
 
 def test_ida_atol():
@@ -156,7 +157,7 @@ def test_ida_atol():
 
     solver = IDA(dae, rtol=1e-9, atol=[1e-12, 1e-12], algebraic_idx=[1])
     soln_0 = solver.init_step(0, y0, yp0)
-    assert np.allclose(soln_0.y, dae_soln(soln_0.t, y0))
+    npt.assert_allclose(soln_0.y, dae_soln(soln_0.t, y0))
 
 
 def test_ida_linsolver():
@@ -171,7 +172,7 @@ def test_ida_linsolver():
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
-    assert np.allclose(soln.y, ode_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, ode_soln(soln.t, y0))
 
 
 @pytest.mark.parametrize('linsolver', ['dense', 'band'])
@@ -190,7 +191,7 @@ def test_ida_sparsity(linsolver):  # using idaLSSparseDQJac for dense/band
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
-    assert np.allclose(soln.y, dae_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, dae_soln(soln.t, y0))
 
 
 def test_ida_constraints():
@@ -211,7 +212,7 @@ def test_ida_constraints():
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
-    assert np.allclose(soln.y, dae_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, dae_soln(soln.t, y0))
 
 
 def test_ida_eventsfn():
@@ -231,14 +232,14 @@ def test_ida_eventsfn():
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
     assert soln.t[-1] < tspan[-1]  # event was terminal
-    assert np.allclose(soln.y, dae_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, dae_soln(soln.t, y0))
 
-    assert np.isclose(soln.i_events[0], [1])  # event detected correctly
-    assert np.isclose(soln.y_events[0][0], 1.55)
+    npt.assert_allclose(soln.i_events[0], [1])  # event detected correctly
+    npt.assert_allclose(soln.y_events[0][0], 1.55)
 
-    assert np.isclose(soln.t_events[0], soln.t[-1])  # event was concatenated
-    assert np.allclose(soln.y_events[0], soln.y[-1])
-    assert np.allclose(soln.yp_events[0], soln.yp[-1])
+    npt.assert_allclose(soln.t_events[0], soln.t[-1])  # event was concatenated
+    npt.assert_allclose(soln.y_events[0], soln.y[-1])
+    npt.assert_allclose(soln.yp_events[0], soln.yp[-1])
 
     eventsfn.terminal = [False]
 
@@ -247,11 +248,11 @@ def test_ida_eventsfn():
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
-    assert np.isclose(soln.t[-1], tspan[-1])  # event wasn't terminal
-    assert np.allclose(soln.y, dae_soln(soln.t, y0))
+    npt.assert_allclose(soln.t[-1], tspan[-1])  # event wasn't terminal
+    npt.assert_allclose(soln.y, dae_soln(soln.t, y0))
 
-    assert np.isclose(soln.i_events[0], [1])  # event detected correctly
-    assert np.isclose(soln.y_events[0][0], 1.55)
+    npt.assert_allclose(soln.i_events[0], [1])  # event detected correctly
+    npt.assert_allclose(soln.y_events[0][0], 1.55)
 
     assert not np.isclose(soln.t_events[0], soln.t[-1])  # didn't concatenate
     assert not np.allclose(soln.y_events[0], soln.y[-1])
@@ -263,8 +264,8 @@ def test_ida_eventsfn():
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
-    assert np.isclose(soln.t[-1], tspan[-1])  # event didn't trigger
-    assert np.allclose(soln.y, dae_soln(soln.t, y0))
+    npt.assert_allclose(soln.t[-1], tspan[-1])  # event didn't trigger
+    npt.assert_allclose(soln.y, dae_soln(soln.t, y0))
 
     assert soln.i_events is None  # event didn't trigger
     assert soln.t_events is None
@@ -288,14 +289,14 @@ def test_ida_jacfn():
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
-    assert np.allclose(soln.y, ode_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, ode_soln(soln.t, y0))
 
     solver = IDA(ode, rtol=1e-9, atol=1e-12, linsolver='band',
                  lband=0, uband=0, jacfn=jacfn)
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
-    assert np.allclose(soln.y, ode_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, ode_soln(soln.t, y0))
 
     y0 = np.array([1, 2])
     yp0 = np.array([0.1, 0.2])
@@ -309,14 +310,14 @@ def test_ida_jacfn():
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
-    assert np.allclose(soln.y, dae_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, dae_soln(soln.t, y0))
 
     solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
                  linsolver='band', lband=1, uband=0, jacfn=jacfn)
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
-    assert np.allclose(soln.y, dae_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, dae_soln(soln.t, y0))
 
 
 def test_failures_on_exceptions():
@@ -382,9 +383,9 @@ def test_IDAResult():
     assert result.message == soln.message
     assert result.success == soln.success
     assert result.status == result.status
-    assert np.allclose(result.t, soln.t)
-    assert np.allclose(result.y, soln.y)
-    assert np.allclose(result.yp, soln.yp)
+    npt.assert_allclose(result.t, soln.t)
+    npt.assert_allclose(result.y, soln.y)
+    npt.assert_allclose(result.yp, soln.yp)
     assert result.i_events == soln.i_events  # Don't use allclose here b/c
     assert result.t_events == soln.t_events  # all events are None.
     assert result.y_events == soln.y_events

@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import numpy.testing as npt
 
 from sksundae import ida
 from sksundae._cy_common import config
@@ -34,7 +35,7 @@ def test_lapackdense_solver():
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
-    assert np.allclose(soln.y, dae_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, dae_soln(soln.t, y0))
 
 
 @pytest.mark.skipif(not has_lapack, reason='LAPACK not enabled')
@@ -50,4 +51,4 @@ def test_lapackband_solver():
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
-    assert np.allclose(soln.y, dae_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, dae_soln(soln.t, y0))

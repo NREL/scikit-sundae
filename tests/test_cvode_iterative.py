@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import numpy.testing as npt
 
 from sksundae.cvode import CVODE, CVODEPrecond, CVODEJacTimes
 
@@ -71,12 +72,12 @@ def test_iterative_no_precond(linsolver):
     tspan = np.linspace(0, 10, 11)  # normal solve - user picks times
     soln = solver.solve(tspan, y0)
     assert len(tspan) > 2 and len(tspan) == len(soln.t)
-    assert np.allclose(soln.y, ode_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, ode_soln(soln.t, y0), rtol=1e-5)
 
     tspan = np.array([0, 10])  # onestep solve - integrator picks times
     soln = solver.solve(tspan, y0)
     assert len(tspan) == 2 and len(soln.t) > 2
-    assert np.allclose(soln.y, ode_soln(soln.t, y0))
+    npt.assert_allclose(soln.y, ode_soln(soln.t, y0), rtol=1e-5)
 
 
 @pytest.mark.parametrize('linsolver', ('gmres', 'bicgstab', 'tfqmr'))

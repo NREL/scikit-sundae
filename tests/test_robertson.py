@@ -1,8 +1,10 @@
 import os
 
-import numpy as np
 import pandas as pd
 from sksundae import ida
+
+import numpy as np
+import numpy.testing as npt
 
 
 def resfn(t, y, yp, res):
@@ -25,5 +27,5 @@ def test_against_C_solution():
     soln.y[:, 1] *= 1e4  # Scale y1 values prior to comparison
     data.y1 *= 1e4
 
-    assert np.allclose(soln.t, data.t)
-    assert np.allclose(soln.y, data[['y0', 'y1', 'y2']])
+    npt.assert_allclose(soln.t, data.t)
+    npt.assert_allclose(soln.y, data[['y0', 'y1', 'y2']])
