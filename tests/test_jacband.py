@@ -1,6 +1,8 @@
 import pytest
-import numpy as np
 import sksundae as sun
+
+import numpy as np
+import numpy.testing as npt
 
 from scipy import sparse
 
@@ -72,7 +74,7 @@ def test_cvode_jpattern():
         correct[2*i:2*(i+1), 2*i:2*(i+1)] = np.array([[0, 1], [1, 1]])
 
     approx = sun.jacband.j_pattern(cvode_narrow, t0, y0)
-    np.testing.assert_allclose(correct, approx)
+    npt.assert_allclose(correct, approx)
 
     # Van der Pol with wide pattern
     t0 = 0.
@@ -88,7 +90,7 @@ def test_cvode_jpattern():
     correct = sparse.diags(diags, offsets, shape=(2*N, 2*N)).toarray()
 
     approx = sun.jacband.j_pattern(cvode_wide, t0, y0)
-    np.testing.assert_allclose(correct, approx)
+    npt.assert_allclose(correct, approx)
 
 
 def test_ida_jpattern():
@@ -117,7 +119,7 @@ def test_ida_jpattern():
         correct[3*i:3*(i+1), 3*i:3*(i+1)] = np.ones((3, 3))
 
     approx = sun.jacband.j_pattern(ida_narrow, t0, y0, yp0)
-    np.testing.assert_allclose(correct, approx)
+    npt.assert_allclose(correct, approx)
 
     # Robertson with wide pattern
     t0 = 0.
@@ -140,7 +142,7 @@ def test_ida_jpattern():
     correct = sparse.diags(diags, offsets, shape=(3*N, 3*N)).toarray()
 
     approx = sun.jacband.j_pattern(ida_wide, t0, y0, yp0)
-    np.testing.assert_allclose(correct, approx)
+    npt.assert_allclose(correct, approx)
 
 
 def test_bandwidth():
