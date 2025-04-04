@@ -22,7 +22,7 @@ Banded solvers are designed for systems where the Jacobian matrix is sparse and 
 When to use:
 
 * Use a band solver when the Jacobian matrix has a banded structure.
-* Beneficial for large systems. When possible, try to order your problem's systems of equations to `minimize the bandwidth`_.
+* Beneficial for large systems. When possible, try to order your problem's systems of equations to `minimize the bandwidth`_. For convenience we include a ``reduce_bandwidth`` function to help with this, found in the ``jacband`` module. It uses the reverse Cuthill-McKee heuristic algorithm from ``scipy.sparse.csgraph``. See the full documentation for more information.
 
 .. _minimize the bandwidth: https://sciendo.com/article/10.2478/awutm-2014-0019
 
