@@ -1,10 +1,10 @@
 import pytest
 import sksundae as sun
+import scipy. sparse as sp
 
 import numpy as np
 import numpy.testing as npt
 
-from scipy import sparse
 
 N = 10  # number of repeats for Van der Pol (and Robertson) problems
 
@@ -87,7 +87,7 @@ def test_cvode_jpattern():
         np.ones(N),
     ]
     offsets = [-N, 0, N]
-    correct = sparse.diags(diags, offsets, shape=(2*N, 2*N)).toarray()
+    correct = sp.diags(diags, offsets, shape=(2*N, 2*N)).toarray()
 
     approx = sun.jacband.j_pattern(cvode_wide, t0, y0)
     npt.assert_allclose(correct, approx)
@@ -139,7 +139,7 @@ def test_ida_jpattern():
         np.ones(N),
     ]
     offsets = [-2*N, -N, 0, N, 2*N]
-    correct = sparse.diags(diags, offsets, shape=(3*N, 3*N)).toarray()
+    correct = sp.diags(diags, offsets, shape=(3*N, 3*N)).toarray()
 
     approx = sun.jacband.j_pattern(ida_wide, t0, y0, yp0)
     npt.assert_allclose(correct, approx)
@@ -154,7 +154,7 @@ def test_bandwidth():
         np.ones(N),
     ]
     offsets = [-N, 0, N]
-    diagonal = sparse.diags(diags, offsets, shape=(2*N, 2*N)).toarray()
+    diagonal = sp.diags(diags, offsets, shape=(2*N, 2*N)).toarray()
 
     bands = sun.jacband.bandwidth(diagonal)
     assert bands[0] == N
@@ -168,3 +168,51 @@ def test_bandwidth():
     bands = sun.jacband.bandwidth(sparsity)
     assert bands[0] == 2
     assert bands[1] == 2
+
+
+def test_reduce_bandwidth():
+
+    # symmetric
+    diags = [
+        np.ones(N),
+        np.hstack([np.zeros(N), np.ones(N)]),
+        np.ones(N),
+    ]
+    offsets = [-N, 0, N]
+    A = sp.diags(diags, offsets, shape=(2*N, 2*N)).toarray()
+
+    rng = np.random.default_rng(42)
+    random = rng.random(A.shape)
+
+    assert np.unique(random).size == random.size
+
+    Anp = A*random
+    wide_band = sun.jacband.bandwidth(Anp)
+
+    assert isinstance(Anp, np.ndarray)
+
+    perm, inv_perm = sun.jacband.reduce_bandwidth(Anp, symmetric=True)
+
+    Bnp = Anp[perm][:, perm]
+    narrow_band = sun.jacband.bandwidth(Bnp)
+
+    assert not np.allclose(Anp, Bnp)
+    assert narrow_band[0] <= wide_band[0]
+    assert narrow_band[1] <= wide_band[1]
+    npt.assert_allclose(Bnp[inv_perm][:, inv_perm], Anp)
+
+    # non-symmetric
+    Asp = sp.random(N, N, density=0.1, format='csc', rng=42)
+    wide_band = sun.jacband.bandwidth(Asp.todense())
+
+    assert sp.issparse(Asp)
+
+    perm, inv_perm = sun.jacband.reduce_bandwidth(Asp)
+
+    Bsp = Asp[perm][:, perm]
+    narrow_band = sun.jacband.bandwidth(Bsp.todense())
+
+    assert not np.allclose(Asp.todense(), Bsp.todense())
+    assert narrow_band[0] <= wide_band[0]
+    assert narrow_band[1] <= wide_band[1]
+    npt.assert_allclose(Bsp[inv_perm][:, inv_perm].todense(), Asp.todense())

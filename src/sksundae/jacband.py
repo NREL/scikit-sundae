@@ -15,6 +15,7 @@ import numpy as np
 
 if TYPE_CHECKING:  # pragma: no cover
     from numpy.typing import ndarray
+    from scipy.sparse import spmatrix
 
 
 def _cvode_pattern(rhsfn: Callable, t0: float, y0: ndarray,
@@ -186,7 +187,7 @@ def j_pattern(rhsfn: Callable, t0: float, y0: ndarray, yp0: ndarray = None,
 
 def bandwidth(A: ndarray) -> tuple[int]:
     """
-    Return the half bandwidths of a 2D array.
+    Return half bandwidths of a 2D array.
 
     Uses the ``scipy.linalg.bandwidth`` function to determine the lower and
     upper bandwidths of a given array. Use in conjunction with ``j_pattern``
@@ -207,3 +208,43 @@ def bandwidth(A: ndarray) -> tuple[int]:
     """
     from scipy.linalg import bandwidth
     return bandwidth(A)
+
+
+def reduce_bandwidth(A: ndarray | spmatrix,
+                     symmetric: bool = False) -> tuple[ndarray]:
+    """
+    Find a row/col reordering to reduce bandwidth.
+
+    Uses the Reverse Cuthill-McKee algorithm from ``scipy.sparse.csgraph`` to
+    determine an index rearragement for rows and columns of ``A`` that reduce
+    the bandwidth.
+
+    Parameters
+    ----------
+    A : ndarray | spmatrix
+        A 2D (n, n) input matrix whose sparsity pattern will be reduced.
+    symmetric : bool, optional
+        True if input matrix is guaranteed symmetric, otherwise False (default).
+
+    Returns
+    -------
+    perm : ndarray
+        Array of permuted row and column indices such that B = A[perm][:, perm]
+        is a maxtrix with reduced bandwidth compared to A.
+    inv_perm : ndarray
+        The inverse of 'perm' such that B[inv_perm][:, inv_perm] returns the
+        original matrix A.
+
+    """
+    import scipy.sparse as sp
+    from scipy.sparse.csgraph import reverse_cuthill_mckee
+
+    if not sp.issparse(A):
+        A = sp.csc_matrix(A)
+    else:
+        A = A.tocsc()
+
+    perm = reverse_cuthill_mckee(A, symmetric)
+    inv_perm = np.argsort(perm)
+
+    return perm, inv_perm
