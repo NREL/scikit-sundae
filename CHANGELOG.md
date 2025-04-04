@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/NREL/scikit-sundae/)
 
 ### New Features
+- Add `reduce_bandwidth` function to help restructure sparse problems ([#15](https://github.com/NREL/scikit-sundae/pull/15))
 - Implement interfaces for Jacobian-vector products ([#13](https://github.com/NREL/scikit-sundae/pull/13))
 - Allow preconditioning for iterative solvers ([#12](https://github.com/NREL/scikit-sundae/pull/12))
 - Enable OpenBLAS-linked LAPACK linear solvers ([#11](https://github.com/NREL/scikit-sundae/pull/11))
