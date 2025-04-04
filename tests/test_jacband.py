@@ -202,7 +202,7 @@ def test_reduce_bandwidth():
     npt.assert_allclose(Bnp[inv_perm][:, inv_perm], Anp)
 
     # non-symmetric
-    Asp = sp.random(N, N, density=0.1, format='csc', rng=42)
+    Asp = sp.random(N, N, density=0.1, format='csc', random_state=42)
     wide_band = sun.jacband.bandwidth(Asp.todense())
 
     assert sp.issparse(Asp)
