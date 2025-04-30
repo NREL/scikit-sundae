@@ -473,6 +473,9 @@ cdef class CVODE:
 
         yy_tmp = y0.copy()
 
+        # Memory allocation and settings steps handled in _mem_alloc()... only
+        # runs on first call, or if the size of the system changes.
+
         if not self._malloc:
             flag = self._mem_alloc(t0, y0)
 

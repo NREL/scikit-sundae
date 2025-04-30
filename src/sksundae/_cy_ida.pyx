@@ -210,12 +210,12 @@ cdef class IDA:
     cdef AuxData aux
 
     cdef object _size
+    cdef object _malloc
     cdef object _options
     cdef object _initialized
 
     def __cinit__(self, object resfn, **options):
-        self.ctx = NULL
-        self.mem = NULL
+        self._free_memory()
         
         self._options = {
             "resfn": resfn,
@@ -250,7 +250,6 @@ cdef class IDA:
 
         _check_options(self._options)
 
-        self._size = None
         self._initialized = False
 
     cdef _create_linsolver(self):
@@ -297,15 +296,53 @@ cdef class IDA:
         if flag < 0:
             raise RuntimeError("IDAtolerances - " + IDAMESSAGES[flag])
 
-    cdef _init_step(self, sunrealtype t0, np.ndarray[DTYPE_t, ndim=1] y0,
-                    np.ndarray[DTYPE_t, ndim=1] yp0):
+    cdef _free_memory(self):
+        if self.mem is not NULL:
+            IDAFree(&self.mem)
+            self.mem = NULL
+
+        if self.ctx is not NULL:
+            SUNContext_Free(&self.ctx)
+            self.ctx = NULL
+
+        if self.atol is not NULL:
+            N_VDestroy(self.atol)
+            self.atol = NULL
+
+        if self.algidx is not NULL:
+            N_VDestroy(self.algidx)
+            self.algidx = NULL
+
+        if self.constraints is not NULL:
+            N_VDestroy(self.constraints)
+            self.constraints = NULL
+
+        if self.yy is not NULL:
+            N_VDestroy(self.yy)
+            self.yy = NULL
+
+        if self.yp is not NULL:
+            N_VDestroy(self.yp)
+            self.yp = NULL
+
+        if self.A is not NULL:
+            SUNMatDestroy(self.A)
+            self.A = NULL
+
+        if self.LS is not NULL:
+            SUNLinSolFree(self.LS)
+            self.LS = NULL
+
+        self._size = None
+        self._malloc = False
+
+    cdef int _mem_alloc(self, sunrealtype t0, np.ndarray[DTYPE_t, ndim=1] y0,
+                        np.ndarray[DTYPE_t, ndim=1] yp0):
 
         # Enumerated steps below correspond to the SUNDIALS IDA documentation,
         # available at https://sundials.readthedocs.io/en/latest/ida/Usage.
 
         cdef int flag
-        cdef int ic_opt
-        cdef sunrealtype ic_t0
         cdef np.ndarray np_eventsdir
 
         # 1) Initialize parallel environment (skip, only use serial here)
@@ -330,11 +367,8 @@ cdef class IDA:
         if self.yp is NULL:
             raise MemoryError("N_VNew_Serial returned a NULL pointer for yp.")
 
-        yy_tmp = y0.copy()
-        yp_tmp = yp0.copy()
-
-        np2svec(yy_tmp, self.yy)
-        np2svec(yp_tmp, self.yp)
+        np2svec(y0.copy(), self.yy)
+        np2svec(yp0.copy(), self.yp)
 
         # 4) and 5) Create matrix and linear solver - they must match
         self._create_linsolver()
@@ -452,6 +486,40 @@ cdef class IDA:
             flag = IDASetConstraints(self.mem, self.constraints)
             if flag < 0:
                 raise RuntimeError("IDASetConstraints - " + IDAMESSAGES[flag])
+
+        self._size = self.NEQ
+        self._malloc = True
+        
+        return flag
+
+    cdef _init_step(self, sunrealtype t0, np.ndarray[DTYPE_t, ndim=1] y0,
+                    np.ndarray[DTYPE_t, ndim=1] yp0):
+
+        cdef int flag
+        cdef int ic_opt
+        cdef sunrealtype ic_t0
+
+        yy_tmp = y0.copy()
+        yp_tmp = yp0.copy()
+
+        # Steps 1-15 handled in _mem_alloc()... only runs on first call, or if
+        # the size of the system changes.
+
+        if not self._malloc:
+            flag = self._mem_alloc(t0, y0, yp0)
+        
+        elif self._size != y0.size:
+            self._free_memory()
+            self._mem_alloc(t0, y0, yp0)
+
+        else:
+
+            np2svec(yy_tmp, self.yy)
+            np2svec(yp_tmp, self.yp)
+
+            flag = IDAReInit(self.mem, t0, self.yy, self.yp)
+            if flag < 0:
+                raise RuntimeError("IDAReInit - " + IDAMESSAGES[flag])
 
         # 16) Correct initial values
         calc_initcond = self._options["calc_initcond"]
@@ -753,24 +821,7 @@ cdef class IDA:
         return soln
 
     def __dealloc__(self):
-        if self.mem is not NULL:
-            IDAFree(&self.mem)
-        if self.ctx is not NULL:
-            SUNContext_Free(&self.ctx)
-        if self.atol is not NULL:
-            N_VDestroy(self.atol)
-        if self.algidx is not NULL:
-            N_VDestroy(self.algidx)
-        if self.constraints is not NULL:
-            N_VDestroy(self.constraints)
-        if self.yy is not NULL:
-            N_VDestroy(self.yy)
-        if self.yp is not NULL:
-            N_VDestroy(self.yp)
-        if self.A is not NULL:
-            SUNMatDestroy(self.A)
-        if self.LS is not NULL:
-            SUNLinSolFree(self.LS)
+        self._free_memory()
 
 
 cdef _prepare_events(object eventsfn, int num_events):
