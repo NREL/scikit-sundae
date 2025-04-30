@@ -25,6 +25,7 @@ cdef extern from "cvode/cvode.h":
     # initialization functions
     void* CVodeCreate(int imethod, SUNContext ctx)
     int CVodeInit(void* mem, CVRhsFn rhsfn, sunrealtype t0, N_Vector y0)
+    int CVodeReInit(void* mem, sunrealtype t0, N_Vector y0)
 
     # tolerance input functions
     int CVodeSStolerances(void* mem, sunrealtype rtol, sunrealtype atol)

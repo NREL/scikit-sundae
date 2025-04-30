@@ -209,6 +209,7 @@ cdef class IDA:
     cdef np.npy_intp NEQ
     cdef AuxData aux
 
+    cdef object _size
     cdef object _options
     cdef object _initialized
 
@@ -249,6 +250,7 @@ cdef class IDA:
 
         _check_options(self._options)
 
+        self._size = None
         self._initialized = False
 
     cdef _create_linsolver(self):

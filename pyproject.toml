@@ -9,7 +9,11 @@ name = "scikit-sundae"
 readme = "README.md"
 dynamic = ["version"]
 requires-python = ">=3.9,<3.14"
-license = { file = "LICENSE" }
+license = "BSD-3-Clause"
+license-files = [
+    "LICENSE*",
+    "SUNDIALS_LICENSE",
+]
 description = "SUNDIALS bindings to differential aglebraic equation solvers."
 keywords = ["sundials", "dae", "ode", "integrator", "ivp"]
 authors = [
@@ -23,7 +27,6 @@ maintainers = [
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: BSD License",
     "Topic :: Scientific/Engineering :: Mathematics",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
@@ -36,13 +39,6 @@ dependencies = ["numpy"]
 
 [tool.setuptools]
 include-package-data = true
-license-files = [
-    "NOTICE*",
-    "AUTHORS*",
-    "COPYING*",
-    "LICENSE*",
-    "SUNDIALS_LICENSE",
-]
 
 [tool.setuptools.dynamic]
 version = {attr = "sksundae.__version__"}
