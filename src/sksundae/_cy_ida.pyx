@@ -336,8 +336,8 @@ cdef class IDA:
         self._size = None
         self._malloc = False
 
-    cdef int _mem_alloc(self, sunrealtype t0, np.ndarray[DTYPE_t, ndim=1] y0,
-                        np.ndarray[DTYPE_t, ndim=1] yp0):
+    cdef int _setup(self, sunrealtype t0, np.ndarray[DTYPE_t, ndim=1] y0,
+                    np.ndarray[DTYPE_t, ndim=1] yp0):
 
         # Enumerated steps below correspond to the SUNDIALS IDA documentation,
         # available at https://sundials.readthedocs.io/en/latest/ida/Usage.
@@ -502,15 +502,15 @@ cdef class IDA:
         yy_tmp = y0.copy()
         yp_tmp = yp0.copy()
 
-        # Steps 1-15 handled in _mem_alloc()... only runs on first call, or if
-        # the size of the system changes.
+        # Steps 1-15 handled in _setup()... only runs on first call, or if the
+        # size of the system changes.
 
         if not self._malloc:
-            flag = self._mem_alloc(t0, y0, yp0)
+            flag = self._setup(t0, y0, yp0)
         
         elif self._size != y0.size:
             self._free_memory()
-            self._mem_alloc(t0, y0, yp0)
+            self._setup(t0, y0, yp0)
 
         else:
 
@@ -539,10 +539,11 @@ cdef class IDA:
             if flag < 0:
                 raise RuntimeError("IDAGetConsistentIC - " + IDAMESSAGES[flag])
 
+        self._initialized = True
+
+        # Construct result instance to return
         svec2np(self.yy, yy_tmp)
         svec2np(self.yp, yp_tmp)
-
-        self._initialized = True
 
         nfev, njev = _collect_stats(self.mem)
 

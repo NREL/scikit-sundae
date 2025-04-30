@@ -326,7 +326,7 @@ cdef class CVODE:
         self._size = None
         self._malloc = False
 
-    cdef int _mem_alloc(self, sunrealtype t0, np.ndarray[DTYPE_t, ndim=1] y0):
+    cdef int _setup(self, sunrealtype t0, np.ndarray[DTYPE_t, ndim=1] y0):
 
         # Enumerated steps roughly correspond to the SUNDIALS documentation,
         # available at https://sundials.readthedocs.io/en/latest/cvode/Usage.
@@ -473,15 +473,15 @@ cdef class CVODE:
 
         yy_tmp = y0.copy()
 
-        # Memory allocation and settings steps handled in _mem_alloc()... only
-        # runs on first call, or if the size of the system changes.
+        # Memory allocation and settings steps handled in _setup()... only runs
+        # on first call, or if the size of the system changes.
 
         if not self._malloc:
-            flag = self._mem_alloc(t0, y0)
+            flag = self._setup(t0, y0)
 
         elif self._size != y0.size:
             self._free_memory()
-            flag = self._mem_alloc(t0, y0)
+            flag = self._setup(t0, y0)
 
         else:
             
@@ -491,9 +491,10 @@ cdef class CVODE:
             if flag < 0:
                 raise RuntimeError("CVodeReInit - " + CVMESSAGES[flag])
 
-        svec2np(self.yy, yy_tmp)
-
         self._initialized = True
+
+        # Construct result instance to return
+        svec2np(self.yy, yy_tmp)
 
         nfev, njev = _collect_stats(self.mem)
 
