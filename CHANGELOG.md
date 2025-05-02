@@ -10,6 +10,11 @@
 
 ### Breaking Changes
 
+## [v1.0.1](https://github.com/NREL/scikit-sundae/tree/v1.0.1)
+
+### Bug Fixes
+- Fix memory leak in `CVODE` and `IDA` ([#18](https://github.com/NREL/scikit-sundae/pull/18))
+
 ## [v1.0.0](https://github.com/NREL/scikit-sundae/tree/v1.0.0)
 This is the first official release of scikit-SUNDAE. Main features/capabilities are listed below.
 
