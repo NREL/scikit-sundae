@@ -22,6 +22,7 @@
 - Use `micromamba` instead of `miniconda` in CI ([#3](https://github.com/NREL/scikit-sundae/pull/3))
 
 ### Bug Fixes
+- Fix memory leak when `init_step` is repeatedly called in `CVODE` and `IDA` ([#19](https://github.com/NREL/scikit-sundae/pull/19))
 - Add `sign_y` terms and default to `np.float64` for floating type in `j_pattern` ([#7](https://github.com/NREL/scikit-sundae/pull/7))
 
 ### Breaking Changes
