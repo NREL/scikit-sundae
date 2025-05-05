@@ -87,7 +87,7 @@ plt.show()
 ## Citing this Work
 This work was authored by researchers at the National Renewable Energy Laboratory (NREL). If you use use this package in your work, please include the following citation:
 
-> Randall, Corey R. "scikit-SUNDAE: A scikit with Python bindings to SUNDIALS Differential Algebraic Equation solvers [SWR-24-137]." Computer software. url: https://github.com/NREL/scikit-sundae. doi: https://doi.org/10.11578/dc.20241104.3.
+> Randall, Corey R. "scikit-SUNDAE: A scikit with Python bindings to SUNDIALS Differential Algebraic Equation solvers [SWR-24-137]." Computer software, Oct. 2024. url: https://github.com/NREL/scikit-sundae. doi: https://doi.org/10.11578/dc.20241104.3.
 
 For convenience, we also provide the following for your BibTex:
 
@@ -106,7 +106,7 @@ You should also cite SUNDIALS following their recommendations [here](https://com
 ## Acknowledgements
 scikit-SUNDAE was originally inspired by [scikits-odes](https://scikits-odes.readthedocs.io/) which also offers Python bindings to SUNDIALS. The API for scikit-SUNDAE was mostly adopted from scikits-odes; however, all of our source code is original. If you are comparing the two:
 
-1. **scikits-odes:** includes solvers from daepack, scipy, and SUNDIALS. The package only provides source distributions, so users must configure and compile SUNDAILS on their own; however, this gives users maximum flexibility to compile against SUNDIALS builds with their choice of precision, optional solvers, etc.
+1. **scikits-odes:** includes solvers from daepack, scipy, and SUNDIALS. The package only provides source distributions, so users must configure and compile SUNDIALS on their own; however, this gives users maximum flexibility to compile against SUNDIALS builds with their choice of precision, optional solvers, etc.
 2. **scikit-SUNDAE:** only includes SUNDIALS solvers. Provides sparse solvers, more flexible events function capabilities (e.g., direction detection and terminal flags), and scipy-like output not available in scikits-odes. Both binary and source distributions are available; however, we prioritize compatibility with SUNDIALS releases on conda-forge over general user-compiled builds.
 
 Our binary distributions include pre-compiled dynamic SUNDIALS libraries that also reference libraries like SuperLU_MT, OpenBLAS, and LAPACK. These are self-contained and will not affect other, existing installations you may already have. To be in compliance with each library's distribution requirements, all scikit-SUNDAE distributions include a summary of all licenses (see the `LICENSES_bundled` file). Note that we only link against and distribute packages with BSD-3 license. Some solvers and options, like KLU, have LGPL licenses and therefore will not be compatible to implement/distribute.
