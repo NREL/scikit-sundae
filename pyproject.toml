@@ -9,9 +9,10 @@ name = "scikit-sundae"
 readme = "README.md"
 dynamic = ["version"]
 requires-python = ">=3.9,<3.14"
-license = { file = "LICENSE" }
+license = "BSD-3-Clause"
+license-files = ["LICENSE*"]
 description = "SUNDIALS bindings to differential aglebraic equation solvers."
-keywords = ["sundials", "dae", "ode", "integrator", "ivp"]
+keywords = ["sundials", "dae", "ode", "integrator", "ivp", "cvode", "ida"]
 authors = [
     { name = "Corey R. Randall" },
     { email = "corey.randall@nrel.gov" },
@@ -23,7 +24,6 @@ maintainers = [
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: BSD License",
     "Topic :: Scientific/Engineering :: Mathematics",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
@@ -36,13 +36,6 @@ dependencies = ["numpy", "scipy"]
 
 [tool.setuptools]
 include-package-data = true
-license-files = [
-    "NOTICE*",
-    "AUTHORS*",
-    "COPYING*",
-    "LICENSE*",
-    "LICENSES_bundled",
-]
 
 [tool.setuptools.dynamic]
 version = {attr = "sksundae.__version__"}
@@ -54,11 +47,11 @@ where = ["src"]
 docs = [
     "sphinx",
     "myst-nb",
+    "matplotlib",
     "sphinx-design",
     "sphinx-autoapi",
     "sphinx-copybutton",
     "pydata-sphinx-theme",
-    "matplotlib",
 ]
 tests = [
     "pandas",
