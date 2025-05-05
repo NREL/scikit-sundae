@@ -416,7 +416,6 @@ cdef class CVODE:
     cdef void* mem
     cdef SUNContext ctx
     cdef N_Vector atol
-    cdef N_Vector algidx
     cdef N_Vector constraints
     cdef N_Vector yy
     cdef SUNMatrix A 
@@ -424,12 +423,13 @@ cdef class CVODE:
     cdef sunindextype NEQ
     cdef AuxData aux
 
+    cdef object _size           # int
+    cdef object _malloc         # bool - flag for memory allocation
     cdef object _options        # dict[str, Any]
-    cdef object _initialized    # bool
+    cdef object _initialized    # bool - flag for init_step completion
 
     def __cinit__(self, object rhsfn, **options):
-        self.ctx = NULL
-        self.mem = NULL
+        self._free_memory()
         
         self._options = {
             "rhsfn": rhsfn,
@@ -551,7 +551,39 @@ cdef class CVODE:
         if flag < 0:
             raise RuntimeError("CVodetolerances - " + CVMESSAGES[flag])
 
-    cdef _init_step(self, sunrealtype t0, np.ndarray[DTYPE_t, ndim=1] y0):
+    cdef _free_memory(self):
+        if self.mem is not NULL:
+            CVodeFree(&self.mem)
+            self.mem = NULL
+
+        if self.ctx is not NULL:
+            SUNContext_Free(&self.ctx)
+            self.ctx = NULL
+
+        if self.atol is not NULL:
+            N_VDestroy(self.atol)
+            self.atol = NULL
+
+        if self.constraints is not NULL:
+            N_VDestroy(self.constraints)
+            self.constraints = NULL
+
+        if self.yy is not NULL:
+            N_VDestroy(self.yy)
+            self.yy = NULL
+
+        if self.A is not NULL:
+            SUNMatDestroy(self.A)
+            self.A = NULL
+
+        if self.LS is not NULL:
+            SUNLinSolFree(self.LS)
+            self.LS = NULL
+
+        self._size = None
+        self._malloc = False
+
+    cdef _setup(self, sunrealtype t0, np.ndarray[DTYPE_t, ndim=1] y0):
 
         # Enumerated steps roughly correspond to the SUNDIALS documentation,
         # available at https://sundials.readthedocs.io/en/latest/cvode/Usage.
@@ -575,10 +607,8 @@ cdef class CVODE:
         self.yy = N_VNew_Serial(self.NEQ, self.ctx)
         if self.yy is NULL:
             raise MemoryError("N_VNew_Serial returned a NULL pointer for yy.")
-
-        yy_tmp = y0.copy()
         
-        np2svec(yy_tmp, self.yy)
+        np2svec(y0.copy(), self.yy)
 
         # 5) Create CVODE object
         if self._options["method"].lower() == "adams":
@@ -726,9 +756,37 @@ cdef class CVODE:
             if flag < 0:
                 raise RuntimeError("CVodeSetConstraints - " + CVMESSAGES[flag])
 
-        svec2np(self.yy, yy_tmp)
+        self._size = self.NEQ
+        self._malloc = True
+        
+        return flag
+
+    cdef _init_step(self, sunrealtype t0, np.ndarray[DTYPE_t, ndim=1] y0):
+        cdef int flag
+
+        yy_tmp = y0.copy()
+
+        # Memory allocation and settings steps handled in _setup()... only runs
+        # on first call, or if the size of the system changes.
+
+        if not self._malloc:
+            flag = self._setup(t0, y0)
+
+        elif self._size != y0.size:
+            self._free_memory()
+            flag = self._setup(t0, y0)
+
+        else:
+            np2svec(yy_tmp, self.yy)
+            
+            flag = CVodeReInit(self.mem, t0, self.yy)
+            if flag < 0:
+                raise RuntimeError("CVodeReInit - " + CVMESSAGES[flag])
 
         self._initialized = True
+
+        # Construct result instance to return
+        svec2np(self.yy, yy_tmp)
 
         nfev, njev = _collect_stats(self.mem)
 
@@ -987,22 +1045,7 @@ cdef class CVODE:
         return soln
 
     def __dealloc__(self):
-        if self.mem is not NULL:
-            CVodeFree(&self.mem)
-        if self.ctx is not NULL:
-            SUNContext_Free(&self.ctx)
-        if self.atol is not NULL:
-            N_VDestroy(self.atol)
-        if self.algidx is not NULL:
-            N_VDestroy(self.algidx)
-        if self.constraints is not NULL:
-            N_VDestroy(self.constraints)
-        if self.yy is not NULL:
-            N_VDestroy(self.yy)
-        if self.A is not NULL:
-            SUNMatDestroy(self.A)
-        if self.LS is not NULL:
-            SUNLinSolFree(self.LS)
+        self._free_memory()
 
 
 cdef _prepare_events(object eventsfn, int num_events):

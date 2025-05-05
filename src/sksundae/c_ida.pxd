@@ -25,6 +25,7 @@ cdef extern from "ida/ida.h":
     # initialization functions
     void* IDACreate(SUNContext ctx)
     int IDAInit(void* mem, IDAResFn resfn, sunrealtype t0, N_Vector y0, N_Vector yp0)
+    int IDAReInit(void* mem, sunrealtype t0, N_Vector y0, N_Vector yp0)
 
     # tolerance input functions
     int IDASStolerances(void* mem, sunrealtype rtol, sunrealtype atol)
