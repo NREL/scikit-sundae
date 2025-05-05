@@ -554,24 +554,31 @@ cdef class CVODE:
     cdef _free_memory(self):
         if self.mem is not NULL:
             CVodeFree(&self.mem)
+            self.mem = NULL
 
         if self.ctx is not NULL:
             SUNContext_Free(&self.ctx)
+            self.ctx = NULL
 
         if self.atol is not NULL:
             N_VDestroy(self.atol)
+            self.atol = NULL
 
         if self.constraints is not NULL:
             N_VDestroy(self.constraints)
+            self.constraints = NULL
 
         if self.yy is not NULL:
             N_VDestroy(self.yy)
+            self.yy = NULL
 
         if self.A is not NULL:
             SUNMatDestroy(self.A)
+            self.A = NULL
 
         if self.LS is not NULL:
             SUNLinSolFree(self.LS)
+            self.LS = NULL
 
         self._size = None
         self._malloc = False
@@ -771,8 +778,8 @@ cdef class CVODE:
 
         else:
             np2svec(yy_tmp, self.yy)
+            
             flag = CVodeReInit(self.mem, t0, self.yy)
-
             if flag < 0:
                 raise RuntimeError("CVodeReInit - " + CVMESSAGES[flag])
 
