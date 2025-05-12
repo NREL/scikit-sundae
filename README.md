@@ -97,6 +97,7 @@ For convenience, we also provide the following for your BibTex:
   author = {Randall, Corey R.},
   doi = {10.11578/dc.20241104.3},
   url = {https://github.com/NREL/scikit-sundae},
+  month = Oct.,
   year = {2024},
 }
 ```
@@ -109,7 +110,7 @@ scikit-SUNDAE was originally inspired by [scikits-odes](https://scikits-odes.rea
 1. **scikits-odes:** includes solvers from daepack, scipy, and SUNDIALS. The package only provides source distributions, so users must configure and compile SUNDIALS on their own; however, this gives users maximum flexibility to compile against SUNDIALS builds with their choice of precision, optional solvers, etc.
 2. **scikit-SUNDAE:** only includes SUNDIALS solvers. Provides sparse solvers, more flexible events function capabilities (e.g., direction detection and terminal flags), and scipy-like output not available in scikits-odes. Both binary and source distributions are available; however, we prioritize compatibility with SUNDIALS releases on conda-forge over general user-compiled builds.
 
-Our binary distributions include pre-compiled dynamic SUNDIALS libraries that also reference libraries like SuperLU_MT, OpenBLAS, and LAPACK. These are self-contained and will not affect other, existing installations you may already have. To be in compliance with each library's distribution requirements, all scikit-SUNDAE distributions include a summary of all licenses (see the `LICENSES_bundled` file). Note that we only link against and distribute packages with BSD-3 license. Some solvers and options, like KLU, have LGPL licenses and therefore will not be compatible to implement/distribute.
+Our binary distributions include pre-compiled dynamic SUNDIALS libraries that also reference libraries like SuperLU_MT, OpenBLAS, and LAPACK. These are self-contained and will not affect other, existing installations you may already have. To be in compliance with each library's distribution requirements, all scikit-SUNDAE distributions include a summary of all licenses (see the `LICENSES_bundled` file). Note that we only link against and distribute packages with a BSD-3 license. Some solvers and options, like KLU, have LGPL licenses and therefore are not be compatible to implement nor distribute.
 
 ## Contributing
 If you'd like to contribute to this package, please look through the existing [issues](https://github.com/NREL/scikit-sundae/issues). If the bug you've caught or the feature you'd like to add isn't already reported, please submit a new issue. You should also read through the [developer guidelines](https://scikit-sundae.readthedocs.io/en/latest/development/) if you plan to work on the issue yourself.
