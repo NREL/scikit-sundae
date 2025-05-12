@@ -97,7 +97,7 @@ For convenience, we also provide the following for your BibTex:
   author = {Randall, Corey R.},
   doi = {10.11578/dc.20241104.3},
   url = {https://github.com/NREL/scikit-sundae},
-  month = Oct.,
+  month = {Oct.},
   year = {2024},
 }
 ```
