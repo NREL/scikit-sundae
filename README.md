@@ -87,13 +87,13 @@ plt.show()
 ## Citing this Work
 This work was authored by researchers at the National Renewable Energy Laboratory (NREL). If you use use this package in your work, please include the following citation:
 
-> Randall, Corey R. "scikit-SUNDAE: A scikit with Python bindings to SUNDIALS Differential Algebraic Equation solvers [SWR-24-137]." Computer software, Oct. 2024. url: https://github.com/NREL/scikit-sundae. doi: https://doi.org/10.11578/dc.20241104.3.
+> Randall, Corey R. "scikit-SUNDAE: Python bindings to SUNDIALS Differential Algebraic Equation solvers [SWR-24-137]." Computer software, Oct. 2024. url: https://github.com/NREL/scikit-sundae. doi: https://doi.org/10.11578/dc.20241104.3.
 
 For convenience, we also provide the following for your BibTex:
 
 ```
 @misc{Randall-2024,
-  title = {{scikit-SUNDAE: A scikit with Python bindings to SUNDIALS Differential Algebraic Equation solvers [SWR-24-137]}},
+  title = {{scikit-SUNDAE: Python bindings to SUNDIALS Differential Algebraic Equation solvers [SWR-24-137]}},
   author = {Randall, Corey R.},
   doi = {10.11578/dc.20241104.3},
   url = {https://github.com/NREL/scikit-sundae},
