@@ -240,10 +240,9 @@ cdef void _err_handler(int line, const char* func, const char* file,
                        SUNContext ctx) except *:
     """Custom error handler for shorter messages (no line or file)."""
     
-    decoded_func = func.decode("utf-8")
-    decoded_msg = msg.decode("utf-8").replace(", ,", ",").strip()
-
     if not PyErr_Occurred():
+        decoded_func = func.decode("utf-8")
+        decoded_msg = msg.decode("utf-8").replace(", ,", ",").strip()
         print(f"\n[{decoded_func}, Error: {err_code}] {decoded_msg}\n")
 
 
