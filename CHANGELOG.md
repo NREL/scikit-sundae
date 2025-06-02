@@ -7,6 +7,8 @@
 ### Optimizations
 
 ### Bug Fixes
+- Change `Exception` propagations to support Cython v3.1 ([#21](https://github.com/NREL/scikit-sundae/pull/21))
+- Improve type support by using `Integral` and `Real` ([#21](https://github.com/NREL/scikit-sundae/pull/21))
 
 ### Breaking Changes
 
