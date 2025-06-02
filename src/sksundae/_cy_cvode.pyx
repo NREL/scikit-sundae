@@ -7,11 +7,13 @@
 from warnings import warn
 from types import MethodType
 from inspect import getfullargspec
+from numbers import Integral, Real
 from typing import Callable, Iterable
 
 # Dependencies
 import numpy as np
 cimport numpy as np
+
 from cpython.exc cimport PyErr_CheckSignals, PyErr_Occurred
 
 # Extern cdef headers
@@ -143,10 +145,9 @@ cdef void _err_handler(int line, const char* func, const char* file,
                        SUNContext ctx) except *:
     """Custom error handler for shorter messages (no line or file)."""
     
-    decoded_func = func.decode("utf-8")
-    decoded_msg = msg.decode("utf-8").replace(", ,", ",").strip()
-
     if not PyErr_Occurred():
+        decoded_func = func.decode("utf-8")
+        decoded_msg = msg.decode("utf-8").replace(", ,", ",").strip()
         print(f"\n[{decoded_func}, Error: {err_code}] {decoded_msg}\n")
 
 
@@ -516,7 +517,7 @@ cdef class CVODE:
         elif method == "onestep":  # output after one internal step toward tt
             itask = CV_ONE_STEP
 
-        if isinstance(tstop, (int, float)):
+        if isinstance(tstop, Real):
             flag = CVodeSetStopTime(self.mem, <sunrealtype> tstop)
             if flag < 0:
                 raise RuntimeError("CVodeSetStopTime - " + CVMESSAGES[flag])
@@ -726,7 +727,7 @@ cdef class CVODE:
 
         if tstop is None:
             pass
-        elif not isinstance(tstop, (int, float)):
+        elif not isinstance(tstop, Real):
             raise TypeError("'tstop' must be type float, or None.")
         
         return self._step(t, method, tstop)
@@ -764,7 +765,7 @@ cdef _prepare_events(object eventsfn, int num_events):
     terminal = eventsfn.terminal
     if not isinstance(terminal, Iterable):
         raise TypeError("'eventsfn.terminal' must be type Iterable.")
-    elif not all(isinstance(x, (bool, int)) for x in terminal):
+    elif not all(isinstance(x, (bool, Integral)) for x in terminal):
         raise TypeError("All 'eventsfn.terminal' values must be bool or int.")
     elif not all(int(x) >= 0 for x in terminal):
         raise ValueError("At least one 'eventsfn.terminal' value is invalid."
@@ -910,19 +911,19 @@ def _check_options(options: dict) -> None:
         raise ValueError(f"{method=} is invalid. Must be in {valid}.")
     
     # first_step
-    if not isinstance(options["first_step"], (int, float)):
+    if not isinstance(options["first_step"], Real):
         raise TypeError("'first_step' must be type float.")
     elif options["first_step"] < 0.:
         raise ValueError("'first_step' must be positive or zero.")
         
     # min_step
-    if not isinstance(options["min_step"], (int, float)):
+    if not isinstance(options["min_step"], Real):
         raise TypeError("'min_step' must be type float.")
     elif options["min_step"] < 0.:
         raise ValueError("'min_step' must be positive or zero.")
 
     # max_step
-    if not isinstance(options["max_step"], (int, float)):
+    if not isinstance(options["max_step"], Real):
         raise TypeError("'max_step' must be type float.")
     elif options["max_step"] < 0.:
         raise ValueError("'max_step' must be positive or zero.")
@@ -930,12 +931,16 @@ def _check_options(options: dict) -> None:
         raise ValueError("'max_step' cannot be smaller than 'min_step'.")
 
     # rtol
-    if not isinstance(options["rtol"], float):
+    if not isinstance(options["rtol"], Real):
         raise TypeError("'rtol' must be type float.")
 
     # atol
-    if not isinstance(options["atol"], (float, Iterable)):
-        raise TypeError("'atol' must be type float or Iterable.")
+    if isinstance(options["atol"], Real):
+        pass
+    elif not isinstance(options["atol"], Iterable):
+        raise TypeError("'atol' must be type float or Iterable[float].")
+    elif not all(isinstance(x, Real) for x in options["atol"]):
+        raise TypeError("When iterable, all 'atol' values must be float.")
 
     # linsolver
     valid =  {"dense", "band",}
@@ -949,7 +954,7 @@ def _check_options(options: dict) -> None:
     lband = options["lband"]
     if lband is None:
         pass
-    elif not isinstance(lband, int):
+    elif not isinstance(lband, Integral):
         raise TypeError("'lband' must be type int.")
     elif lband < 0:
         raise ValueError("'lband' must be positive or zero.")
@@ -958,7 +963,7 @@ def _check_options(options: dict) -> None:
     uband = options["uband"]
     if uband is None:
         pass
-    elif not isinstance(uband, int):
+    elif not isinstance(uband, Integral):
         raise TypeError("'uband' must be type int.")
     elif uband < 0:
         raise ValueError("'uband' must be positive or zero.")
@@ -975,25 +980,25 @@ def _check_options(options: dict) -> None:
     elif method.lower() == "adams":
         max_allowed = 12
 
-    if not isinstance(options["max_order"], int):
+    if not isinstance(options["max_order"], Integral):
         raise TypeError("'order' must be type int.")
     elif options["max_order"] < 1 or options["max_order"] > max_allowed:
         raise ValueError(f"'order' must be in range [1, {max_allowed}].")
 
     # max_num_steps
-    if not isinstance(options["max_num_steps"], int):
+    if not isinstance(options["max_num_steps"], Integral):
         raise TypeError("'max_num_steps' must be type int.")
     elif not options["max_num_steps"] > 0:
         raise ValueError("'max_num_steps' must be > 0.")
 
     # max_nonlin_iters
-    if not isinstance(options["max_nonlin_iters"], int):
+    if not isinstance(options["max_nonlin_iters"], Integral):
         raise TypeError("'max_nonlin_iters' must be type int.")
     elif not options["max_nonlin_iters"] > 0:
         raise ValueError("'max_nonlin_iters' must be > 0.")
 
     # max_conv_fails
-    if not isinstance(options["max_conv_fails"], int):
+    if not isinstance(options["max_conv_fails"], Integral):
         raise TypeError("'max_conv_fails' must be type int.")
     elif not options["max_conv_fails"] > 0:
         raise ValueError("'max_conv_fails' must be > 0.")
@@ -1004,7 +1009,7 @@ def _check_options(options: dict) -> None:
         pass
     elif not isinstance(constraints_idx, Iterable):
         raise TypeError("'constraints_idx' must be type Iterable.")
-    elif not all(isinstance(x, int) for x in constraints_idx):
+    elif not all(isinstance(x, Integral) for x in constraints_idx):
         raise TypeError("All 'constraints_idx' values must be type int.")
 
     # constraints_type
@@ -1041,7 +1046,7 @@ def _check_options(options: dict) -> None:
     num_events = options["num_events"]    
     if num_events == 0:
         pass
-    elif not isinstance(num_events, int):
+    elif not isinstance(num_events, Integral):
         raise TypeError("'num_events' must be type int.")
     elif num_events < 0:
         raise ValueError("'num_events' must be positive or zero.")
