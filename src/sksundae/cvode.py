@@ -152,11 +152,11 @@ class CVODE:
 
         Examples
         --------
-        The following example solves the stiff Van der Pol equation, which is a
-        classic ODE test problem. The same example is provided by `MATLAB`_ for
-        comparison.
+        The following example solves the stiff Van der Pol equation, a classic
+        ODE test problem. The same example is provided by `MATLAB <vdp-ex_>`_
+        for comparison.
 
-        .. _MATLAB:
+        .. _vdp-ex:
             https://www.mathworks.com/help/matlab/math/solve-stiff-odes.html
 
         .. code-block:: python
