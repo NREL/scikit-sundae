@@ -4,28 +4,11 @@
 cimport numpy as np
 
 # Define float and int types:
-# config.pxi is created in setup.py. While building the python package, the 
+# c_config.pxi is created in setup.py. While building the python package, the 
 # sundials_config.h header is parsed to determine what precision was used to
 # compile the SUNDIALS that is being built against. The settings are saved in
 # the pxi file and used here.
-include "config.pxi"
-
-IF SUNDIALS_FLOAT_TYPE == "single":
-    ctypedef float sunrealtype
-    ctypedef np.float32_t DTYPE_t
-ELIF SUNDIALS_FLOAT_TYPE == "double":
-    ctypedef double sunrealtype
-    ctypedef np.float64_t DTYPE_t
-ELIF SUNDIALS_FLOAT_TYPE == "extended":
-    ctypedef long double sunrealtype
-    ctypedef np.float128_t DTYPE_t
-
-IF SUNDIALS_INT_TYPE == "int32":
-    ctypedef int sunindextype
-    ctypedef np.int32_t INT_TYPE_t
-ELIF SUNDIALS_INT_TYPE == "int64":
-    ctypedef long int sunindextype
-    ctypedef np.int64_t INT_TYPE_t
+include "c_config.pxi"
 
 # sundials_types.h
 cdef extern from "sundials/sundials_types.h":

@@ -9,24 +9,28 @@ from .c_nvector cimport *  # Access to N_Vector functions
 from .c_sunmatrix cimport *  # Access to SUNMatrix functions
 
 # Define float and int types:
-# config.pxi is created in setup.py. While building the python package, the 
+# py_config.pxi is created in setup.py. While building the python package, the 
 # sundials_config.h header is parsed to determine what precision was used to
 # compile the SUNDIALS that is being built against. The settings are saved in
 # the pxi file and used here.
-include "config.pxi"
+include "py_config.pxi"
 
-sundials_version = SUNDIALS_VERSION
+config = {
+    "SUNDIALS_VERSION": SUNDIALS_VERSION,
+    "SUNDIALS_FLOAT_TYPE": SUNDIALS_FLOAT_TYPE,
+    "SUNDIALS_INT_TYPE": SUNDIALS_INT_TYPE,
+}
 
-if SUNDIALS_FLOAT_TYPE == "single":
+if SUNDIALS_FLOAT_TYPE == "float":
     from numpy import float32 as DTYPE
 elif SUNDIALS_FLOAT_TYPE == "double":
     from numpy import float64 as DTYPE
-elif SUNDIALS_FLOAT_TYPE == "extended":
+elif SUNDIALS_FLOAT_TYPE == "long double":
     from numpy import longdouble as DTYPE
 
-if SUNDIALS_INT_TYPE == "int32":
+if SUNDIALS_INT_TYPE == "int":
     from numpy import int32 as INT_TYPE
-elif SUNDIALS_INT_TYPE == "int64":
+elif SUNDIALS_INT_TYPE == "long int":
     from numpy import int64 as INT_TYPE
 
 
