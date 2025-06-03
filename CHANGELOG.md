@@ -5,6 +5,8 @@
 ### New Features
 
 ### Optimizations
+- Use `micromamba` over `conda` in CI workflow ([#22](https://github.com/NREL/scikit-sundae/pull/22))
+- Remove `IF` and `DEF` compile-time code for future-proofing Cython code ([#22](https://github.com/NREL/scikit-sundae/pull/22)) 
 
 ### Bug Fixes
 - Change `Exception` propagations to support Cython v3.1 ([#21](https://github.com/NREL/scikit-sundae/pull/21))

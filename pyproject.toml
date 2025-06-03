@@ -47,34 +47,29 @@ version = {attr = "sksundae.__version__"}
 where = ["src"]
 
 [project.optional-dependencies]
-dev = [
-    "nox",
+docs = [
+    "sphinx",
+    "myst-nb",
+    "matplotlib",
+    "sphinx-design",
+    "sphinx-autoapi",
+    "sphinx-favicon",
+    "sphinx-copybutton",
+    "pydata-sphinx-theme",
+]
+tests = [
     "pandas",
     "pytest",
     "pytest-cov",
     "pytest-xdist",
-    "genbadge[all]",
+]
+dev = [
+    "nox",
     "flake8",
     "autopep8",
     "codespell",
-    "sphinx",
-    "myst-nb",
-    "sphinx-design",
-    "sphinx-autoapi",
-    "sphinx-favicon",
-    "sphinx-copybutton",
-    "pydata-sphinx-theme",
-    "matplotlib",
-]
-docs = [
-    "sphinx",
-    "myst-nb",
-    "sphinx-design",
-    "sphinx-autoapi",
-    "sphinx-favicon",
-    "sphinx-copybutton",
-    "pydata-sphinx-theme",
-    "matplotlib",
+    "genbadge[all]",
+    "scikit-sundae[docs,tests]",
 ]
 
 [project.urls]

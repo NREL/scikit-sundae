@@ -53,7 +53,7 @@ rights reserved.
 
 """
 
-from ._cy_common import sundials_version as SUNDIALS_VERSION
+from ._cy_common import SUNDIALS_VERSION
 
 from . import ida
 from . import utils
