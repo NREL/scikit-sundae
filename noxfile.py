@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import importlib
 
 import nox
 
@@ -84,14 +85,24 @@ def run_pytest(session):
 
     """
 
-    command = [
-        'pytest',
-        '--cov=src/sksundae',
-        '--cov-report=html:reports/htmlcov',
-        '--cov-report=xml:reports/coverage.xml',
-        '--junitxml=reports/junit.xml',
-        'tests/',
-    ]
+    package = importlib.util.find_spec('sksundae')
+    coverage_folder = os.path.dirname(package.origin)
+
+    if 'no-reports' in session.posargs:
+        command = [
+            'pytest',
+            f'--cov={coverage_folder}',  # for editable or site-packages
+            'tests/',
+        ]
+    else:
+        command = [
+            'pytest',
+            '--cov=src/sksundae',
+            '--cov-report=html:reports/htmlcov',
+            '--cov-report=xml:reports/coverage.xml',
+            '--junitxml=reports/junit.xml',
+            'tests/',
+        ]
 
     for arg in session.posargs:
         if arg.startswith('parallel='):
