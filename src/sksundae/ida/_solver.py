@@ -16,7 +16,7 @@ class IDA:
         """
         This class wraps the implicit differential algebraic (IDA) solver from
         SUNDIALS [1]_ [2]_. IDA solves both ordinary differential equations
-        (ODEs) and differiential agebraic equatinos (DAEs).
+        (ODEs) and differiential agebraic equations (DAEs).
 
         Parameters
         ----------
@@ -193,7 +193,7 @@ class IDA:
         The initialization is checked against the correct answer after solving.
 
         .. _Rob-Ex:
-            https://mathworks.com/help/matlab/math/
+            https://www.mathworks.com/help/matlab/math/
             solve-differential-algebraic-equations-daes.html
 
         .. code-block:: python
