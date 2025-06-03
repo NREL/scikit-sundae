@@ -5,14 +5,20 @@
 ### New Features
 
 ### Optimizations
+
+### Bug Fixes
+
+### Breaking Changes
+
+## [v1.0.2](https://github.com/NREL/scikit-sundae/tree/v1.0.2)
+
+### Optimizations
 - Use `micromamba` over `conda` in CI workflow ([#22](https://github.com/NREL/scikit-sundae/pull/22))
-- Remove `IF` and `DEF` compile-time code for future-proofing Cython code ([#22](https://github.com/NREL/scikit-sundae/pull/22)) 
+- Remove `IF` and `DEF` Cython code for future-proofing builds ([#22](https://github.com/NREL/scikit-sundae/pull/22)) 
 
 ### Bug Fixes
 - Change `Exception` propagations to support Cython v3.1 ([#21](https://github.com/NREL/scikit-sundae/pull/21))
 - Improve type support by using `Integral` and `Real` ([#21](https://github.com/NREL/scikit-sundae/pull/21))
-
-### Breaking Changes
 
 ## [v1.0.1](https://github.com/NREL/scikit-sundae/tree/v1.0.1)
 
