@@ -123,7 +123,7 @@ if __name__ == '__main__':
 
     patch_check = Version(args.local)
     if patch_check.micro > 0:
-        prefix = str(patch_check.major) + '.' + str(patch_check.minor)
+        prefix = str(patch_check.major) + '.' + str(patch_check.minor) + '.'
     else:
         prefix = None
 
