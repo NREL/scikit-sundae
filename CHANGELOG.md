@@ -5,6 +5,7 @@
 ### New Features
 
 ### Optimizations
+- Bound supported SUNDIALS versions to >= 7.0.0 and < 7.3.0 ([#24](https://github.com/NREL/scikit-sundae/pull/24))
 
 ### Bug Fixes
 
