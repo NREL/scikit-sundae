@@ -5,11 +5,15 @@
 ### New Features
 
 ### Optimizations
-- Bound supported SUNDIALS versions to >= 7.0.0 and < 7.3.0 ([#24](https://github.com/NREL/scikit-sundae/pull/24))
 
 ### Bug Fixes
 
 ### Breaking Changes
+
+## [v1.0.3](https://github.com/NREL/scikit-sundae/tree/v1.0.3)
+
+### Optimizations
+- Bound supported SUNDIALS versions to >= 7.0.0 and < 7.3.0 ([#24](https://github.com/NREL/scikit-sundae/pull/24))
 
 ## [v1.0.2](https://github.com/NREL/scikit-sundae/tree/v1.0.2)
 
