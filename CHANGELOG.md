@@ -3,6 +3,8 @@
 ## [Unreleased](https://github.com/NREL/scikit-sundae/)
 
 ### New Features
+- Move to newest SUNDIALS v7.4 for CI builds/tests ([#23](https://github.com/NREL/scikit-sundae/pull/23))
+- Move to newest SUNDIALS v7.3 for CI builds/tests ([#16](https://github.com/NREL/scikit-sundae/pull/16))
 - Add `reduce_bandwidth` function to help restructure sparse problems ([#15](https://github.com/NREL/scikit-sundae/pull/15))
 - Implement interfaces for Jacobian-vector products ([#13](https://github.com/NREL/scikit-sundae/pull/13))
 - Allow preconditioning for iterative solvers ([#12](https://github.com/NREL/scikit-sundae/pull/12))
@@ -15,7 +17,6 @@
 - Changed signature inspections to support decorated `jit` functions ([#3](https://github.com/NREL/scikit-sundae/pull/3))
 
 ### Optimizations
-- Move to newest SUNDIALS v7.3 for CI tests/builds ([#16](https://github.com/NREL/scikit-sundae/pull/16))
 - Use `np.testing` where possible in tests for more informative fail statements ([#14](https://github.com/NREL/scikit-sundae/pull/14))
 - Updates to be compliant with Cython deprecations of `IF/ELIF/ELSE` and `DEF` ([#5](https://github.com/NREL/scikit-sundae/pull/5))
 - Replace loops between 1D numpy arrays and SUNDIALS NVectors with single-line memory views and pointer addressing ([#5](https://github.com/NREL/scikit-sundae/pull/5))
