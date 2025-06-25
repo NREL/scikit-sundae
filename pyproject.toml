@@ -1,7 +1,7 @@
 # pyproject.toml
 
 [build-system]
-requires = ["setuptools", "cython", "numpy"]
+requires = ["setuptools", "cython", "numpy", "packaging"]
 build-backend = "setuptools.build_meta"
 
 [project]

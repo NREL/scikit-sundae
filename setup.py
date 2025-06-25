@@ -3,10 +3,16 @@
 import os
 import re
 import setuptools
+
 from warnings import warn
 
 import numpy
+
 from Cython.Build import cythonize
+from packaging.version import Version
+
+MIN_VERSION = Version('7.3.0')
+MAX_VERSION = Version('7.5.0')
 
 
 def find_sundials():
@@ -36,11 +42,11 @@ def find_sundials():
         if os.path.exists(CONFIG_H):
             return BASE, CONFIG_H
 
-    raise FileNotFoundError("Can't find SUNDIALS installation in any of the"
-                            f" {search_paths=}. Set the environment variable"
-                            " SUNDIALS_PREFIX to the parent directory of the"
-                            " 'include' and 'lib' directories and retry the"
-                            " installation.")
+    raise FileNotFoundError(
+        f"Can't find SUNDIALS installation in any of the {search_paths=}. Set"
+        " the environment variable SUNDIALS_PREFIX to the parent directory of"
+        " the 'include' and 'lib' directories and retry the installation."
+    )
 
 
 def parse_config_h(file):
@@ -79,10 +85,12 @@ def get_extensions():
 
     # Write pxi files for C and Python to match types to sundials_config.h
     SUNDIALS_VERSION = config.get('SUNDIALS_VERSION')
-    MAJOR_VERSION = SUNDIALS_VERSION.split('.')[0]
-    if int(MAJOR_VERSION) < 7:
-        raise RuntimeError(f"sksundae - incompatible {SUNDIALS_VERSION=}."
-                           " MAJOR_VERSION must be at least 7.")
+    if not (MIN_VERSION <= Version(SUNDIALS_VERSION) < MAX_VERSION):
+        raise RuntimeError(
+            f"This version of sksundae requires SUNDIALS >= v{MIN_VERSION} and"
+            f" < v{MAX_VERSION}, but found {SUNDIALS_VERSION=}. Please install"
+            " a supported version and rebuild sksundae."
+        )
 
     if config.get('SUNDIALS_SINGLE_PRECISION'):
         precision = 'float'
