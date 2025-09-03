@@ -14,6 +14,8 @@ author = 'Corey R. Randall'
 version = sun.__version__
 release = sun.__version__
 
+json_url = 'https://scikit-sundae.readthedocs.io/en/latest/_static/switcher.json'
+
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -94,6 +96,11 @@ html_theme_options = {
     'collapse_navigation': True,
     'show_toc_level': 0,
     'pygments_light_style': 'tango',
+    'show_version_warning_banner': True,
+    'switcher': {
+        'json_url': json_url,
+        'version_match': version,
+    }
 }
 
 
