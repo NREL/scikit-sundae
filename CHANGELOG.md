@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/NREL/scikit-sundae/)
 
 ### New Features
+- Add version warning banner to docs for dev and older releases ([#28][https://github.com/NREL/scikit-sundae/pull/28])
 - Move to newest SUNDIALS v7.4 for CI builds/tests ([#23](https://github.com/NREL/scikit-sundae/pull/23))
 - Move to newest SUNDIALS v7.3 for CI builds/tests ([#16](https://github.com/NREL/scikit-sundae/pull/16))
 - Add `reduce_bandwidth` function to help restructure sparse problems ([#15](https://github.com/NREL/scikit-sundae/pull/15))
