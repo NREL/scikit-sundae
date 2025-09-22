@@ -75,7 +75,7 @@ class RichResult:
 
         .. code-block:: python
 
-            from sundae.utils import RichResult
+            from sksundae.utils import RichResult
 
             result = RichResult(a=10, b=20, c=30)
 
