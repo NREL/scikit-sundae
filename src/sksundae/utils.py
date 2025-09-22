@@ -43,7 +43,7 @@ class RichResult:
 
         .. code-block:: python
 
-            import sundae as sun
+            import sksundae as sun
 
             class CustomResult(sun.utils.RichResult):
                 _order_keys = ['first', 'second', 'third',]
@@ -58,7 +58,8 @@ class RichResult:
         .. code-block:: python
 
             import numpy as np
-            from sundae.utils import RichResult
+
+            from sksundae.utils import RichResult
 
             t = np.linspace(0, 1, 1000)
             y = np.random.rand(1000, 5)
@@ -74,7 +75,7 @@ class RichResult:
 
         .. code-block:: python
 
-            from sundae.utils import RichResult
+            from sksundae.utils import RichResult
 
             result = RichResult(a=10, b=20, c=30)
 
