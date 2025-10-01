@@ -107,7 +107,7 @@ In all cases where you are trying to install from the source distribution, you s
 scikit-SUNDAE Version  Supported SUNDIALS Version(s)
 ====================== ==============================
 1.0.x                   >=7.0, <7.3
-1.1.x                   >=7.3, <7.5
+1.1.x                   >=7.3, <7.6
 ====================== ==============================
 
 1. Make sure you have a C compiler installed. If you are using the Windows operating system, we recommend `Visual Studio`_, but if you have another preferred compiler that should work too. For MacOS and other Linux-based operating systems, we recommend `Clang`_, which can be installed through the terminal using::
