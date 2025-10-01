@@ -1,5 +1,6 @@
 import requests
 import argparse
+
 from packaging.version import Version
 
 
@@ -35,7 +36,7 @@ def get_latest_version(package: str, prefix: str = None) -> str:
         raise ValueError(f"Failed to fetch PyPI data for '{package}'.")
 
     data = response.json()
-    versions = list(data['releases'].keys())
+    versions = list(data.get('releases', {}).keys())
     if not versions:
         print(f"{package=} not found on PyPI.")
         return '0.0.0'
