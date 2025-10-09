@@ -3,8 +3,9 @@
 ## [Unreleased](https://github.com/NREL/scikit-sundae/)
 
 ### New Features
+- Drop Python 3.9 and add support for 3.14 in tests/release ([#31](https://github.com/NREL/scikit-sundae/pull/31))
 - Move to newest SUNDIALS v7.5 for CI builds/tests ([#30](https://github.com/NREL/scikit-sundae/pull/30))
-- Add version warning banner to docs for dev and older releases ([#28][https://github.com/NREL/scikit-sundae/pull/28])
+- Add version warning banner to docs for dev and older releases ([#28](https://github.com/NREL/scikit-sundae/pull/28]))
 - Move to newest SUNDIALS v7.4 for CI builds/tests ([#23](https://github.com/NREL/scikit-sundae/pull/23))
 - Move to newest SUNDIALS v7.3 for CI builds/tests ([#16](https://github.com/NREL/scikit-sundae/pull/16))
 - Add `reduce_bandwidth` function to help restructure sparse problems ([#15](https://github.com/NREL/scikit-sundae/pull/15))
@@ -21,7 +22,7 @@
 ### Optimizations
 - Use `np.testing` where possible in tests for more informative fail statements ([#14](https://github.com/NREL/scikit-sundae/pull/14))
 - Updates to be compliant with Cython deprecations of `IF/ELIF/ELSE` and `DEF` ([#5](https://github.com/NREL/scikit-sundae/pull/5))
-- Replace loops between 1D numpy arrays and SUNDIALS NVectors with single-line memory views and pointer addressing ([#5](https://github.com/NREL/scikit-sundae/pull/5))
+- Use single-line memory views and pointer addressing for `np2ptr` and `np2smat` ([#5](https://github.com/NREL/scikit-sundae/pull/5))
 - Use `micromamba` instead of `miniconda` in CI ([#3](https://github.com/NREL/scikit-sundae/pull/3))
 
 ### Bug Fixes
@@ -46,6 +47,6 @@ This is the first official release of scikit-SUNDAE. Main features/capabilities 
 - scipy-like `RichResult` output containers
 
 ### Notes
-- Implemented `pytest` with tests that directly compare against solutions generated using C programs
+- Tests check solutions against C programs
 - Source/binary distributions available on [PyPI](https://pypi.org/project/scikit-sundae)
 - Documentation available on [Read the Docs](https://scikit-sundae.readthedocs.io/)
