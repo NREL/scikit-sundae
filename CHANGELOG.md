@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/NREL/scikit-sundae/)
 
 ### New Features
+- Enforce constraints when `**LSSparseDQJac` funcs are used ([#32](https://github.com/NREL/scikit-sundae/pull/32))
 - Drop Python 3.9 and add support for 3.14 in tests/release ([#31](https://github.com/NREL/scikit-sundae/pull/31))
 - Move to newest SUNDIALS v7.5 for CI builds/tests ([#30](https://github.com/NREL/scikit-sundae/pull/30))
 - Add version warning banner to docs for dev and older releases ([#28](https://github.com/NREL/scikit-sundae/pull/28]))

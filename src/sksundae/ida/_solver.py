@@ -68,13 +68,14 @@ class IDA:
         uband : int or None, optional
             Upper Jacobian bandwidth. Required when 'linsolver' is 'band'. Use
             zero if no elements are above the main diagonal. Defaults to None.
-        sparsity : array_like, sparse matrix or None, optional
+        sparsity : 2D np.array or sparse matrix or None, optional
             Jacobian sparsity pattern. Required when 'linsolver' is 'sparse'.
             The shape must be (N, N) where N is the size of the system. Zero
             entries indicate fixed zeros in the Jacobian. If 'jacfn' is None,
-            this argument will activate a custom Jacobian routine. The routine
-            works with all direct linear solvers but may increase step count.
-            Reduce 'max_step' to help with this, if needed. Defaults to None.
+            this argument activates a custom Jacobian routine (not part of the
+            original SUNDIALS package). The routine works with all direct linear
+            solvers but may increase step count. Reduce 'max_step' to help with
+            this, if needed. Defaults to None.
         nthreads : int or None, optional
             Number of threads to use with the 'sparse' linear solver. If None
             (default), 1 is used. Use -1 to use all available threads.
