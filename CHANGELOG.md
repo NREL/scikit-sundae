@@ -1,6 +1,6 @@
 # scikit-SUNDAE Changelog
 
-## [Unreleased](https://github.com/NREL/scikit-sundae/)
+## [v1.1.0](https://github.com/NREL/scikit-sundae/tree/v1.1.0)
 
 ### New Features
 - Enforce constraints when `**LSSparseDQJac` funcs are used ([#32](https://github.com/NREL/scikit-sundae/pull/32))
