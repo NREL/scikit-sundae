@@ -263,7 +263,9 @@ cdef class AuxData:
     cdef np.ndarray np_zv       # precond zvec
     cdef np.ndarray np_vv       # jactimes vv
     cdef np.ndarray np_Jv       # jactimes Jv
+    cdef np.ndarray np_cc       # constraints (-2, -1, 0, 1, 2)
     cdef bint with_userdata
+    cdef bint is_constrained
 
     cdef object resfn           # Callable
     cdef object userdata        # Any
@@ -311,6 +313,19 @@ cdef class AuxData:
             self.np_vv = np.empty(0, DTYPE)
             self.np_Jv = np.empty(0, DTYPE)
 
+        constraints_idx = options["constraints_idx"]
+        constraints_type = options["constraints_type"]
+        if constraints_idx is not None:
+
+            self.is_constrained = True
+            self.np_cc = np.zeros(NEQ, INT_TYPE)
+            for idx, val in zip(constraints_idx, constraints_type):
+                self.np_cc[idx] = val
+
+        else:
+            self.is_constrained = False
+            self.np_cc = np.zeros(0, INT_TYPE)
+
 
 cdef class _idaLSSparseDQJac:
     """
@@ -338,7 +353,7 @@ cdef class _idaLSSparseDQJac:
         groups = {}
         for i in range(ngroups):
             cols = np.where(grouped_cols == i)[0]           
-            groups[i] = np.array(cols, dtype=INT_TYPE)       
+            groups[i] = np.array(cols, INT_TYPE)       
         
         self.aux = aux
         self.groups = groups
@@ -376,6 +391,18 @@ cdef class _idaLSSparseDQJac:
         sign = (hh*yp >= 0).astype(float) * 2 - 1
         inc = srur * np.maximum(np.abs(y), np.abs(hh*yp))
         inc = sign * np.maximum(srur, inc)
+
+        if aux.is_constrained:
+            conj = aux.np_cc
+
+            mask1 = np.abs(conj) == 1
+            flip1 = ((y + inc) * conj < 0)
+            inc[mask1 & flip1] *= -1
+
+            mask2 = np.abs(conj) == 2
+            flip2 = ((y + inc) * conj <= 0)
+            inc[mask2 & flip2] *= -1
+
         inc_inv = 1. / inc
 
         ngroups = len(self.groups)
@@ -545,7 +572,7 @@ cdef class IDA:
 
         if isinstance(atol, Iterable):
             rtol = <sunrealtype> rtol
-            atol = np.asarray(atol, dtype=DTYPE)
+            atol = np.asarray(atol, DTYPE)
 
             if len(atol) != self.NEQ:
                 raise ValueError(f"'atol' length ({atol.size}) differs from"
@@ -729,7 +756,7 @@ cdef class IDA:
             if flag < 0:
                 raise RuntimeError("IDARootInit - " + IDAMESSAGES[flag])
 
-            np_eventsdir = np.array(eventsfn.direction, dtype=INT_TYPE)
+            np_eventsdir = np.array(eventsfn.direction, INT_TYPE)
 
             flag = IDASetRootDirection(self.mem, <int*> np_eventsdir.data)
             if flag < 0:
@@ -740,7 +767,7 @@ cdef class IDA:
         SUNContext_PushErrHandler(self.ctx, _err_handler, NULL)
 
         np_algidx = np.ones(self.NEQ, DTYPE)
-        if self._options["algebraic_idx"]:
+        if self._options["algebraic_idx"] is not None:
             for idx in self._options["algebraic_idx"]:
                 np_algidx[idx] = 0.0
 
@@ -778,7 +805,7 @@ cdef class IDA:
 
         constraints_idx = self._options["constraints_idx"]
         constraints_type = self._options["constraints_type"]
-        if constraints_idx:
+        if constraints_idx is not None:
 
             np_constraints = np.zeros(self.NEQ, DTYPE)
             for idx, val in zip(constraints_idx, constraints_type):
@@ -1083,8 +1110,8 @@ cdef class IDA:
 
     def init_step(self, DTYPE_t t0, object y0, object yp0):
         
-        y0 = np.asarray(y0, dtype=DTYPE)
-        yp0 = np.asarray(yp0, dtype=DTYPE)
+        y0 = np.asarray(y0, DTYPE)
+        yp0 = np.asarray(yp0, DTYPE)
         
         return self._init_step(t0, y0, yp0)
 
@@ -1106,9 +1133,9 @@ cdef class IDA:
 
     def solve(self, object tspan, object y0, object yp0):
 
-        tspan = np.asarray(tspan, dtype=DTYPE)
-        y0 = np.asarray(y0, dtype=DTYPE)
-        yp0 = np.asarray(yp0, dtype=DTYPE)
+        tspan = np.asarray(tspan, DTYPE)
+        y0 = np.asarray(y0, DTYPE)
+        yp0 = np.asarray(yp0, DTYPE)
 
         diff = np.diff(tspan)
         if not all(diff > 0) ^ all(diff < 0):
@@ -1160,8 +1187,8 @@ cdef _prepare_events(object eventsfn, int num_events):
         raise ValueError("'eventsfn.direction' length != 'num_events'.")
 
     # add extra fields for _handle_events function
-    eventsfn._i_tmp = np.zeros(num_events, dtype=INT_TYPE)
-    eventsfn._i_cnt = np.zeros(num_events, dtype=INT_TYPE)
+    eventsfn._i_tmp = np.zeros(num_events, INT_TYPE)
+    eventsfn._i_cnt = np.zeros(num_events, INT_TYPE)
 
     eventsfn._i = []
     eventsfn._t = []
