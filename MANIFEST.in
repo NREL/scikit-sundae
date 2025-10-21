@@ -1,2 +1,2 @@
 global-exclude *.c tests/*
-recursive-include src/sksundae *.py *.pyx *.pxd *.pxi
+recursive-include src/sksundae *.py *.pyx *.pxd *.pxi *.h

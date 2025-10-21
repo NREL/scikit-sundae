@@ -120,7 +120,7 @@ jobs:
         run: |
           pip install delvewheel
           for whl in dist/*sundae*.whl; do 
-          delvewheel repair "$whl" -w wheels/ || exit 1;
+          delvewheel repair "$whl" --add-dll openblas.dll -w wheels -v || exit 1;
           done
           
       - name: Repair MacOS wheels
@@ -130,7 +130,7 @@ jobs:
 
           pip install delocate
           for whl in dist/*sundae*.whl; do
-            delocate-wheel "$whl" -w wheels/ || exit 1;
+            delocate-wheel "$whl" -w wheels -v || exit 1;
           done
 
       - name: Repair Linux wheels
@@ -138,7 +138,7 @@ jobs:
         run: |
           pip install auditwheel
           for whl in dist/*sundae*.whl; do
-            auditwheel repair "$whl" --plat manylinux2014_x86_64 -w wheels/ || exit 1;
+            auditwheel repair "$whl" --plat manylinux2014_x86_64 -w wheels -v || exit 1;
           done
         
       - name: List files in wheels dir
@@ -155,13 +155,11 @@ jobs:
         run: |
           micromamba remove sundials
           micromamba create -n test python=${{ matrix.python-version }}
-          micromamba activate test
 
-          python -m pip install --upgrade pip
-          pip install wheels/*.whl -v
-          
-          pip install pandas pytest
-          pytest ./tests
+          micromamba run -n test python -m pip install --upgrade pip
+          micromamba run -n test pip install wheels/*.whl -v
+          micromamba run -n test pip install pandas pytest
+          micromamba run -n test pytest ./tests
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
