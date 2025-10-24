@@ -27,6 +27,7 @@
 - Use `micromamba` instead of `miniconda` in CI ([#3](https://github.com/NREL/scikit-sundae/pull/3))
 
 ### Bug Fixes
+- Move to `cibuildwheel` for releases due to segfaults on Linux ([#33](https://github.com/NREL/scikit-sundae/pull/33))
 - Fixed import typo in docstring examples for `RichResult` ([#29](https://github.com/NREL/scikit-sundae/pull/29))
 - Resolve exception propagation consistently for Cython v3.1 and up ([#20](https://github.com/NREL/scikit-sundae/pull/20))
 - Fix memory leak when `init_step` is repeatedly called in `CVODE` and `IDA` ([#19](https://github.com/NREL/scikit-sundae/pull/19))
