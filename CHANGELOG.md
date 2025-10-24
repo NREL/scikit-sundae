@@ -1,5 +1,15 @@
 # scikit-SUNDAE Changelog
 
+## [Unreleased](https://github.com/NREL/scikit-sundae)
+
+### New Features
+
+### Optimizations
+
+### Bug Fixes
+
+### Breaking Changes
+
 ## [v1.1.0](https://github.com/NREL/scikit-sundae/tree/v1.1.0)
 
 ### New Features
