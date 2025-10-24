@@ -200,7 +200,7 @@ def get_extensions():
         ])
 
         MACROS.append(('SUNDIALS_HAS_LAPACK', None))
-        
+
     # Define the extension modules
     extensions = [
         setuptools.Extension(
