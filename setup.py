@@ -6,7 +6,7 @@ import setuptools
 
 from warnings import warn
 
-import numpy
+import numpy as np
 
 from Cython.Build import cythonize
 from packaging.version import Version
@@ -158,7 +158,7 @@ def get_extensions():
         f.write(f"ctypedef {np_indexsize} INT_TYPE_t\n\n")
 
     # Specify include_dirs, library_dirs, and libraries for each extension
-    SUNDIALS_INCLUDE_DIRS = [numpy.get_include(), os.path.join(BASE, 'include')]
+    SUNDIALS_INCLUDE_DIRS = [np.get_include(), os.path.join(BASE, 'include')]
     SUNDIALS_LIBRARY_DIRS = [os.path.join(BASE, 'lib')]
 
     LIBRARIES = [
