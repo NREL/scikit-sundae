@@ -1,6 +1,6 @@
 [
     {
-        "name": "dev",
+        "name": "latest",
         "version": "1.2.0.dev0",
         "url": "https://scikit-sundae.readthedocs.io/en/latest/"
     },
@@ -11,7 +11,7 @@
         "preferred": true
     },
     {
-        "name": "stable",
+        "name": "v1.0.x",
         "version": "1.0.3",
         "url": "https://scikit-sundae.readthedocs.io/en/v1.0.x/"
     }
