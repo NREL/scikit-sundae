@@ -207,7 +207,7 @@ cdef class IDA:
     cdef N_Vector yp
     cdef SUNMatrix A 
     cdef SUNLinearSolver LS
-    cdef np.npy_intp NEQ
+    cdef sunindextype NEQ
     cdef AuxData aux
 
     cdef object _size
@@ -357,7 +357,7 @@ cdef class IDA:
         if len(y0) != len(yp0):
             raise ValueError("'y0' and 'yp0' must be the same size.")
         
-        self.NEQ = y0.size
+        self.NEQ = <sunindextype> y0.size
         self.aux = AuxData(self.NEQ, self._options)
 
         self.yy = N_VNew_Serial(self.NEQ, self.ctx)
@@ -437,7 +437,7 @@ cdef class IDA:
             raise RuntimeError("IDASetUserData - " + IDAMESSAGES[flag])
 
         np_algidx = np.ones(self.NEQ, DTYPE)
-        if self._options["algebraic_idx"]:
+        if self._options["algebraic_idx"] is not None:
             for idx in self._options["algebraic_idx"]:
                 np_algidx[idx] = 0.0
 
@@ -475,7 +475,7 @@ cdef class IDA:
 
         constraints_idx = self._options["constraints_idx"]
         constraints_type = self._options["constraints_type"]
-        if constraints_idx:
+        if constraints_idx is not None:
 
             np_constraints = np.zeros(self.NEQ, DTYPE)
             for idx, val in zip(constraints_idx, constraints_type):
