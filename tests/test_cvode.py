@@ -110,7 +110,7 @@ def test_cvode_linsolver():
 
 def test_cvode_constraints():
     y0 = np.array([1, 2])
-    
+
     c_np_idx = np.array([0, 1], dtype=int)
     c_list_idx = c_np_idx.tolist()
 

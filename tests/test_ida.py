@@ -176,7 +176,7 @@ def test_ida_linsolver():
 def test_ida_constraints():
     y0 = np.array([1, 2])
     yp0 = np.array([0.1, 0.2])
-    
+
     c_np_idx = np.array([0, 1], dtype=int)
     c_list_idx = c_np_idx.tolist()
 
