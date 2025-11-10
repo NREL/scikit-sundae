@@ -10,7 +10,7 @@
 
 ### Breaking Changes
 
-## [v1.0.4](https://github.com/NREL/scikit-sundae/)
+## [v1.0.4](https://github.com/NREL/scikit-sundae/tree/v1.0.4)
 
 ### Bug Fixes
 - Fix conditional checks for constraints to allow numpy arrays ([#36](https://github.com/NREL/scikit-sundae/pull/36))
