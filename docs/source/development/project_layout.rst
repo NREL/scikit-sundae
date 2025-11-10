@@ -29,8 +29,9 @@ File names follow a convention based on their purpose:
 
 Submodules
 ^^^^^^^^^^
-There are three submodules that handle specific functionality:
+There are four submodules that handle specific functionality:
 
-* ``common``: Contains functions and/or classes that are useful to all solvers. For example, a wrapper class for solutions. Also includes an attribute to store ``SUNDIALS_VERSION``.
+* ``utils``: Contains utility functions and/or classes that are useful to all solvers. For example, a wrapper class for solutions.
+* ``jacband``: Provides access to helper functions/classes associated with Jacobian patterns and bandwidths. For example, suggesting how to restructure a problem to reduce bandwidth.
 * ``cvode``: Holds the CVODE solver class and its results wrapper. The CVODE class is recommended for all ODE problems, even though IDA can also solve pure ODEs.
 * ``ida``: Includes both the IDA solver class and its results wrapper. The IDA class is required for DAE problems since CVODE cannot support the algebraic constraints.
