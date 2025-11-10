@@ -177,17 +177,20 @@ def test_ida_constraints():
     y0 = np.array([1, 2])
     yp0 = np.array([0.1, 0.2])
 
-    # cannot satisfy constraints
+    c_np_idx = np.array([0, 1], dtype=int)
+    c_list_idx = c_np_idx.tolist()
+
+    # cannot satisfy constraints & works with list of constraints_idx
     solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
-                 constraints_idx=[0, 1], constraints_type=[-2, -2])
+                 constraints_idx=c_list_idx, constraints_type=[-2, -2])
 
     _ = solver.init_step(0, y0, yp0)
     soln = solver.step(10)
     assert not soln.success
 
-    # can satisfy constraints
+    # can satisfy constraints & works with numpy array of constraints_idx
     solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
-                 constraints_idx=[0, 1], constraints_type=[2, 2])
+                 constraints_idx=c_np_idx, constraints_type=[2, 2])
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)

@@ -61,4 +61,4 @@ from . import cvode
 
 __all__ = ['ida', 'utils', 'cvode', 'SUNDIALS_VERSION']
 
-__version__ = '1.0.3'
+__version__ = '1.0.4'
