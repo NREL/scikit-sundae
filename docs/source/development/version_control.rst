@@ -52,7 +52,7 @@ Key Features
     - Feature branches: ``feature/description-issue``
     - Bugfix branches: ``bugfix/description-issue``
 
-Note that only bug fixes should have a prefix, but all branches should reference an issue number. Use underscores between words as needed and keep to shorter names. The issue can always be referenced in cases where more information is needed.
+Note that feature and bugfix branches both use prefixes in their branch names. If a modification doesn't neatly fit into either category it is also okay to use other prefixes (e.g., ``docs``, ``chore``, etc.). Use dashes between words as needed and keep to shorter names. The issue number should also be appended to the end. This makes it easy to reference more information, if needed.
 
 The upstream repo only hosts the main and release branches. Users should both fork and clone the to get a local copy::
 
@@ -64,7 +64,7 @@ You will likely also want to setup a remote to the upstream repository for deali
 
 Bug Fixes
 ^^^^^^^^^
-Always prioritize fixing bugs in the ``main`` branch first. Older releases should only be patched on a case-by-case basis, focusing on the most recent releases. It is possible that known bugs will not be patched for versions that are more than three releases old. If you are patching ``main``, follow the directions in the :ref:`New Features` section. Otherwise, to patch a bug on a previous release, follow these steps:
+Always prioritize fixing bugs in the ``main`` branch first. Older releases are patched only on a case-by-case basis, with priority given to the most recent versions. In general, critical fixes will be provided for releases issued within the past two years. If all existing versions are older than two years, only the latest release will continue to receive patches. All other versions will be considered unsupported once they are more than two years old. If you are patching ``main``, follow the directions in the :ref:`New Features` section. Otherwise, to patch a bug on a previous release, follow these steps:
 
 1. Fetch the release branches and create a new branch off the release you are patching::
 
@@ -92,7 +92,7 @@ Always prioritize fixing bugs in the ``main`` branch first. Older releases shoul
     git push origin --delete bugfix/description-123
     git fetch --prune
 
-7. Repeat this processes as necessary to patch additional older versions. Unfortunately, each version needs to be patched individually, which creates more work for developers, and is the reason we prioritize which versions get patched and which do not. At a minimum, patches should always be applied to all versions between the original patched release and ``main``. For example, patches to ``v1.1.x`` should also be applied for ``v1.2.x`` and above, including ``main``, but do not necessarily need to be submitted for ``v1.0.x``.
+7. Repeat this processes as necessary to patch additional older versions. Unfortunately, each version needs to be patched individually, which creates more work for developers, and is the reason we prioritize which versions get patched and which do not. There are ways to cherry pick commits to streamline this process, but this topic is beyond this short tutorial. At a minimum, patches should always be applied to all versions between the original patched release and ``main``. For example, patches to ``v1.1.x`` should also be applied for ``v1.2.x`` and above, including ``main``, but do not necessarily need to be submitted for ``v1.0.x``.
 
 .. _New Features:
 
