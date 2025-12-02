@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/NREL/scikit-sundae)
 
 ### New Features
+- Custom `__reduce__` methods, allowing solvers to be serialized ([#38](https://github.com/NREL/scikit-sundae/pull/38))
 
 ### Optimizations
 
