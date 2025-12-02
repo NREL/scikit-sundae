@@ -1,3 +1,5 @@
+import pickle
+
 import pytest
 import numpy as np
 import numpy.testing as npt
@@ -287,3 +289,27 @@ def test_CVODEResult():
     assert result.y_events == soln.y_events
     assert result.nfev == soln.nfev
     assert result.njev == soln.njev
+
+
+def test_pickling(tmp_path):
+    y0 = np.array([1, 2])
+
+    solver = CVODE(ode, rtol=1e-9, atol=1e-12)
+
+    tspan = np.linspace(0, 10, 11)
+    soln = solver.solve(tspan, y0)
+
+    # pickle the solver
+    pickle_path = tmp_path.joinpath('cvode_solver.pkl')
+    with open(pickle_path, 'wb') as f:
+        pickle.dump(solver, f)
+
+    # unpickle the solver
+    with open(pickle_path, 'rb') as f:
+        loaded_solver = pickle.load(f)
+
+    # solve again with the unpickled solver
+    loaded_soln = loaded_solver.solve(tspan, y0)
+
+    npt.assert_allclose(loaded_soln.t, soln.t)
+    npt.assert_allclose(loaded_soln.y, soln.y)

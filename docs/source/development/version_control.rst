@@ -64,7 +64,9 @@ You will likely also want to setup a remote to the upstream repository for deali
 
 Bug Fixes
 ^^^^^^^^^
-Always prioritize fixing bugs in the ``main`` branch first. Older releases are patched only on a case-by-case basis, with priority given to the most recent versions. In general, critical fixes will be provided for releases issued within the past two years. If all existing versions are older than two years, only the latest release will continue to receive patches. All other versions will be considered unsupported once they are more than two years old. If you are patching ``main``, follow the directions in the :ref:`New Features` section. Otherwise, to patch a bug on a previous release, follow these steps:
+Always prioritize fixing bugs in the ``main`` branch first. In addition to ``main``, patches should also be applied to the latest stable release by creating a new branch off the corresponding maintenance branch, as demonstrated below. Older releases are generally only maintained if they were released within the past year. Please open and consult with a core developer if you have specific needs for patching an older release that is outside the one-year support window.
+
+If you are patching ``main``, follow the directions in the :ref:`New Features` section. Otherwise, to patch a bug on a previous release, follow these steps:
 
 1. Fetch the release branches and create a new branch off the release you are patching::
 
@@ -92,7 +94,7 @@ Always prioritize fixing bugs in the ``main`` branch first. Older releases are p
     git push origin --delete bugfix/description-123
     git fetch --prune
 
-7. Repeat this processes as necessary to patch additional older versions. Unfortunately, each version needs to be patched individually, which creates more work for developers, and is the reason we prioritize which versions get patched and which do not. There are ways to cherry pick commits to streamline this process, but this topic is beyond this short tutorial. At a minimum, patches should always be applied to all versions between the original patched release and ``main``. For example, patches to ``v1.1.x`` should also be applied for ``v1.2.x`` and above, including ``main``, but do not necessarily need to be submitted for ``v1.0.x``.
+7. Repeat this processes as necessary to patch additional older versions. Unfortunately, each version needs to be patched individually, which creates more work for developers, and is the reason we prioritize which (and how many) versions get patched. However, patches should never skip versions when applied to many. For example, if a patch is submitted for ``v1.1.x``, then it should also be applied to ``v1.2.x`` and above (up to and including ``main``), but it does not necessarily need to be submitted for ``v1.0.x``. Before submitting patches for older versions, we recommend confirming with the development team. Some releases may no longer be eligible for new patch updates.
 
 .. _New Features:
 
