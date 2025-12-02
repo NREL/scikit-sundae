@@ -1,7 +1,8 @@
 # ida._solver.py
 
 from __future__ import annotations
-from typing import Callable, TYPE_CHECKING
+
+from typing import Callable, Literal, TYPE_CHECKING
 
 from sksundae._cy_ida import IDA as _IDA, IDAResult as _IDAResult
 
@@ -222,7 +223,12 @@ class IDA:
             plt.show()
 
         """
-        self._IDA = _IDA(resfn, **options)
+        self.__init_data = (resfn, options)
+        self.__IDA = _IDA(resfn, **options)
+
+    def __reduce__(self) -> tuple[type, tuple[Callable], dict]:
+        """Custom pickling support due to C-extension."""
+        return (_deserialize_ida, self.__init_data)
 
     def init_step(self, t0: float, y0: ndarray, yp0: ndarray) -> IDAResult:
         """
@@ -260,9 +266,10 @@ class IDA:
             'y0' and 'yp0' must be the same length.
 
         """
-        return self._IDA.init_step(t0, y0, yp0)
+        return self.__IDA.init_step(t0, y0, yp0)
 
-    def step(self, t: float, method='normal', tstop=None) -> IDAResult:
+    def step(self, t: float, method: Literal['normal', 'onestep'] = 'normal',
+             tstop: float | None = None) -> IDAResult:
         """
         Return the solution at time 't'.
 
@@ -278,7 +285,7 @@ class IDA:
             is returned at time 't'. If 'onestep', output is returned after one
             internal step toward 't'. Both methods stop at events, if given,
             regardless of how 'eventsfn.terminal' was set.
-        tstop : float, optional
+        tstop : float or None, optional
             Specifies a hard time constraint for which the solver should not
             pass, regardless of the 'method'. The default is None.
 
@@ -313,7 +320,7 @@ class IDA:
         .. _here: https://computing.llnl.gov/projects/sundials/usage-notes
 
         """
-        return self._IDA.step(t, method, tstop)
+        return self.__IDA.step(t, method, tstop)
 
     def solve(self, tspan: ndarray, y0: ndarray, yp0: ndarray) -> IDAResult:
         """
@@ -347,7 +354,7 @@ class IDA:
             'tspan' length must be >= 2.
 
         """
-        return self._IDA.solve(tspan, y0, yp0)
+        return self.__IDA.solve(tspan, y0, yp0)
 
 
 class IDAResult(_IDAResult):
@@ -414,3 +421,8 @@ class IDAResult(_IDAResult):
 
         """
         super().__init__(**kwargs)
+
+
+def _deserialize_ida(resfn: Callable, options: dict) -> IDA:
+    """Helper function for unpickling IDA objects."""
+    return IDA(resfn, **options)

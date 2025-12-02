@@ -172,13 +172,13 @@ def run_pre_commit(session: nox.Session) -> None:
     """
     Run all linters/tests and make new badges
 
-    Order of sessions: flake8, codespell, pytest, genbade. Using 'format' for
-    linter, 'write' for codespell, and/or 'parallel' for pytest is permitted.
+    Order of sessions: flake8, spellcheck, pytest, genbadge. Using 'format' for
+    linter, 'write' for spellcheck, and/or 'parallel' for pytest is permitted.
 
     """
 
     run_flake8(session)
-    run_codespell(session)
+    run_spellcheck(session)
 
     run_pytest(session)
     run_genbadge(session)

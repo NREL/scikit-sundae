@@ -1,7 +1,8 @@
 # cvode._solver.py
 
 from __future__ import annotations
-from typing import Callable, TYPE_CHECKING
+
+from typing import Callable, Literal, TYPE_CHECKING
 
 from sksundae._cy_cvode import CVODE as _CVODE, CVODEResult as _CVODEResult
 
@@ -205,7 +206,12 @@ class CVODE:
             plt.show()
 
         """
-        self._CVODE = _CVODE(rhsfn, **options)
+        self.__init_data = (rhsfn, options)
+        self.__CVODE = _CVODE(rhsfn, **options)
+
+    def __reduce__(self) -> tuple[type, tuple[Callable], dict]:
+        """Custom pickling support due to C-extension."""
+        return (_deserialize_cvode, self.__init_data)
 
     def init_step(self, t0: float, y0: ndarray) -> CVODEResult:
         """
@@ -238,9 +244,10 @@ class CVODE:
             A SUNDIALS function returned NULL or was unsuccessful.
 
         """
-        return self._CVODE.init_step(t0, y0)
+        return self.__CVODE.init_step(t0, y0)
 
-    def step(self, t: float, method='normal', tstop=None) -> CVODEResult:
+    def step(self, t: float, method: Literal['normal', 'onestep'] = 'normal',
+             tstop: float | None = None) -> CVODEResult:
         """
         Return the solution at time 't'.
 
@@ -256,7 +263,7 @@ class CVODE:
             is returned at time 't'. If 'onestep', output is returned after one
             internal step toward 't'. Both methods stop at events, if given,
             regardless of how 'eventsfn.terminal' was set.
-        tstop : float, optional
+        tstop : float or None, optional
             Specifies a hard time constraint for which the solver should not
             pass, regardless of the 'method'. The default is None.
 
@@ -291,7 +298,7 @@ class CVODE:
         .. _here: https://computing.llnl.gov/projects/sundials/usage-notes
 
         """
-        return self._CVODE.step(t, method, tstop)
+        return self.__CVODE.step(t, method, tstop)
 
     def solve(self, tspan: ndarray, y0: ndarray) -> CVODEResult:
         """
@@ -322,7 +329,7 @@ class CVODE:
             'tspan' length must be >= 2.
 
         """
-        return self._CVODE.solve(tspan, y0)
+        return self.__CVODE.solve(tspan, y0)
 
 
 class CVODEResult(_CVODEResult):
@@ -383,3 +390,8 @@ class CVODEResult(_CVODEResult):
 
         """
         super().__init__(**kwargs)
+
+
+def _deserialize_cvode(rhsfn: Callable, options: dict) -> CVODE:
+    """Helper function for unpickling CVODE objects."""
+    return CVODE(rhsfn, **options)

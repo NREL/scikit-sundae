@@ -1,3 +1,5 @@
+import pickle
+
 import pytest
 import numpy as np
 import numpy.testing as npt
@@ -392,3 +394,28 @@ def test_IDAResult():
     assert result.yp_events == soln.yp_events
     assert result.nfev == soln.nfev
     assert result.njev == soln.njev
+
+
+def test_pickling(tmp_path):
+    y0 = np.array([1, 2])
+    yp0 = np.array([0.1, 0.2])
+
+    solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1])
+
+    tspan = np.linspace(0, 10, 11)
+    soln = solver.solve(tspan, y0, yp0)
+
+    # pickle the solver
+    pkl_file = tmp_path.joinpath('ida_solver.pkl')
+    with open(pkl_file, 'wb') as f:
+        pickle.dump(solver, f)
+
+    # unpickle the solver
+    with open(pkl_file, 'rb') as f:
+        loaded_solver = pickle.load(f)
+
+    # solve again with the unpickled solver
+    loaded_soln = loaded_solver.solve(tspan, y0, yp0)
+
+    npt.assert_allclose(loaded_soln.t, soln.t)
+    npt.assert_allclose(loaded_soln.y, soln.y)

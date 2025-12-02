@@ -96,7 +96,17 @@ In some cases, exceptions to this order may be made, particularly if moving a hi
                                          # _helper_func first to preprocess
         # Special __dealloc__ method
         cdef __dealloc__(self):
-            pass        
+            pass
+
+Module Considerations
+---------------------
+In our modules, we try to maintain a consistent structure to enhance readability and organization. The general order is as follows:
+
+1. **Classes:** If a module contains any class definitions, they should appear first. Classes define the core structure and behavior of the module.
+2. **Functions:** Public functions follow the class definitions. These functions are the primary operations or utilities that the module offers for external use.
+3. **Hidden Functions:** Internal functions (those with a leading underscore) come last. These are used for supporting internal logic and are not intended to be accessed directly by users.
+
+This ordering helps ensure that users interacting with the module can quickly identify the main components, while hidden/internal logic remains at the bottom for a clearer separation of concerns.
 
 Development Tools
 -----------------
