@@ -20,8 +20,8 @@ includes search functionality and more detailed examples.
 
 Acknowledgements
 ----------------
-scikit-SUNDAE was written by researchers at the **National Renewable Energy
-Laboratory (NREL)**, primarily to solve physics-based battery models. Modeling
+scikit-SUNDAE was written by researchers at the **National Laboratory of the
+Rockies (NLR)**, primarily to solve physics-based battery models. Modeling
 in Python typically allows for rapid development and makes code more shareable.
 However, there was an identified gap in Python's numerical computing ecosystem:
 the lack of accessible DAE solvers. While ODE solvers are widely available in

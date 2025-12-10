@@ -9,6 +9,7 @@ Please add a line in the relevant section of [CHANGELOG.md](https://github.com/N
 - [ ] New feature (non-breaking change which adds functionality)
 - [ ] Optimization (back-end change that improves speed/readability/etc.)
 - [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] Chore (any other clean up, maintenance, etc.)
 
 # Key checklist
 - [ ] No style issues: `$ nox -s linter [-- format]`
