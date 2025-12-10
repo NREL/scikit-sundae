@@ -11,6 +11,9 @@
 
 ### Breaking Changes
 
+### Chores
+- Rebrand NREL to NLR, and include name change for Alliance as well ([#39](https://github.com/NREL/scikit-sundae/pull/39))
+
 ## [v1.1.0](https://github.com/NREL/scikit-sundae/tree/v1.1.0)
 
 ### New Features
