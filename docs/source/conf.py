@@ -9,8 +9,9 @@
 import sksundae as sun
 
 project = 'scikit-sundae'
-copyright = 'Alliance for Energy Innovation, LLC'
 author = 'Corey R. Randall'
+copyright = 'Alliance for Energy Innovation, LLC'
+
 version = sun.__version__
 release = sun.__version__
 
@@ -22,14 +23,14 @@ json_url = 'https://scikit-sundae.readthedocs.io/en/latest/_static/switcher.json
 
 extensions = [
     'sphinx.ext.todo',
-    'sphinx.ext.viewcode',
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
-    'autoapi.extension',
+    'sphinx.ext.viewcode',
     'myst_nb',
     'sphinx_design',
     # 'sphinx_favicon',
     'sphinx_copybutton',
+    'autoapi.extension',
 ]
 
 templates_path = ['_templates']
@@ -38,16 +39,17 @@ exclude_patterns = [
     'build',
     'Thumbs.db',
     '.DS_Store',
-    '*.ipynb_checkpoints',
     '__pycache__',
+    '*.ipynb_checkpoints',
 ]
 
 source_suffix = {
-    '.rst': 'restructuredtext',
-    '.ipynb': 'myst-nb',
     '.myst': 'myst-nb',
+    '.ipynb': 'myst-nb',
+    '.rst': 'restructuredtext',
 }
 
+default_role = 'literal'
 highlight_language = 'console'
 
 
@@ -61,6 +63,7 @@ html_theme = 'pydata_sphinx_theme'
 html_context = {'default_mode': 'dark'}
 
 html_static_path = ['_static']
+
 html_js_files = ['custom.js']
 html_css_files = ['custom.css']
 
@@ -109,22 +112,21 @@ html_theme_options = {
 
 napoleon_use_rtype = False
 napoleon_custom_sections = [
-    'Accessing the documentation',
     'Acknowledgements',
+    'Accessing the documentation',
 ]
 
 
 # -- Options for autoapi -----------------------------------------------------
 # https://sphinx-autoapi.readthedocs.io/en/latest/reference/config.html
 
-autoapi_type = 'python'
-autoapi_ignore = ['*/__pycache__/*']
-autoapi_dirs = ['../../src/sksundae']
-autoapi_keep_files = True
 autoapi_root = 'api'
-autoapi_member_order = 'groupwise'
+autoapi_type = 'python'
+autoapi_keep_files = True
 autodoc_typehints = 'none'
+autoapi_member_order = 'groupwise'
 autoapi_python_class_content = 'both'
+autoapi_dirs = ['../../src/sksundae']
 autoapi_options = [
     'members',
     'imported-members',
