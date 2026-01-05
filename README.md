@@ -92,7 +92,7 @@ This work was authored by researchers at the National Laboratory of the Rockies 
 For convenience, we also provide the following for your BibTex:
 
 ```
-@misc{Randall-2024,
+@misc{randall2024sksundae,
   author = {Randall, Corey R.},
   title = {{scikit-SUNDAE: Python bindings to SUNDIALS Differential Algebraic Equation solvers [SWR-24-137]}},
   url = {github.com/NREL/scikit-sundae},
