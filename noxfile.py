@@ -106,6 +106,8 @@ def run_pytest(session: nox.Session) -> None:
             '--cov-report=html:reports/htmlcov',
             '--cov-report=xml:reports/coverage.xml',
             '--junitxml=reports/junit.xml',
+            '--html=reports/pytest.html',
+            '--self-contained-html',
             'tests/',
         ]
 
