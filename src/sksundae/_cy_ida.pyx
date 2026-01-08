@@ -17,7 +17,9 @@ cimport numpy as np
 
 from scipy import sparse as sp
 from scipy.optimize._numdiff import group_columns
-from cpython.exc cimport PyErr_CheckSignals, PyErr_Occurred
+from cpython.exc cimport (
+    PyErr_CheckSignals, PyErr_Occurred, PyErr_GetRaisedException,
+)
 
 # Extern cdef headers
 from .c_ida cimport *
@@ -240,7 +242,11 @@ cdef void _err_handler(int line, const char* func, const char* file,
                        SUNContext ctx) except *:
     """Custom error handler for shorter messages (no line or file)."""
     
-    if not PyErr_Occurred():
+    if PyErr_Occurred():
+        aux = <AuxData> err_user_data
+        aux.pyerr = <object> PyErr_GetRaisedException()
+
+    else:
         decoded_func = func.decode("utf-8")
         decoded_msg = msg.decode("utf-8").replace(", ,", ",").strip()
         print(f"\n[{decoded_func}, Error: {err_code}] {decoded_msg}\n")
@@ -267,6 +273,7 @@ cdef class AuxData:
     cdef bint with_userdata
     cdef bint is_constrained
 
+    cdef object pyerr           # Exception
     cdef object resfn           # Callable
     cdef object userdata        # Any
     cdef object eventsfn        # Callable
@@ -277,6 +284,7 @@ cdef class AuxData:
     cdef object jactimes        # IDAJacTimes
 
     def __cinit__(self, sunindextype NEQ, object options):
+        self.pyerr = None
         self.np_yy = np.empty(NEQ, DTYPE)
         self.np_yp = np.empty(NEQ, DTYPE)
         self.np_rr = np.empty(NEQ, DTYPE)
@@ -764,7 +772,9 @@ cdef class IDA:
 
         # 15) Set optional inputs
         SUNContext_ClearErrHandlers(self.ctx)
-        SUNContext_PushErrHandler(self.ctx, _err_handler, NULL)
+        SUNContext_PushErrHandler(self.ctx, _err_handler, <void*> self.aux)
+
+         # Set algebraic variable indices
 
         np_algidx = np.ones(self.NEQ, DTYPE)
         if self._options["algebraic_idx"] is not None:
@@ -992,10 +1002,12 @@ cdef class IDA:
 
                 ind += 1
 
-            if stop:
-                break
+            if self.aux.pyerr is not None:
+                raise self.aux.pyerr
             elif PyErr_CheckSignals() == -1:
                 return
+            elif stop:
+                break
 
         if self.aux.eventsfn:
             i_ev, t_ev, y_ev, yp_ev = _collect_events(self.aux)
@@ -1083,10 +1095,12 @@ cdef class IDA:
 
                 ind += 1
 
-            if stop:
-                break
+            if self.aux.pyerr is not None:
+                raise self.aux.pyerr
             elif PyErr_CheckSignals() == -1:
                 return
+            elif stop:
+                break
 
         if self.aux.eventsfn:
             i_ev, t_ev, y_ev, yp_ev = _collect_events(self.aux)
