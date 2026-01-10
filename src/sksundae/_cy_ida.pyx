@@ -18,8 +18,12 @@ cimport numpy as np
 from scipy import sparse as sp
 from scipy.optimize._numdiff import group_columns
 from cpython.exc cimport (
-    PyErr_CheckSignals, PyErr_Occurred, PyErr_GetRaisedException,
+    PyErr_Fetch, PyErr_NormalizeException,
+    PyObject, PyErr_CheckSignals, PyErr_Occurred,  # PyErr_GetRaisedException,
 )
+
+# PyErr_Fetch and PyErr_NormalizeException are deprecated at 3.12. When support
+# for <3.12 is dropped, replace with PyErr_GetRaisedException.
 
 # Extern cdef headers
 from .c_ida cimport *
@@ -241,10 +245,16 @@ cdef void _err_handler(int line, const char* func, const char* file,
                        const char* msg, int err_code, void* err_user_data,
                        SUNContext ctx) except *:
     """Custom error handler for shorter messages (no line or file)."""
+    cdef PyObject *errtype, *errvalue, *errtraceback
     
     if PyErr_Occurred():
         aux = <AuxData> err_user_data
-        aux.pyerr = <object> PyErr_GetRaisedException()
+        # aux.pyerr = <object> PyErr_GetRaisedException()
+
+        PyErr_Fetch(&errtype, &errvalue, &errtraceback)
+        PyErr_NormalizeException(&errtype, &errvalue, &errtraceback)
+
+        aux.pyerr = <object> errvalue
 
     else:
         decoded_func = func.decode("utf-8")
