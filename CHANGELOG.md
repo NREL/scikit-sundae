@@ -8,6 +8,7 @@
 ### Optimizations
 
 ### Bug Fixes
+- Ensures exception propagations work correctly with numpy 2.4 release ([#41](https://github.com/NREL/scikit-sundae/pull/41))
 
 ### Breaking Changes
 
