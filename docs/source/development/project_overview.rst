@@ -57,6 +57,6 @@ While there are no immediate plans to add new solvers or additional features, sc
 
 Contributions
 -------------
-scikit-SUNDAE is fully functional and already includes most of the planned features. However, we welcome contributions and ideas for new solvers or additional options. If you're interested in contributing, please submit an `issue <https://github.com/NREL/scikit-sundae/issues>`_ to start a discussion about your proposed feature.
+scikit-SUNDAE is fully functional and already includes most of the planned features. However, we welcome contributions and ideas for new solvers or additional options. If you're interested in contributing, please submit an `issue <https://github.com/NatLabRockies/scikit-sundae/issues>`_ to start a discussion about your proposed feature.
 
 Whether you want to fix bugs, write tests, or suggest new functionality, contributions are welcome! Any major changes should be preceded by an open discussion, ensuring alignment with the project's goals and structure.

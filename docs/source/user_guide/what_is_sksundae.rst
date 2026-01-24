@@ -44,7 +44,7 @@ If you are comparing scikits-odes to scikit-SUNDAE, you should consider the foll
 
 Our binary distributions include pre-compiled dynamic SUNDIALS libraries that also reference libraries like SuperLU_MT, OpenBLAS, and LAPACK. These are self-contained and will not affect other, existing installations you may already have. To be in compliance with each library's distribution requirements, all scikit-SUNDAE distributions include a summary of all licenses (see the `LICENSES_bundled`_ file). Note that we only link against and distribute packages with BSD-3 license. Some solvers and options, like KLU, have LGPL licenses and therefore will not be compatible to implement/distribute.
 
-.. _LICENSES_bundled: https://github.com/NREL/scikit-sundae/blob/main/LICENSES_bundled
+.. _LICENSES_bundled: https://github.com/NatLabRockies/scikit-sundae/blob/main/LICENSES_bundled
 
 Disclaimer
 ==========
