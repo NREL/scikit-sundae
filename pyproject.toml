@@ -71,7 +71,7 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/NREL/scikit-sundae"
+Homepage = "https://github.com/NatLabRockies/scikit-sundae"
 Documentation = "https://scikit-sundae.readthedocs.io/"
-Repository = "https://github.com/NREL/scikit-sundae"
-Issues = "https://github.com/NREL/scikit-sundae/issues"
+Repository = "https://github.com/NatLabRockies/scikit-sundae"
+Issues = "https://github.com/NatLabRockies/scikit-sundae/issues"

@@ -48,8 +48,8 @@ distributed as well (e.g., SuperLU_MT, OpenBLAS, and LAPACK).
 .. _scikits-odes: https://scikits-odes.readthedocs.io
 .. _conda-forge: https://anaconda.org/conda-forge/sundials
 .. _scipy.integrate: https://docs.scipy.org/doc/scipy/reference/integrate.html
-.. _bundled license file: https://github.com/NREL/scikit-sundae/blob/main/ \
-                          LICENSES_bundled
+.. _bundled license file: https://github.com/NatLabRockies/scikit-sundae/blob/ \
+                          main/LICENSES_bundled
 
 """
 

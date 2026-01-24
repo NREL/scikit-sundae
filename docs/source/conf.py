@@ -77,7 +77,7 @@ html_theme_options = {
     'icon_links': [
         {
             'name': 'GitHub',
-            'url': 'https://github.com/NREL/scikit-sundae',
+            'url': 'https://github.com/NatLabRockies/scikit-sundae',
             'icon': 'fa-brands fa-github',
         },
         {
