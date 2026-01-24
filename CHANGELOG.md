@@ -13,6 +13,7 @@
 ### Breaking Changes
 
 ### Chores
+- Make GitHub hyperlinks reference new org name `NREL` -> `NatLabRockies` ([#42](https://github.com/NatLabRockies/scikit-sundae/pull/42))
 - Allow single backticks for sphinx inline code (`default_role = 'literal'`) ([#40](https://github.com/NatLabRockies/scikit-sundae/pull/40))
 - Rebrand NREL to NLR, and include name change for Alliance as well ([#39](https://github.com/NatLabRockies/scikit-sundae/pull/39))
 
